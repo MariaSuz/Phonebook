@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { api } from '@/api/api';
-import type { AuthFormModel } from './forms/AuthFormModel';
+import type { AuthFormModel } from '../logic/types/forms/AuthFormModel';
 import axios from 'axios';
 import router from '@/router';
 

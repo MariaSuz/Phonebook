@@ -1,26 +1,14 @@
 <template>
   <VCard>
-    <div div class="user-form">
-      <div class="user-form__header">
-        <h2 class="user-form__title">{{ formTitle }}</h2>
-        <p
-          class="user-form__subtitle"
-          v-if="formType === FormTypes.ADD"
-        >
-          Заполните информацию о новом сотруднике
-        </p>
-        <p
-          class="user-form__subtitle"
-          v-else-if="formType === FormTypes.EDIT"
-        >
-          Измените необходимые данные
-        </p>
+    <div div class="employee-form">
+      <div class="employee-form__header">
+        <h2 class="employee-form__title">{{ formTitle }}</h2>
       </div>
       <AlertMessage />
       <VForm @submit.prevent="onSubmitForm">
-        <div class="user-form__content">
+        <div class="employee-form__content">
           <TextField
-            v-model="user.cabinet"
+            v-model="employee.cabinet"
             label="№ кабинета"
             placeholder="Например: 101"
             icon="mdi-door"
@@ -29,7 +17,7 @@
             @blur="v.cabinet.$touch"
           />
           <TextField
-            v-model="user.position"
+            v-model="employee.position"
             label="Должность"
             placeholder="Например: Главный бухгалтер"
             icon="mdi-badge-account"
@@ -38,7 +26,7 @@
             @blur="v.position.$touch"
           />
           <TextField
-            v-model="user.fullName"
+            v-model="employee.fullName"
             label="ФИО"
             placeholder="Например: Иванов Иван Иванович"
             icon="mdi-account"
@@ -47,7 +35,7 @@
             @blur="v.fullName.$touch"
           />
           <TextField
-            v-model="user.internalPhone"
+            v-model="employee.internalPhone"
             label="Внутренний номер"
             placeholder="Например: 101"
             icon="mdi-phone"
@@ -56,7 +44,7 @@
             @blur="v.internalPhone.$touch"
           />
           <TextField
-            v-model="user.cityPhone"
+            v-model="employee.cityPhone"
             label="Городской номер"
             placeholder="Например: 340-00-00"
             icon="mdi-phone-classic"
@@ -65,7 +53,7 @@
             @blur="v.cityPhone.$touch"
           />
           <TextField
-            v-model="user.mobilePhone"
+            v-model="employee.mobilePhone"
             label="Мобильный номер"
             v-mask="'+7 (###) ###-##-##'"
             placeholder="Например: 8 927 000 00 00"
@@ -75,7 +63,7 @@
             @blur="v.mobilePhone.$touch"
           />
           <TextField
-            v-model="user.email"
+            v-model="employee.email"
             label="Электронная почта"
             type="email"
             placeholder="Например: ivanov.ii@opera-samara.net"
@@ -84,25 +72,19 @@
             :error="v.email.$error"
             @blur="v.email.$touch"
           />
-          <VSelect
-            v-model="user.departmentId"
+          <Select
+            v-model="employee.departmentId"
             label="Выберите подразделение"
             :items="departmentsList"
             item-title="name"
             item-value="id"
-            variant="outlined"
-            class="user-form__field"
             placeholder="Выберите подразделение"
             :error-messages="v.departmentId.$errors.map((e: any) => e.$message)"
             :error="v.departmentId.$error"
             @blur="v.departmentId.$touch"
-          >
-            <template v-slot:prepend>
-              <VIcon icon="mdi-office-building" color="#7ccf7c" size="small" />
-            </template>
-          </VSelect>
+          />
           <TextField
-            v-model="user.sortOrder"
+            v-model="employee.sortOrder"
             label="Приоритет сортировки"
             placeholder="999"
             icon="mdi-sort-numeric-ascending"
@@ -111,17 +93,17 @@
             @blur="v.sortOrder.$touch"
           />
         </div>
-        <VDivider class="user-form__divider" />
-        <div class="user-form__actions">
+        <VDivider class="employee-form__divider" />
+        <div class="employee-form__actions">
           <VBtn
             @click="cancelAction"
-            class="user-form__actions__btn user-form__actions__btn--cancel"
+            class="employee-form__actions__btn employee-form__actions__btn--cancel"
           > Отмена
           </VBtn>
           <VBtn
             v-if="formType !== FormTypes.SHOW"
             type="submit"
-            class="user-form__actions__btn user-form__actions__btn--save"
+            class="employee-form__actions__btn employee-form__actions__btn--save"
           > Сохранить
           </VBtn>
         </div>
@@ -132,29 +114,30 @@
 
 <script setup lang="ts">
 import { useDepartmentStore } from '@/store/departmentsStore';
-import { FormTypes } from '@/store/forms/FormTypes';
-import type { UserFormModel } from '@/store/forms/EmployeeFormModel';
+import { FormTypes } from '@/logic/types/FormTypes';
+import type { EmployeeFormModel } from '@/logic/types/forms/EmployeeFormModel';
 import { useEmployeesStore } from '@/store/employeesStore';
 import { ref, computed } from 'vue';
 import TextField from '../inputs/TextField.vue';
+import Select from '../inputs/Select.vue';
 import { useAlertStore } from '@/store/alertStore';
 import { useVuelidate } from '@vuelidate/core';
-import { userRules } from '@/logic/validation/userValidation';
+import { employeeRules } from '@/logic/validation/employeeValidation';
 import AlertMessage from '../widgets/AlertMessage.vue';
 
 const store = useEmployeesStore();
 const departmentStore = useDepartmentStore();
 const departmentsList = computed(() => departmentStore.list);
 const alertStore = useAlertStore();
-interface UserProps {
-  userData?: UserFormModel;
+interface employeeProps {
+  data?: EmployeeFormModel;
   formType: FormTypes;
-  userId?: number;
+  id?: number;
 }
 
-const props = defineProps<UserProps>();
+const props = defineProps<employeeProps>();
 
-const createUser = (): UserFormModel => ({
+const createEmployee = (): EmployeeFormModel => ({
   cabinet: '',
   position: '',
   fullName: '',
@@ -165,17 +148,17 @@ const createUser = (): UserFormModel => ({
   departmentId: undefined,
   sortOrder: 999,
 });
-const user = ref<UserFormModel>(props.userData ? { ...props.userData } : createUser());
-const v = useVuelidate(userRules, user);
+const employee = ref<EmployeeFormModel>(props.data ? { ...props.data } : createEmployee());
+const v = useVuelidate(employeeRules, employee);
 
 const formTitle = computed(() => {
    switch (props.formType) {
     case FormTypes.EDIT:
-      return `Редактирование пользователя ${user.value.fullName}`;
+      return `Редактирование пользователя ${employee.value.fullName}`;
     case FormTypes.ADD:
       return `Добавление нового пользователя`;
     default:
-      return `Просмотр пользователя ${user.value.fullName}`;
+      return `Просмотр пользователя ${employee.value.fullName}`;
   };
 });
 
@@ -195,9 +178,9 @@ const onSubmitForm = async () => {
   }
   try {
     if (props.formType === FormTypes.EDIT) {
-      await store.updateEmployee(props.userId, user.value);
+      await store.updateEmployee(props.id, employee.value);
     } else if (props.formType === FormTypes.ADD) {
-      await store.addEmployees(user.value);
+      await store.addEmployees(employee.value);
     }
     emit('cancel');
   } catch (error) {
@@ -207,7 +190,7 @@ const onSubmitForm = async () => {
 </script>
 
 <style lang="scss">
-.user-form {
+.employee-form {
   display: flex;
   flex-direction: column;
   background: #ffffff;

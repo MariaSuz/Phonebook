@@ -15,15 +15,7 @@
             variant="text"
             size="small"
             class="files__header-upload"
-            @click="openFileInput"
-          />
-          <VFileInput
-            ref="fileInputRef"
-            v-model="selectedFile"
-            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
-            class="files__file-input-hidden"
-            @update:modelValue="fileUpload"
-            :multiple="false"
+            @click="openModal"
           />
           <VBtn
             icon="mdi-close"
@@ -43,7 +35,7 @@
               class="docs-panel__item"
             >
               <VListItemTitle class="files__item-title">
-                {{ file.filename }}
+                {{ file.filename || 'Без названия' }}
               </VListItemTitle>
               <VListItemSubtitle class="files__item-subtitle">
                 <div v-if="file.description" class="files__item-description">
@@ -72,14 +64,23 @@
           </VList>
         </div>
       </div>
+      <FormModal
+        v-model="isModalOpenFile"
+        :form-component="FileForm"
+        :form-type="FormTypes.ADD"
+        @cancel="closeModal"
+      />
     </div>
   </Transition>
 </template>
 
 <script setup lang="ts">
 import { useFileStore } from '@/store/filesStore';
-import type { FileFormModel, FileUploadModel } from '@/store/forms/FileFormModel';
+import type { FileFormModel } from '@/logic/types/forms/FileFormModel';
 import { computed, ref, watch } from 'vue';
+import FileForm from '../forms/FileForm.vue';
+import { FormTypes } from '@/logic/types/FormTypes';
+import FormModal from '../modals/FormModal.vue';
 
 
 interface FilesProps {
@@ -94,6 +95,7 @@ const emit = defineEmits<{
 const filesStore = useFileStore();
 const files = computed(() => filesStore.list);
 const selectedFile = ref<File | null>(null);
+const isModalOpenFile = ref(false);
 
 const closePanel = () => {
   emit('update:modelValue', false);
@@ -107,13 +109,12 @@ const confirmDelete = async (file: FileFormModel) => {
     await filesStore.deleteFile(file.id);
   }
 }
-const fileUpload = async (file: FileUploadModel) => {
-  if (!file) return;
-  await filesStore.uploadFile(file)
+const openModal = () => {
+  isModalOpenFile.value = true;
+};
+const closeModal = () => {
+  isModalOpenFile.value = false;
   selectedFile.value = null;
-}
-const openFileInput = () => {
-  fileInput.value?.click();
 };
 
 watch(() => props.modelValue, async (newValue) => {
@@ -156,7 +157,6 @@ watch(() => props.modelValue, async (newValue) => {
       background: rgba(255, 255, 255, 0.1) !important;
       &:hover {
         background: rgba(255, 255, 255, 0.2) !important;
-        transform: rotate(90deg);
       }
     }
   }

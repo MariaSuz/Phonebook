@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import type { FileFormModel, FileUploadModel } from './forms/FileFormModel';
+import type { FileFormModel, FileUploadModel } from '../logic/types/forms/FileFormModel';
 import { api } from "../api/api";
 
 export const useFileStore = defineStore('file', {

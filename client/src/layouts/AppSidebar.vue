@@ -34,8 +34,10 @@
         </VListItem>
     </VList>
     </div>
-    <DepartmentAddModal
+    <FormModal
       v-model="isShowModalAddDepartment"
+      :form-component="DepartmentForm"
+      :form-type="FormTypes.ADD"
       @cancel="closeModal"
     />
   </VNavigationDrawer>
@@ -46,9 +48,11 @@ import { computed, onMounted } from 'vue';
 import { useDepartmentStore } from '@/store/departmentsStore';
 import { useSidebarStore } from '@/store/sidebarStore';
 import { useRouter } from 'vue-router';
-import DepartmentAddModal from '@/components/modals/DepartmentAddModal.vue';
+import FormModal from '@/components/modals/FormModal.vue';
 import { ref } from 'vue';
 import { useEmployeesStore } from '@/store/employeesStore';
+import DepartmentForm from '@/components/forms/DepartmentForm.vue';
+import { FormTypes } from '@/logic/types/FormTypes';
 
 const departmentStore = useDepartmentStore();
 const sidebarStore = useSidebarStore();

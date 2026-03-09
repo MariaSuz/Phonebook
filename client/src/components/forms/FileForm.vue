@@ -1,43 +1,53 @@
 <template>
   <VCard>
-    <div class="department-form">
-      <div class="department-form__header">
-        <div class="department-form__title">{{ formTitle }}</div>
+    <div class="file-form">
+      <div class="file-form__header">
+        <div class="file-form__title">{{ formTitle }}</div>
       </div>
       <AlertMessage />
       <VForm @submit.prevent="onSubmitForm">
-        <div class="department-form__content">
+        <div class="file-form__content">
           <TextField
-            v-model="department.name"
-            label="Наименование отдела"
-            placeholder="Например: Бухгалтерия"
+            v-model="file.fileName"
+            label="Имя файла"
+            placeholder="Например: Правила безопасности"
             icon="mdi-office-building"
-            :error-messages="v.name.$errors.map((e: any) => e.$message)"
-            :error="v.name.$error"
-            @blur="v.name.$touch"
           />
-
+          <VFileInput
+            v-model="selectedFile"
+            :label="selectedFile ? 'Файл выбран' : 'Выберите файл'"
+            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+            @update:modelValue="fileUpload"
+            :multiple="false"
+          />
           <TextField
-            v-model="department.sortOrder"
-            label="Приоритет сортировки"
-            placeholder="999"
+            v-model="file.description"
+            label="Описание (необязательно)"
             icon="mdi-sort-numeric-ascending"
-            :error-messages="v.sortOrder.$errors.map((e: any) => e.$message)"
-            :error="v.sortOrder.$error"
-            @blur="v.sortOrder.$touch"
+          />
+          <Select
+            v-model="file.group"
+            label="Выберите подразделение"
+            :items="groupOptions"
+            item-title="title"
+            item-value="value"
+            placeholder="Выберите подразделение"
+            :error-messages="v.group.$errors.map((e: any) => e.$message)"
+            :error="v.group.$error"
+            @blur="v.group.$touch"
           />
         </div>
-        <VDivider class="department-form__divider" />
-        <div class="department-form__actions">
+        <VDivider class="file-form__divider" />
+        <div class="file-form__actions">
           <VBtn
             @click="cancelAction"
-            class="department-form__actions__btn department-form__actions__btn--cancel"
+            class="file-form__actions__btn file-form__actions__btn--cancel"
           >
             Отмена
           </VBtn>
           <VBtn
             v-if="formType !== formType.SHOW"
-            class="department-form__actions__btn department-form__actions__btn--save"
+            class="file-form__actions__btn file-form__actions__btn--save"
             type="submit"
           >
             Сохранить
@@ -49,47 +59,62 @@
 </template>
 
 <script setup lang="ts">
-import { useDepartmentStore } from '@/store/departmentsStore';
-import type { DepartmentFormModel } from '@/logic/types/forms/DepartmentFormModel';
+import type { FileFormModel } from '@/logic/types/forms/FileFormModel';
 import { FormTypes } from '@/logic/types/FormTypes';
 import { computed, ref } from 'vue';
 import TextField from '../inputs/TextField.vue';
+import Select from '../inputs/Select.vue';
 import AlertMessage from '../widgets/AlertMessage.vue';
 import { useVuelidate } from '@vuelidate/core';
-import { departmentRules } from '@/logic/validation/departmentValidation';
+import { fileRules } from '@/logic/validation/fileValidation';
 import { useAlertStore } from '@/store/alertStore';
+import { useFileStore } from '@/store/filesStore';
 
-const store = useDepartmentStore();
-interface DepartmentProps {
-  data?: DepartmentFormModel;
+const store = useFileStore();
+interface fileProps {
   formType: FormTypes;
 }
 
-const props = defineProps<DepartmentProps>();
+const props = defineProps<fileProps>();
 const alertStore = useAlertStore();
+const selectedFile = ref<File | null>(null);
 
-const createDepartment = (): DepartmentFormModel => ({
-  name: '',
-  sortOrder: 999,
+const createfile = (): FileFormModel => ({
+  fileName: '',
+  description: '',
+  group: null,
+  fileContent: null,
+  contentType: null,
+  sizeBytes: null
 });
-const department = ref<DepartmentFormModel>(props.data ? { ...props.data } : createDepartment());
-const v = useVuelidate(departmentRules, department);
+const file = ref<FileFormModel>(createfile());
+const v = useVuelidate(fileRules, file);
 const emit = defineEmits(['cancel']);
 
 const cancelAction = () => {
   emit('cancel');
 };
 
+const groupOptions = [
+  { title: 'Документация основная', value: 1 },
+  { title: 'Правила', value: 2 },
+  { title: 'Инструкции', value: 3 },
+  { title: 'Отчеты', value: 4 },
+  { title: 'Прочее', value: 5 }
+];
+
 const formTitle = computed(() => {
    switch (props.formType) {
-    case FormTypes.EDIT:
-      return `Редактирование отдела`;
     case FormTypes.ADD:
-      return `Добавление нового отдела`;
+      return `Добавление нового документа`;
     default:
-      return `Просмотр отдела ${department.value.name}`;
+      return `Просмотр документа`;
   };
 });
+
+const fileUpload = async (file: FileFormModel) => {
+  selectedFile.value = file;
+}
 
 const onSubmitForm = async () => {
   alertStore.clear();
@@ -100,12 +125,13 @@ const onSubmitForm = async () => {
     return;
   }
   try {
-    if (props.formType === FormTypes.EDIT) {
-      await store.updateDepartment(department.value.id, department.value);
-    } else if (props.formType === FormTypes.ADD) {
-      await store.createDepartment(department.value);
-    }
+    if (props.formType === FormTypes.ADD) {
+      await store.uploadFile({
+        fileContent: selectedFile.value,
+        description: file.value.description
+      });
     emit('cancel');
+    }
   } catch (error) {
     console.error('Ошибка при добавлении:', error);
   }
@@ -113,7 +139,7 @@ const onSubmitForm = async () => {
 </script>
 
 <style lang="scss">
-.department-form {
+.file-form {
   display: flex;
   flex-direction: column;
   background: #ffffff;

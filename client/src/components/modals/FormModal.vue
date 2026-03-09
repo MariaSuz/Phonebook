@@ -4,21 +4,28 @@
       backgroundColor="white"
       width="750"
     >
-      <AuthUserForm
+      <Component
+        :is="formComponent"
+        :data="data"
+        :id="id"
+        :form-type="formType"
         @cancel="closeModalEmit"
-        :form-type="FormTypes.ADD"
       />
   </Modal>
 </template>
 
 <script setup lang="ts">
 import Modal from '@/components/modals/Modal.vue';
-import AuthUserForm from '@/components/forms/AuthUserForm.vue';
-import { FormTypes } from '@/store/forms/FormTypes';
+import {  FormType } from '@/logic/types/FormTypes';
 import { computed } from 'vue';
+import type { Component } from 'vue';
 
 interface ModalProps {
   modelValue: boolean;
+  data?: any;
+  formComponent: Component;
+  formType: FormType;
+  id?: number;
 }
 
 const props = defineProps<ModalProps>();
@@ -43,3 +50,4 @@ const closeModalEmit = () => {
 
 <style lang="scss">
 </style>
+
