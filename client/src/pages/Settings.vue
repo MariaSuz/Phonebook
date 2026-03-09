@@ -52,26 +52,28 @@
         </VDataTable>
       </div>
     </div>
-    <AuthUserAddModal
+    <FormModal
       v-model="isShowModalCreateAuthUser"
+      :form-component="AuthUserForm"
+      :form-type="FormTypes.ADD"
       @cancel="closeModal"
     />
-    <AuthUserEditModal
+    <FormModal
       v-model="isShowModalEditAuthUser"
-      :user-data="selectedUser"
-      :user-id="selectedUser?.id"
+      :form-component="AuthUserForm"
       :form-type="FormTypes.EDIT"
+      :data="selectedUser"
+      :id="selectedUser?.id"
       @cancel="closeModal"
     />
   </VCard>
 </template>
 
 <script setup lang="ts">
-import AuthUserAddModal from '@/components/modals/AuthUserAddModal.vue';
-import AuthUserEditModal from '@/components/modals/AuthUserEditModal.vue';
+import AuthUserForm from '@/components/forms/AuthUserForm.vue';
 import { useAuthStore } from '@/store/authStore';
-import type { AuthFormModel } from '@/store/forms/AuthFormModel';
-import { FormTypes } from '@/store/forms/FormTypes';
+import type { AuthFormModel } from '@/logic/types/forms/AuthFormModel';
+import { FormTypes } from '@/logic/types/FormTypes';
 import { computed, onMounted, ref } from 'vue';
 
 const authStore = useAuthStore();

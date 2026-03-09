@@ -1,10 +1,11 @@
 export interface FileFormModel {
   id?: string;
-  filename: string;
+  fileName: string;
   fileContent: File | null;
   contentType: string | null;
   sizeBytes: number | null;
   description: string | null;
+  group: number | null;
 }
 
 export interface FileUploadModel {

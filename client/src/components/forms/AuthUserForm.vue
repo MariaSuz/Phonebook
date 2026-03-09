@@ -3,18 +3,6 @@
     <div div class="auth-form">
       <div class="auth-form__header">
         <h2 class="auth-form__title">{{ formTitle }}</h2>
-        <p
-          class="auth-form__subtitle"
-          v-if="formType === FormTypes.ADD"
-        >
-          Создайте нового пользователя системы
-        </p>
-        <p
-          class="auth-form__subtitle"
-          v-else-if="formType === FormTypes.EDIT"
-        >
-          Измените данные пользователя
-        </p>
       </div>
       <div class="auth-form__content">
         <TextField
@@ -67,8 +55,8 @@
 
 <script setup lang="ts">
 import { useAuthStore } from '@/store/authStore';
-import type { AuthFormModel } from '@/store/forms/AuthFormModel';
-import { FormTypes } from '@/store/forms/FormTypes';
+import type { AuthFormModel } from '@/logic/types/forms/AuthFormModel';
+import { FormTypes } from '@/logic/types/FormTypes';
 import { ref, computed } from 'vue';
 import TextField from '../inputs/TextField.vue';
 

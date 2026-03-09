@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { api } from '@/api/api';
-import type { EmployeeFormModel } from './forms/EmployeeFormModel';
-import type { DepartmentFormModel } from './forms/DepartmentFormModel';
+import type { EmployeeFormModel } from '../logic/types/forms/EmployeeFormModel';
+import type { DepartmentFormModel } from '../logic/types/forms/DepartmentFormModel';
 
 export const useEmployeesStore = defineStore('employee', {
   state: () => ({
@@ -56,7 +56,7 @@ export const useEmployeesStore = defineStore('employee', {
         const updatedEmployee = response.data;
         const index = this.employees.findIndex((u) => u.id === id);
         if (index !== -1) {
-          this.employees[index] = updatedEmployees;
+          this.employees[index] = updatedEmployee;
         }
         return updatedEmployee;
       } catch (error) {

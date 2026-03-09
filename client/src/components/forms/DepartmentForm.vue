@@ -3,18 +3,6 @@
     <div class="department-form">
       <div class="department-form__header">
         <div class="department-form__title">{{ formTitle }}</div>
-        <p
-          class="department-form__subtitle"
-          v-if="formType === FormTypes.ADD"
-        >
-          Создайте новый отдел
-        </p>
-        <p
-          class="department-form__subtitle"
-          v-else-if="formType === FormTypes.EDIT"
-        >
-          Измените информацию об отделе
-        </p>
       </div>
       <AlertMessage />
       <VForm @submit.prevent="onSubmitForm">
@@ -62,8 +50,8 @@
 
 <script setup lang="ts">
 import { useDepartmentStore } from '@/store/departmentsStore';
-import type { DepartmentFormModel } from '@/store/forms/DepartmentFormModel';
-import { FormTypes } from '@/store/forms/FormTypes';
+import type { DepartmentFormModel } from '@/logic/types/forms/DepartmentFormModel';
+import { FormTypes } from '@/logic/types/FormTypes';
 import { computed, ref } from 'vue';
 import TextField from '../inputs/TextField.vue';
 import AlertMessage from '../widgets/AlertMessage.vue';
@@ -73,7 +61,7 @@ import { useAlertStore } from '@/store/alertStore';
 
 const store = useDepartmentStore();
 interface DepartmentProps {
-  departmentData: DepartmentFormModel;
+  data?: DepartmentFormModel;
   formType: FormTypes;
 }
 
@@ -84,7 +72,7 @@ const createDepartment = (): DepartmentFormModel => ({
   name: '',
   sortOrder: 999,
 });
-const department = ref<DepartmentFormModel>(props.departmentData ? { ...props.departmentData } : createDepartment());
+const department = ref<DepartmentFormModel>(props.data ? { ...props.data } : createDepartment());
 const v = useVuelidate(departmentRules, department);
 const emit = defineEmits(['cancel']);
 

@@ -40,8 +40,6 @@
               :search="search"
               class="departments-data-table"
             >
-
-               <!-- Подсветка для всех текстовых колонок -->
               <template v-slot:item.cabinet="{ item }">
                 <span v-html="highlightText(item.cabinet) || '—'"></span>
               </template>
@@ -99,35 +97,40 @@
         </div>
       </div>
     </div>
-    <UserAddModal
+    <FormModal
       v-model="isShowModalAddUser"
+      :form-component="EmployeeForm"
+      :form-type="FormTypes.ADD"
       @cancel="closeModal"
     />
-    <UserEditModal
+    <FormModal
       v-model="isShowModalEditUser"
-      :user-data="selectedUser"
-      :user-id="selectedUser?.id"
+      :form-component="EmployeeForm"
+      :data="selectedEmployee"
+      :id="selectedEmployee?.id"
       :form-type="FormTypes.EDIT"
       @cancel="closeModal"
     />
-    <DepartmentEditModal
+    <FormModal
       v-model="isShowModalEditDepartment"
+      :form-component="DepartmentForm"
+      :form-type="FormTypes.EDIT"
       @cancel="closeModal"
-      :department-data="department"
+      :data="department"
     />
   </VCard>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { useEmployeesStore } from '@/store/employeesStore';
 import { useDepartmentStore } from '@/store/departmentsStore';
-import UserAddModal from '@/components/modals/UserAddModal.vue';
-import UserEditModal from '@/components/modals/UserEditModal.vue';
-import DepartmentEditModal from '@/components/modals/DepartmentEditModal.vue';
-import type { UserFormModel } from '@/store/forms/EmployeeFormModel';
+import FormModal from '@/components/modals/FormModal.vue';
+import type { EmployeeFormModel } from '@/logic/types/forms/EmployeeFormModel';
 import router from '@/router';
-import { FormTypes } from '@/store/forms/FormTypes';
+import { FormTypes } from '@/logic/types/FormTypes';
+import DepartmentForm from '@/components/forms/DepartmentForm.vue';
+import EmployeeForm from '@/components/forms/EmployeeForm.vue';
 
 const props = defineProps<{
   departmentId: number;
@@ -153,7 +156,7 @@ const users = computed(() => {
 
 // const isEmpty = computed(() => users.value.length === 0);
 
-const selectedUser = ref<null | UserFormModel>(null);
+const selectedEmployee = ref<null | EmployeeFormModel>(null);
 const headers = computed(() => [
   { key: 'cabinet', title: '№ кабинета' },
   { key: 'position', title: 'Должность' },
@@ -171,8 +174,8 @@ const headers = computed(() => [
   }
 ]);
 
-const edit = (user: UserFormModel) => {
-  selectedUser.value = user;
+const edit = (user: EmployeeFormModel) => {
+  selectedEmployee.value = user;
   isShowModalEditUser.value = true;
 };
 
@@ -190,7 +193,7 @@ const deleteDepartment = (user: any) => {
 
 const closeModal = () => {
   isShowModalEditUser.value = false;
-  selectedUser.value = null;
+  selectedEmployee.value = null;
   isShowModalAddUser.value = false;
   isShowModalEditDepartment.value = false;
 };

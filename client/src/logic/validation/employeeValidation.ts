@@ -5,7 +5,7 @@ import {
   between,
 } from '@vuelidate/validators';
 
-export const userRules = {
+export const employeeRules = {
   fullName: {
     required: helpers.withMessage('Имя обязателено для заполнения', required),
     validFormat: helpers.withMessage(
@@ -66,11 +66,11 @@ export const userRules = {
     ),
     between: helpers.withMessage(
       'Приоритет сортировки должен быть от 1 до 999',
-      between(1, 999)
+      between(1, 999),
     ),
     numeric: helpers.withMessage(
       'Приоритет сортировки должен быть числом',
-      (value: string) => !value || /^\d+$/.test(value)
+      (value: string) => !value || /^\d+$/.test(value),
     ),
   },
-}
+};

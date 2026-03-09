@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import type { DepartmentFormModel } from './forms/DepartmentFormModel';
+import type { DepartmentFormModel } from '../logic/types/forms/DepartmentFormModel';
 import { api } from "../api/api";
 
 export const useDepartmentStore = defineStore('departments', {
