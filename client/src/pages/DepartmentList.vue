@@ -103,7 +103,7 @@
                   >
                     Добавить первого сотрудника
                   </VBtn>
-                  <span>
+                  <span  v-if="!authenticationUser">
                     Сотрудники отсутствуют
                 </span>
                 </div>

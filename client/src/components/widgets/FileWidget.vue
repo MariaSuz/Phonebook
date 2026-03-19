@@ -16,7 +16,7 @@
             variant="text"
             size="small"
             class="files__header-upload"
-            @click="openModal"
+            @click="openAddModal"
           />
           <VBtn
             icon="mdi-close"
@@ -59,7 +59,7 @@
                     variant="text"
                     size="small"
                     color="error"
-                    @click="confirmDelete(file)"
+                    @click="deleteFile(file)"
                   />
                 </div>
               </template>
@@ -68,11 +68,17 @@
         </div>
       </div>
       <FormModal
-        v-model="isModalOpenFile"
+        v-model="modals.add"
         :form-component="FileForm"
         :form-type="FormTypes.ADD"
         @cancel="closeModal"
       />
+      <ComfirmDelete
+        v-model="modals.delete"
+        :title="selectedFile?.fileName"
+        @confirm="confirmDelete"
+        @cancel="closeModal"
+    />
     </div>
   </Transition>
 </template>
@@ -80,12 +86,13 @@
 <script setup lang="ts">
 import { useFileStore } from '@/store/filesStore';
 import type { FileFormModel } from '@/logic/types/forms/FileFormModel';
-import { computed, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import FileForm from '../forms/FileForm.vue';
 import { FormTypes } from '@/logic/types/FormTypes';
 import FormModal from '../modals/FormModal.vue';
 import FileTab from './FileTab.vue';
 import { useAuthStore } from '@/store/authStore';
+import ComfirmDelete from '../modals/ComfirmDelete.vue';
 
 
 interface FilesProps {
@@ -100,12 +107,15 @@ const emit = defineEmits<{
 const filesStore = useFileStore();
 const authStore = useAuthStore();
 const files = computed(() => filesStore.list);
-const selectedFile = ref<File | null>(null);
-const isModalOpenFile = ref(false);
+const selectedFile = ref<FileFormModel | null>(null)
 const activeTab = ref(2);
+const modals = reactive({
+  add: false,
+  delete: false,
+});
 
 const closePanel = () => {
-  if (!isModalOpenFile.value) {
+  if (!modals.add && !modals.delete) {
     emit('update:modelValue', false);
   }
 };
@@ -115,18 +125,23 @@ const filteredFiles = computed(() => {
 });
 
 const downloadFile = async (file: FileFormModel) => {
-  await filesStore.downloadFile(file.id);
+  await filesStore.downloadFile(file.id!);
 }
-const confirmDelete = async (file: FileFormModel) => {
-  if (confirm(`Удалить файл?`)) {
-    await filesStore.deleteFile(file.id);
+const deleteFile = async (file: FileFormModel) => {
+  selectedFile.value = file;
+  modals.delete = true;
+}
+const confirmDelete = async () => {
+  if (selectedFile.value?.id) {
+    await filesStore.deleteFile(selectedFile.value.id);
   }
 }
-const openModal = () => {
-  isModalOpenFile.value = true;
+const openAddModal = () => {
+  modals.add = true;
 };
 const closeModal = () => {
-  isModalOpenFile.value = false;
+  modals.add = false;
+  modals.delete = false;
   selectedFile.value = null;
 };
 
