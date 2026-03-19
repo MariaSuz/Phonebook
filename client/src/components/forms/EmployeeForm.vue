@@ -92,6 +92,7 @@
             @blur="v.departmentId.$touch"
           />
           <TextField
+            v-if="formType !== FormTypes.SHOW"
             v-model="employee.sortOrder"
             label="Приоритет сортировки"
             placeholder="999"

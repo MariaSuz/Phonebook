@@ -38,7 +38,7 @@
             Отмена
           </VBtn>
           <VBtn
-            v-if="formType !== formType.SHOW"
+            v-if="formType !== FormTypes.SHOW"
             class="department-form__actions__btn department-form__actions__btn--save"
             type="submit"
           >

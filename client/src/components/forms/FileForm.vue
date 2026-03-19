@@ -49,7 +49,7 @@
             Отмена
           </VBtn>
           <VBtn
-            v-if="formType !== formType.SHOW"
+            v-if="formType !== FormTypes.SHOW"
             class="file-form__actions__btn file-form__actions__btn--save"
             type="submit"
           >
