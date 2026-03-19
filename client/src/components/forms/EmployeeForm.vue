@@ -12,6 +12,7 @@
             label="№ кабинета"
             placeholder="Например: 101"
             icon="mdi-door"
+            :readonly="disabled"
             :error-messages="v.cabinet.$errors.map((e: any) => e.$message)"
             :error="v.cabinet.$error"
             @blur="v.cabinet.$touch"
@@ -21,6 +22,7 @@
             label="Должность"
             placeholder="Например: Главный бухгалтер"
             icon="mdi-badge-account"
+            :readonly="disabled"
             :error-messages="v.position.$errors.map((e: any) => e.$message)"
             :error="v.position.$error"
             @blur="v.position.$touch"
@@ -30,6 +32,7 @@
             label="ФИО"
             placeholder="Например: Иванов Иван Иванович"
             icon="mdi-account"
+            :readonly="disabled"
             :error-messages="v.fullName.$errors.map((e: any) => e.$message)"
             :error="v.fullName.$error"
             @blur="v.fullName.$touch"
@@ -39,6 +42,7 @@
             label="Внутренний номер"
             placeholder="Например: 101"
             icon="mdi-phone"
+            :readonly="disabled"
             :error-messages="v.internalPhone.$errors.map((e: any) => e.$message)"
             :error="v.internalPhone.$error"
             @blur="v.internalPhone.$touch"
@@ -48,6 +52,7 @@
             label="Городской номер"
             placeholder="Например: 340-00-00"
             icon="mdi-phone-classic"
+            :readonly="disabled"
             :error-messages="v.cityPhone.$errors.map((e: any) => e.$message)"
             :error="v.cityPhone.$error"
             @blur="v.cityPhone.$touch"
@@ -58,6 +63,7 @@
             v-mask="'+7 (###) ###-##-##'"
             placeholder="Например: 8 927 000 00 00"
             icon="mdi-cellphone"
+            :readonly="disabled"
             :error-messages="v.mobilePhone.$errors.map((e: any) => e.$message)"
             :error="v.mobilePhone.$error"
             @blur="v.mobilePhone.$touch"
@@ -68,6 +74,7 @@
             type="email"
             placeholder="Например: ivanov.ii@opera-samara.net"
             icon="mdi-email"
+            :readonly="disabled"
             :error-messages="v.email.$errors.map((e: any) => e.$message)"
             :error="v.email.$error"
             @blur="v.email.$touch"
@@ -79,6 +86,7 @@
             item-title="name"
             item-value="id"
             placeholder="Выберите подразделение"
+            :readonly="disabled"
             :error-messages="v.departmentId.$errors.map((e: any) => e.$message)"
             :error="v.departmentId.$error"
             @blur="v.departmentId.$touch"
@@ -88,6 +96,7 @@
             label="Приоритет сортировки"
             placeholder="999"
             icon="mdi-sort-numeric-ascending"
+            :readonly="disabled"
             :error-messages="v.sortOrder.$errors.map((e: any) => e.$message)"
             :error="v.sortOrder.$error"
             @blur="v.sortOrder.$touch"
@@ -150,6 +159,7 @@ const createEmployee = (): EmployeeFormModel => ({
 });
 const employee = ref<EmployeeFormModel>(props.data ? { ...props.data } : createEmployee());
 const v = useVuelidate(employeeRules, employee);
+const disabled = computed(() => props.formType === FormTypes.SHOW);
 
 const formTitle = computed(() => {
    switch (props.formType) {

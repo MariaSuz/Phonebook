@@ -10,17 +10,18 @@
           label="Имя пользователя"
           placeholder="Введите логин"
           icon="mdi-account"
+          :error-messages="v.userName.$errors.map((e: any) => e.$message)"
+          :error="v.userName.$error"
+          @blur="v.userName.$touch"
         />
         <TextField
           v-model="user.password"
           label="Пароль пользователя"
           type="password"
           icon="mdi-lock"
-        />
-        <TextField
-          v-model="user.avatar"
-          label="Аватар пользователя"
-          icon="mdi-image"
+          :error-messages="v.password.$errors.map((e: any) => e.$message)"
+          :error="v.password.$error"
+          @blur="v.password.$touch"
         />
         <VSelect
           v-model="user.roleId"
@@ -59,11 +60,13 @@ import type { AuthFormModel } from '@/logic/types/forms/AuthFormModel';
 import { FormTypes } from '@/logic/types/FormTypes';
 import { ref, computed } from 'vue';
 import TextField from '../inputs/TextField.vue';
+import useVuelidate from '@vuelidate/core';
+import { userRules } from '@/logic/validation/userValidation';
 
 interface AuthUserProps {
-  userData?: AuthFormModel;
+  data?: AuthFormModel;
   formType: FormTypes;
-  userId?: number;
+  id?: number;
 }
 interface RoleOption {
   title: string;
@@ -84,7 +87,8 @@ const createAuthUser = (): AuthFormModel => ({
   roleId: 2,
   avatar: '',
 });
-const user = ref<AuthFormModel>(props.userData ? { ...props.userData } : createAuthUser());
+const user = ref<AuthFormModel>(props.data ? { ...props.data } : createAuthUser());
+const v = useVuelidate(userRules, user);
 
 const formTitle = computed(() => {
    switch (props.formType) {
@@ -104,9 +108,14 @@ const cancelAction = () => {
 };
 
 const onSubmitForm = async () => {
+  const isValid = await v.value.$validate();
+  if (!isValid) {
+    v.value.$touch();
+    return;
+  }
   try {
     if (props.formType === FormTypes.EDIT) {
-      await store.updateAuthUser(props.userId!, user.value);
+      await store.updateAuthUser(props.id!, user.value);
     } else if (props.formType === FormTypes.ADD) {
       await store.register(user.value);
       await store.getAuthUsers();

@@ -19,7 +19,7 @@ export const getById = async (id: string) => {
 
 export const downloadById = async (id: string) => {
   const { rows: files } = await pool.query(
-    `SELECT id, file_name, file_content, content_type, size_bytes, description
+    `SELECT id, file_name, file_content, content_type, size_bytes, description, group_id, original_file_name
     FROM files
     WHERE id = $1`,
     [id],
@@ -33,12 +33,22 @@ export const create = async ({
   contentType,
   sizeBytes,
   description,
+  groupId,
+  originalFileName,
 }: File) => {
   const { rows: files } = await pool.query(
-    `INSERT INTO files(file_name, file_content, content_type, size_bytes, description)
-    VALUES($1, $2, $3, $4, $5)
+    `INSERT INTO files(file_name, file_content, content_type, size_bytes, description, group_id, original_file_name)
+    VALUES($1, $2, $3, $4, $5, $6, $7)
     RETURNING *`,
-    [fileName, fileContent, contentType, sizeBytes, description || null],
+    [
+      fileName,
+      fileContent,
+      contentType,
+      sizeBytes,
+      description || null,
+      groupId,
+      originalFileName,
+    ],
   );
   return camelcaseKeys(files[0]);
 };

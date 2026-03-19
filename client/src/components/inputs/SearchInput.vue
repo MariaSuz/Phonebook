@@ -33,4 +33,5 @@ const updateValue = debounce((value: string) => {
 }, 300);
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+</style>

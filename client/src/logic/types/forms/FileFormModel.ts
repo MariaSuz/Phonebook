@@ -5,10 +5,12 @@ export interface FileFormModel {
   contentType: string | null;
   sizeBytes: number | null;
   description: string | null;
-  group: number | null;
+  groupId: number | null;
 }
 
 export interface FileUploadModel {
-  fileContent: File;
+  fileName: string | null;
+  fileContent: File | null;
   description?: string | null;
+  groupId: number | null;
 }

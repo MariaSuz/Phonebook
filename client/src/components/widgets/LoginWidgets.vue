@@ -19,6 +19,13 @@
         />
         <VListItem
           v-if="authStore.isAuthenticated"
+          prepend-icon="mdi-history"
+          title="Логи"
+          value="audit"
+          @click="goAudit"
+        />
+        <VListItem
+          v-if="authStore.isAuthenticated"
           prepend-icon="mdi-logout"
           title="Выйти"
           value="logout"
@@ -47,6 +54,9 @@ const logout = () => authStore.logout();
 
 const goSettings = () => {
   router.push('/settings');
+};
+const goAudit = () => {
+  router.push('/audit');
 };
 const goLogin = () => {
   router.push('/login');

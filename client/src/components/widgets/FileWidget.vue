@@ -11,6 +11,7 @@
         </span>
         <div class="files__header-actions">
           <VBtn
+            v-if="authenticationUser"
             icon="mdi-upload"
             variant="text"
             size="small"
@@ -26,16 +27,17 @@
           />
         </div>
       </div>
+      <FileTab v-model:active-tab="activeTab"/>
       <div class="files__content">
         <div class="files__list">
           <VList>
             <VListItem
-              v-for="file in files"
+              v-for="file in filteredFiles"
               :key="file.id"
               class="docs-panel__item"
             >
               <VListItemTitle class="files__item-title">
-                {{ file.filename || 'Без названия' }}
+                {{ file.fileName || 'Без названия' }}
               </VListItemTitle>
               <VListItemSubtitle class="files__item-subtitle">
                 <div v-if="file.description" class="files__item-description">
@@ -52,6 +54,7 @@
                     @click="downloadFile(file)"
                   />
                   <VBtn
+                    v-if="authenticationUser"
                     icon="mdi-delete"
                     variant="text"
                     size="small"
@@ -81,6 +84,8 @@ import { computed, ref, watch } from 'vue';
 import FileForm from '../forms/FileForm.vue';
 import { FormTypes } from '@/logic/types/FormTypes';
 import FormModal from '../modals/FormModal.vue';
+import FileTab from './FileTab.vue';
+import { useAuthStore } from '@/store/authStore';
 
 
 interface FilesProps {
@@ -93,13 +98,21 @@ const emit = defineEmits<{
 }>();
 
 const filesStore = useFileStore();
+const authStore = useAuthStore();
 const files = computed(() => filesStore.list);
 const selectedFile = ref<File | null>(null);
 const isModalOpenFile = ref(false);
+const activeTab = ref(2);
 
 const closePanel = () => {
-  emit('update:modelValue', false);
+  if (!isModalOpenFile.value) {
+    emit('update:modelValue', false);
+  }
 };
+
+const filteredFiles = computed(() => {
+  return files.value.filter(file => file.groupId === activeTab.value);
+});
 
 const downloadFile = async (file: FileFormModel) => {
   await filesStore.downloadFile(file.id);
@@ -116,6 +129,8 @@ const closeModal = () => {
   isModalOpenFile.value = false;
   selectedFile.value = null;
 };
+
+const authenticationUser = computed(() => authStore.isAuthenticated);
 
 watch(() => props.modelValue, async (newValue) => {
   if (newValue) {

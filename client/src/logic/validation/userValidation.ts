@@ -1,9 +1,9 @@
 import { helpers, required, minLength } from '@vuelidate/validators';
 
-export const loginRules = {
+export const userRules = {
   userName: {
     required: helpers.withMessage(
-      'Логин обязателен для заполнения',
+      'Имя пользователя обязательно для заполнения',
       required,
     ),
     minLength: helpers.withMessage(

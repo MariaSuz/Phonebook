@@ -10,6 +10,7 @@
                   {{ department?.name || 'Отдел не найден' }}</span
                 >
                 <VIcon
+                  v-if="authenticationUser"
                   color="white"
                   icon="mdi-pencil"
                   size="small"
@@ -17,6 +18,7 @@
                   class="departments-edit-icon"
                 ></VIcon>
                 <VIcon
+                  v-if="authenticationUser"
                   color="white"
                   icon="mdi-delete"
                   size="small"
@@ -25,6 +27,7 @@
                 ></VIcon>
               </div>
               <VBtn
+                v-if="authenticationUser"
                 prepend-icon="mdi-plus"
                 @click="addUser"
                 class="departments-btn"
@@ -38,7 +41,7 @@
               :items="users"
               hide-default-footer
               :search="search"
-              class="departments-data-table"
+              class="departments__table"
             >
               <template v-slot:item.cabinet="{ item }">
                 <span v-html="highlightText(item.cabinet) || '—'"></span>
@@ -66,6 +69,14 @@
                 <div class="d-flex ga-2 justify-end">
                   <VIcon
                     color="medium-emphasis"
+                    icon="mdi-eye"
+                    size="small"
+                    @click="show(item)"
+                    style="cursor: pointer;"
+                  ></VIcon>
+                  <VIcon
+                    v-if="authenticationUser"
+                    color="medium-emphasis"
                     icon="mdi-pencil"
                     size="small"
                     @click="edit(item)"
@@ -73,10 +84,11 @@
                   ></VIcon>
 
                   <VIcon
+                    v-if="authenticationUser"
                     color="medium-emphasis"
                     icon="mdi-delete"
                     size="small"
-                    @click="removeUser(item)"
+                    @click="removeEmployee(item)"
                     style="cursor: pointer;"
                   ></VIcon>
                 </div>
@@ -84,12 +96,16 @@
               <template v-slot:no-data>
                 <div class="departments-empty">
                   <VBtn
+                    v-if="authenticationUser"
                     prepend-icon="mdi-plus"
                     @click="addUser"
                     class="departments-btn__first"
                   >
                     Добавить первого сотрудника
                   </VBtn>
+                  <span>
+                    Сотрудники отсутствуют
+                </span>
                 </div>
               </template>
             </VDataTable>
@@ -98,13 +114,21 @@
       </div>
     </div>
     <FormModal
-      v-model="isShowModalAddUser"
+      v-model="modals.showEmployee"
+      :form-component="EmployeeForm"
+      :data="selectedEmployee"
+      :id="selectedEmployee?.id"
+      :form-type="FormTypes.SHOW"
+      @cancel="closeModal"
+    />
+    <FormModal
+      v-model="modals.addEmployee"
       :form-component="EmployeeForm"
       :form-type="FormTypes.ADD"
       @cancel="closeModal"
     />
     <FormModal
-      v-model="isShowModalEditUser"
+      v-model="modals.editEmployee"
       :form-component="EmployeeForm"
       :data="selectedEmployee"
       :id="selectedEmployee?.id"
@@ -112,11 +136,23 @@
       @cancel="closeModal"
     />
     <FormModal
-      v-model="isShowModalEditDepartment"
+      v-model="modals.editDepartment"
       :form-component="DepartmentForm"
       :form-type="FormTypes.EDIT"
       @cancel="closeModal"
       :data="department"
+    />
+    <ComfirmDelete
+      v-model="modals.deleteDepartment"
+      :title="department?.name"
+      @confirm="confirmDeleteDepartment"
+      @cancel="closeModal"
+    />
+    <ComfirmDelete
+      v-model="modals.deleteEmployee"
+      :title="selectedEmployee?.fullName"
+      @confirm="confirmDeleteEmployee"
+      @cancel="closeModal"
     />
   </VCard>
 </template>
@@ -131,6 +167,9 @@ import router from '@/router';
 import { FormTypes } from '@/logic/types/FormTypes';
 import DepartmentForm from '@/components/forms/DepartmentForm.vue';
 import EmployeeForm from '@/components/forms/EmployeeForm.vue';
+import { useAuthStore } from '@/store/authStore';
+import { reactive } from 'vue';
+import ComfirmDelete from '@/components/modals/ComfirmDelete.vue';
 
 const props = defineProps<{
   departmentId: number;
@@ -140,16 +179,23 @@ const props = defineProps<{
 
 const userStore = useEmployeesStore();
 const departmentStore = useDepartmentStore();
+const authStore = useAuthStore();
 
-const isShowModalEditUser = ref(false);
-const isShowModalAddUser = ref(false);
-const isShowModalEditDepartment = ref(false);
+const modals = reactive({
+  showEmployee: false,
+  addEmployee: false,
+  editEmployee: false,
+  editDepartment: false,
+  deleteDepartment: false,
+  deleteEmployee: false,
+});
 
 const search = computed(() => props.searchValue ?? '');
 const departmentsList = computed(() => departmentStore.list);
 const department = computed(() =>
   departmentsList.value.find(dep => dep.id === +props.departmentId)
 );
+const authenticationUser = computed(() => authStore.isAuthenticated);
 const users = computed(() => {
   return userStore.list.filter(user => user.departmentId == +props.departmentId);
 })
@@ -176,33 +222,47 @@ const headers = computed(() => [
 
 const edit = (user: EmployeeFormModel) => {
   selectedEmployee.value = user;
-  isShowModalEditUser.value = true;
+  modals.editEmployee = true;
+};
+const show = (user: EmployeeFormModel) => {
+  selectedEmployee.value = user;
+  modals.showEmployee = true;
+};
+const addUser = () => {
+  modals.addEmployee = true;
+};
+const editDepartment = () => {
+  modals.editDepartment = true;
 };
 
-const removeUser = (user: any) => {
-  if (confirm(`Удалить сотрудника ${user.fullName}?`)) {
-    userStore.deleteEmployee(user.id);
-  }
+const removeEmployee = (user: EmployeeFormModel) => {
+  modals.deleteEmployee = true;
+  selectedEmployee.value = user;
 };
-const deleteDepartment = (user: any) => {
-  if (confirm(`Удалить отдел ${department?.value?.name}}?`)) {
-    departmentStore.deleteDepartment(department?.value?.id);
+const confirmDeleteEmployee = () => {
+  userStore.deleteEmployee(selectedEmployee?.value?.id!);
+};
+const deleteDepartment = () => {
+  modals.deleteDepartment = true;
+};
+const confirmDeleteDepartment = async () => {
+  try {
+    await departmentStore.deleteDepartment(department.value?.id!);
+    modals.deleteDepartment = false;
     router.push('/');
+  } catch (error) {
+    console.error('Ошибка при удалении отдела:', error);
   }
 };
 
 const closeModal = () => {
-  isShowModalEditUser.value = false;
+  modals.showEmployee = false;
+  modals.addEmployee = false;
+  modals.editEmployee = false;
+  modals.editDepartment = false;
+  modals.deleteDepartment = false;
+  modals.deleteEmployee = false;
   selectedEmployee.value = null;
-  isShowModalAddUser.value = false;
-  isShowModalEditDepartment.value = false;
-};
-
-const addUser = () => {
-  isShowModalAddUser.value = true;
-};
-const editDepartment = () => {
-  isShowModalEditDepartment.value = true;
 };
 
 //Подстветка текста
@@ -300,12 +360,6 @@ const highlightText = (text: string | number) => {
     &:hover {
       opacity: 1;
       transform: scale(1.15);
-      &[icon="mdi-pencil"] {
-        color: #1e88e5 !important;
-      }
-      &[icon="mdi-delete"] {
-        color: #e53935 !important;
-      }
     }
   }
 }

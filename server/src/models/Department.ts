@@ -1,15 +1,6 @@
 import pool from '../config/db';
 import camelcaseKeys from 'camelcase-keys';
-
-interface CreateDepartment {
-  name: string;
-  sortOrder?: number;
-}
-interface EditDepartment {
-  id: number;
-  name: string;
-  sortOrder?: number;
-}
+import { Department } from '../types/departmentType';
 
 export const getAll = async () => {
   const { rows: departments } = await pool.query(
@@ -19,7 +10,7 @@ export const getAll = async () => {
   return camelcaseKeys(departments);
 };
 
-export const create = async ({ name, sortOrder = 999 }: CreateDepartment) => {
+export const create = async ({ name, sortOrder = 999 }: Department) => {
   const { rows: departments } = await pool.query(
     `INSERT INTO departments(name, sort_order)
     VALUES($1, $2)
@@ -37,7 +28,7 @@ export const getById = async (id: number) => {
   return departments[0] ? camelcaseKeys(departments[0]) : null;
 };
 
-export const edit = async ({ name, sortOrder, id }: EditDepartment) => {
+export const edit = async ({ name, sortOrder, id }: Department) => {
   const { rows: departments } = await pool.query(
     `UPDATE departments
     SET name = $1, sort_order =$2

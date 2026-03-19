@@ -34,30 +34,72 @@ import {
   requireAdmin,
   canEditUser,
 } from '../middleware/authMiddleware';
+import { employeeValidator } from "../middleware/validator/employeeValidator";
+import { validateDepartmentId, validateId } from "../middleware/validator/idValidator";
+import { validate } from "../middleware/validate";
+import { departmentValidator } from "../middleware/validator/departmentValidator";
+import { getAuditLog } from "../controllers/auditLogController";
 
 
 const router = Router();
 
 // Маршруты для отделов
 router.get("/departments", allDepartments);
-router.post('/departments', createDepartment);
-router.get('/departments/:id', departmentById);
-router.put('/departments/:id', editDepartment);
-router.delete('/departments/:id', deleteDepartment);
+router.post('/departments', departmentValidator, validate, authenticateToken, createDepartment);
+router.get('/departments/:id', validateId, validate, departmentById);
+router.put(
+  '/departments/:id',
+  validateId,
+  departmentValidator,
+  validate,
+  authenticateToken,
+  editDepartment,
+);
+router.delete(
+  '/departments/:id',
+  validateId,
+  validate,
+  authenticateToken,
+  deleteDepartment,
+);
 // Маршруты для пользователей справочника
 router.get('/employees', allEmployees);
-router.post('/employees', createEmployee);
-router.get('/employees/:id', employeeById);
-router.put('/employees/:id', editEmployee);
-router.delete('/employees/:id', deleteEmployee);
+router.post(
+  '/employees',
+  employeeValidator,
+  validate,
+  authenticateToken,
+  createEmployee,
+);
+router.get('/employees/:id', validateId, validate, employeeById);
+router.put(
+  '/employees/:id',
+  validateId,
+  employeeValidator,
+  validate,
+  authenticateToken,
+  editEmployee,
+);
+router.delete(
+  '/employees/:id',
+  validateId,
+  validate,
+  authenticateToken,
+  deleteEmployee,
+);
 //Все пользователи в определенном отделе
-router.get('/employees/department/:departmentId', getEmployeesByDepartment);
+router.get(
+  '/employees/department/:departmentId',
+  validateDepartmentId,
+  validate,
+  getEmployeesByDepartment,
+);
 //Апи для файлов
 router.get('/files', allFiles);
 router.get('/files/:id', fileById);
 router.get('/files/:id/download', downloadFile);
-router.post('/files/upload', uploadFile);
-router.delete('/files/:id', deleteFile);
+router.post('/files/upload', authenticateToken, uploadFile);
+router.delete('/files/:id', authenticateToken, deleteFile);
 //Авторизация
 router.post(
   '/register',
@@ -65,11 +107,13 @@ router.post(
   requireAdmin,
   register,
 ); // Только админ
-router.post('login', login);
+router.post('/login', login);
 router.put('/users/:id', authenticateToken, canEditUser, editUser);
 router.get('/users', authenticateToken, getUsers);
 router.delete('/users/:id', authenticateToken, requireAdmin, deleteUser); // Только админ
 //Роли
 router.get('/role', getRoles);
+//журнал аудита
+router.get('/audit', getAuditLog);
 
 export default router;

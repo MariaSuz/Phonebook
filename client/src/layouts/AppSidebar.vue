@@ -9,13 +9,13 @@
     </div>
     <div class="sidebar__content">
       <VBtn
+        v-if="authenticationUser"
         prepend-icon="mdi-plus"
         @click="addDepartment"
         class="sidebar__btn"
       >
         Создать отдел
       </VBtn>
-      <VDivider class="sidebar__divider" />
       <VList class="sidebar__list">
         <VListItem
           v-for="department in departments"
@@ -53,10 +53,12 @@ import { ref } from 'vue';
 import { useEmployeesStore } from '@/store/employeesStore';
 import DepartmentForm from '@/components/forms/DepartmentForm.vue';
 import { FormTypes } from '@/logic/types/FormTypes';
+import { useAuthStore } from '@/store/authStore';
 
 const departmentStore = useDepartmentStore();
 const sidebarStore = useSidebarStore();
 const userStore = useEmployeesStore();
+const authStore = useAuthStore();
 const departments = computed(() => departmentStore.list);
 const router = useRouter();
 const isShowModalAddDepartment = ref(false);
@@ -73,6 +75,8 @@ const isSidebarOpen = computed({
 const getEmployeeCount = (departmentId) => {
   return userStore.list.filter(user => user.departmentId === departmentId).length;
 };
+
+const authenticationUser = computed(() => authStore.isAuthenticated);
 
 const goToDepartment = (id) => {
   sidebarStore.toggleSidebar();

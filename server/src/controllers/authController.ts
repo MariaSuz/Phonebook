@@ -130,21 +130,6 @@ export const register = async (
       roleId: req.body.roleId ? parseInt(req.body.roleId, 10) : 2,
       avatar: req.body.avatar,
     });
-    //Создается токен для автоматического входа
-    // const token = jwt.sign(
-    //   {
-    //     userId: result.id,
-    //     roleId: result.roleId,
-    //     username: result.username,
-    //   },
-    //   JWT_SECRET,
-    //   { expiresIn: '24h' },
-    // );
-    // res.status(201).json({
-    //   user: result,
-    //   token,
-    //   message: 'Пользователь успешно создан',
-    // });
     res.status(201).json({
       user: {
         id: result.id,

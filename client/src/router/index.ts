@@ -4,6 +4,7 @@ import PhoneBookList from '@/pages/PhoneBookList.vue';
 import Login from '@/pages/Login.vue';
 import Settings from '@/pages/Settings.vue';
 import { useAuthStore } from '@/store/authStore';
+import AuditLog from '@/pages/AuditLog.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -33,16 +34,22 @@ const router = createRouter({
       component: Settings,
       meta: { requiresAuth: true },
     },
+    {
+      path: '/audit',
+      name: 'audit',
+      component: AuditLog,
+      meta: { requiresAuth: true },
+    },
   ],
 });
 
 
 router.beforeEach((to, from, next) => {
-  const requiresAuth = to.matched.some((auth) => auth.meta.requiresAuth);
-  const storeAuth = useAuthStore();
-
-  if (requiresAuth && !storeAuth.isAuthenticated) {
+  const store = useAuthStore();
+  if (to.meta.requiresAuth && !store.isAuthenticated) {
     next({ name: 'login', query: { redirect: to.fullPath } });
+  } else if (to.name === 'login' && store.isAuthenticated) {
+    next({ name: 'main' });
   } else {
     next();
   }
