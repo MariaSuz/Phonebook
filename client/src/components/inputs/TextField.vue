@@ -4,7 +4,8 @@
     :label="label"
     :placeholder="placeholder"
     variant="outlined"
-    :clearable="clearable"
+    :readonly="readonly"
+    :clearable="!readonly && clearable"
     class="text-field"
     @update:model-value="$emit('update:modelValue', $event)"
   >
@@ -26,6 +27,7 @@ interface TextFieldProps {
   placeholder?: string;
   icon?: string;
   clearable?: boolean;
+  readonly?: boolean;
 }
 
 const props = withDefaults(defineProps<TextFieldProps>(), {

@@ -14,11 +14,14 @@
             icon="mdi-office-building"
           />
           <VFileInput
-            v-model="selectedFile"
-            :label="selectedFile ? 'Файл выбран' : 'Выберите файл'"
+            v-model="file.fileContent"
+            :label="file.fileContent ? 'Файл выбран' : 'Выберите файл'"
             accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
-            @update:modelValue="fileUpload"
             :multiple="false"
+            :error-messages="v.fileContent.$errors.map((e: any) => e.$message)"
+            :error="v.fileContent.$error"
+            @blur="v.fileContent.$touch"
+            @update:modelValue="() => v.fileContent.$touch()"
           />
           <TextField
             v-model="file.description"
@@ -26,15 +29,15 @@
             icon="mdi-sort-numeric-ascending"
           />
           <Select
-            v-model="file.group"
+            v-model="file.groupId"
             label="Выберите подразделение"
             :items="groupOptions"
             item-title="title"
             item-value="value"
             placeholder="Выберите подразделение"
-            :error-messages="v.group.$errors.map((e: any) => e.$message)"
-            :error="v.group.$error"
-            @blur="v.group.$touch"
+            :error-messages="v.groupId.$errors.map((e: any) => e.$message)"
+            :error="v.groupId.$error"
+            @blur="v.groupId.$touch"
           />
         </div>
         <VDivider class="file-form__divider" />
@@ -59,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import type { FileFormModel } from '@/logic/types/forms/FileFormModel';
+import type { FileUploadModel } from '@/logic/types/forms/FileFormModel';
 import { FormTypes } from '@/logic/types/FormTypes';
 import { computed, ref } from 'vue';
 import TextField from '../inputs/TextField.vue';
@@ -77,17 +80,14 @@ interface fileProps {
 
 const props = defineProps<fileProps>();
 const alertStore = useAlertStore();
-const selectedFile = ref<File | null>(null);
 
-const createfile = (): FileFormModel => ({
+const createfile = (): FileUploadModel => ({
   fileName: '',
-  description: '',
-  group: null,
   fileContent: null,
-  contentType: null,
-  sizeBytes: null
+  description: '',
+  groupId: null,
 });
-const file = ref<FileFormModel>(createfile());
+const file = ref<FileUploadModel>(createfile());
 const v = useVuelidate(fileRules, file);
 const emit = defineEmits(['cancel']);
 
@@ -96,11 +96,9 @@ const cancelAction = () => {
 };
 
 const groupOptions = [
-  { title: 'Документация основная', value: 1 },
-  { title: 'Правила', value: 2 },
-  { title: 'Инструкции', value: 3 },
-  { title: 'Отчеты', value: 4 },
-  { title: 'Прочее', value: 5 }
+  { title: 'Техническое обслуживание', value: 1 },
+  { title: 'Нормативно-Правовые документы', value: 2 },
+  { title: 'Методические рекомендации по Противодествию коррупции', value: 3 },
 ];
 
 const formTitle = computed(() => {
@@ -111,10 +109,6 @@ const formTitle = computed(() => {
       return `Просмотр документа`;
   };
 });
-
-const fileUpload = async (file: FileFormModel) => {
-  selectedFile.value = file;
-}
 
 const onSubmitForm = async () => {
   alertStore.clear();
@@ -127,8 +121,10 @@ const onSubmitForm = async () => {
   try {
     if (props.formType === FormTypes.ADD) {
       await store.uploadFile({
-        fileContent: selectedFile.value,
-        description: file.value.description
+        fileName: file.value.fileName,
+        fileContent: file.value.fileContent,
+        description: file.value.description,
+        groupId: file.value.groupId,
       });
     emit('cancel');
     }

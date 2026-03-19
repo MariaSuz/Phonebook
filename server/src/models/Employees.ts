@@ -1,18 +1,6 @@
 import pool from '../config/db';
 import camelcaseKeys from 'camelcase-keys';
-
-interface Employee {
-  id?: number;
-  departmentId: string;
-  cabinet?: string;
-  position?: string;
-  fullName: string;
-  internalPhone?: string;
-  cityPhone?: string;
-  mobilePhone?: string;
-  email?: string;
-  sortOrder?: number;
-}
+import { Employee } from '../types/employeeType';
 
 export const getAll = async () => {
   const { rows: employees } = await pool.query(
@@ -64,7 +52,7 @@ export const create = async ({
 
 export const getById = async (id: number) => {
   const { rows: employees } = await pool.query(
-    `SELECT * FROM employeess WHERE id = $1`,
+    `SELECT * FROM employees WHERE id = $1`,
     [id],
   );
   return employees[0] ? camelcaseKeys(employees[0]) : null;

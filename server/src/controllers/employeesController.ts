@@ -7,30 +7,8 @@ import {
   deleteItem,
   departmentUsers,
 } from '../models/Employees';
-
-interface CreateUserRequest {
-  departmentId: string;
-  cabinet?: string;
-  position?: string;
-  fullName: string;
-  internalPhone?: string;
-  cityPhone?: string;
-  mobilePhone?: string;
-  email?: string;
-  sortOrder?: number;
-}
-interface EditUserRequest {
-  id: number;
-  departmentId: string;
-  cabinet?: string;
-  position?: string;
-  fullName: string;
-  internalPhone?: string;
-  cityPhone?: string;
-  mobilePhone?: string;
-  email?: string;
-  sortOrder?: number;
-}
+import { Employee } from '../types/employeeType'
+import { auditService } from '../services/auditService';
 
 export const allEmployees = async (
   req: Request,
@@ -45,11 +23,19 @@ export const allEmployees = async (
 };
 
 export const createEmployee = async (
-  req: Request<{}, {}, CreateUserRequest>,
+  req: Request<{}, {}, Employee>,
   res: Response,
 ): Promise<void> => {
   try {
     const result = await create(req.body);
+    await auditService.log({
+      userId: (req as any).user?.userId,
+      userName: (req as any).user?.userName,
+      action: 'CREATE',
+      entityType: 'employee',
+      entityId: result.id,
+      newData: result,
+    });
     res.status(201).json(result);
   } catch (error) {
     res.status(500).json({ message: 'Пользователь не создан' });
@@ -58,7 +44,8 @@ export const createEmployee = async (
 
 export const employeeById = async (req: Request<{ id: string }>, res: Response) => {
   try {
-    const result = await getById(parseInt(req.params.id, 10));
+    const id = parseInt(req.params.id, 10);
+    const result = await getById(id);
     if (!result) {
       return res.status(404).json({ error: 'Пользователь не найден' });
     }
@@ -69,12 +56,14 @@ export const employeeById = async (req: Request<{ id: string }>, res: Response) 
 };
 
 export const editEmployee = async (
-  req: Request<{ id: string }, {}, EditUserRequest>,
+  req: Request<{ id: string }, {}, Employee>,
   res: Response,
 ) => {
   try {
+    const id = parseInt(req.params.id, 10);
+    const oldData = await getById(id);
     const result = await edit({
-      id: parseInt(req.params.id, 10),
+      id: id,
       fullName: req.body.fullName,
       position: req.body.position,
       cabinet: req.body.cabinet,
@@ -88,18 +77,40 @@ export const editEmployee = async (
     if (!result) {
       return res.status(404).json({ error: 'Пользователь не найден' });
     }
+    const hasChanges = JSON.stringify(oldData) !== JSON.stringify(result);
+    if (hasChanges) {
+      await auditService.log({
+        userId: (req as any).user?.userId,
+        userName: (req as any).user?.userName || 'system',
+        action: 'UPDATE',
+        entityType: 'employee',
+        entityId: id,
+        oldData: oldData,
+        newData: result,
+      });
+    }
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ message: 'Пользователь не найден' });
   }
 };
 
-export const deleteEmployee = async (req: Request<{ id: number }>, res: Response) => {
+export const deleteEmployee = async (req: Request<{ id: string }>, res: Response) => {
   try {
-    const result = await deleteItem(req.params.id);
+    const id = parseInt(req.params.id, 10);
+    const oldData = await getById(id);
+    const result = await deleteItem(id);
     if (!result) {
       return res.status(404).json({ error: 'Пользователь не найден' });
     }
+    await auditService.log({
+      userId: (req as any).user?.userId,
+      userName: (req as any).user?.userName || 'system',
+      action: 'DELETE',
+      entityType: 'employee',
+      entityId: id,
+      oldData: oldData,
+    });
     res.status(205).json(result);
   } catch (error) {
     res.status(500).json({ message: 'Пользователь не найден' });
@@ -111,7 +122,8 @@ export const getEmployeesByDepartment = async (
   res: Response,
 ) => {
   try {
-    const result = await departmentUsers(parseInt(req.params.departmentId, 10));
+    const departmentId = parseInt(req.params.departmentId, 10);
+    const result = await departmentUsers(departmentId);
     if (!result) {
       return res
         .status(404)

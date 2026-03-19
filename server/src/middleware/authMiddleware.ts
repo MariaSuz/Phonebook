@@ -6,9 +6,10 @@ export interface AuthRequest extends Request {
   user?: {
     userId: number;
     roleId: number;
-    username: string;
+    userName: string;
   };
 }
+
 
 // Middleware для проверки JWT токена
 export const authenticateToken = (

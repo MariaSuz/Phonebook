@@ -32,7 +32,7 @@ export const useFileStore = defineStore('file', {
         });
         // Получаем имя файла из заголовка
         const contentDisposition = response.headers['content-disposition'];
-        let filename = 'file';
+        let filename = 'download';
         if (contentDisposition) {
           const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(
             contentDisposition,
@@ -69,6 +69,12 @@ export const useFileStore = defineStore('file', {
         }
         if (data.description) {
           formData.append('description', data.description);
+        }
+        if (data.groupId) {
+          formData.append('groupId', data.groupId.toString());
+        }
+        if (data.fileName) {
+          formData.append('fileName', data.fileName);
         }
         const response = await api.post('/files/upload', formData);
         const newDoc = response.data;

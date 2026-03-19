@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia';
 import { api } from '@/api/api';
 import type { AuthFormModel } from '../logic/types/forms/AuthFormModel';
-import axios from 'axios';
 import router from '@/router';
 
 
@@ -15,7 +14,9 @@ export const useAuthStore = defineStore('auth', {
     authUsers: [] as AuthFormModel[],
     loading: false,
     error: null as string | null,
-    currentUser: null as AuthFormModel | null,
+    currentUser: JSON.parse(
+      localStorage.getItem('currentUser') || 'null',
+    ) as AuthFormModel | null,
     token: localStorage.getItem('token') as string | null,
   }),
 
@@ -31,16 +32,14 @@ export const useAuthStore = defineStore('auth', {
       this.currentUser = null;
       this.token = null;
       localStorage.removeItem('token');
+      localStorage.removeItem('currentUser');
     },
     async login(credentials: { userName: string; password: string }) {
       try {
         this.loading = true;
         this.error = null;
 
-        const response = await api.post<AuthResponse>(
-          '/auth/login',
-          credentials,
-        );
+        const response = await api.post<AuthResponse>('/login', credentials);
 
         const { user: userData, token: authToken } = response.data;
 
@@ -48,6 +47,7 @@ export const useAuthStore = defineStore('auth', {
         this.token = authToken;
 
         localStorage.setItem('token', authToken);
+        localStorage.setItem('currentUser', JSON.stringify(userData));
 
         return { success: true, data: response.data };
       } catch (err: any) {
@@ -64,7 +64,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         this.loading = true;
         this.error = null;
-        const response = await api.post('/auth/register', data);
+        const response = await api.post('/register', data);
         return response.data;
       } catch (err: any) {
         this.error = err.response?.data?.message || 'Ошибка регистрации';
@@ -83,7 +83,7 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true;
       this.error = null;
       try {
-        const response = await api.put(`/auth/${id}`, data);
+        const response = await api.put(`/users/${id}`, data);
         const updatedUser = response.data;
         const index = this.authUsers.findIndex((u) => u.id === id);
         if (index !== -1) {
@@ -103,7 +103,7 @@ export const useAuthStore = defineStore('auth', {
       this.error = null;
       try {
         this.authUsers = [];
-        const response = await api.get('/auth/users');
+        const response = await api.get('/users');
         this.authUsers = response.data;
       } catch (error) {
         this.error = error.message;
@@ -117,7 +117,7 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true;
       this.error = null;
       try {
-        await api.delete(`/auth/${id}`);
+        await api.delete(`/users/${id}`);
         this.authUsers = this.authUsers.filter((u) => u.id !== id);
       } catch (error) {
         this.error = error.message;

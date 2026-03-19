@@ -6,7 +6,7 @@
     overlay-opacity="1"
     scroll-strategy="none"
   >
-    <VCard :style="{ background: backgroundColor }">
+    <VCard>
       <h3
         v-if="headerMessage"
         class="modal__header-message"
@@ -36,7 +36,6 @@ import { computed } from 'vue';
 interface ModalProps {
   modelValue?: boolean;
   headerMessage?: string;
-  backgroundColor?: string;
 }
 
 interface ModalEmits {

@@ -7,6 +7,7 @@ import {
   downloadById,
 } from '../models/File';
 import multer from 'multer';
+import { auditService } from "../services/auditService";
 
 // Храним файл в памяти для последующей записи в БД
 const storage = multer.memoryStorage();
@@ -23,18 +24,18 @@ const upload = multer({
       'image/jpeg',
       'image/png',
       'text/plain',
-      // Excel файлы
-      'application/vnd.ms-excel', // .xls (старый формат)
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx (новый формат)
-      'application/vnd.oasis.opendocument.spreadsheet', // .ods (OpenDocument)
-      'text/csv', // .csv (часто используется как Excel)
+      'application/msword',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.oasis.opendocument.spreadsheet',
     ];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
       cb(
         new Error(
-          'Неверный тип файла. Разрешены: PDF, JPG, PNG, TXT, Excel файлы',
+          'Неверный тип файла. Разрешены: PDF, JPG, PNG, TXT, Excel файлы, Word файлы',
         ),
       );
     }
@@ -75,11 +76,21 @@ export const uploadFile = async (
     if (!req.file) return res.status(400).json({ error: 'Файл не выбран' });
     try {
       const result = await create({
-        fileName: `${Date.now()}-${req.file.originalname}`,
+        fileName: req.body.fileName?.trim() || req.file.originalname,
         fileContent: req.file.buffer,
         contentType: req.file.mimetype,
         sizeBytes: req.file.size,
         description: req.body.description,
+        groupId: req.body.groupId,
+        originalFileName: req.file.originalname,
+      });
+      await auditService.log({
+        userId: (req as any).user?.userId,
+        userName: (req as any).user?.userName,
+        action: 'CREATE',
+        entityType: 'file',
+        entityId: result.id,
+        newData: result,
       });
       res.status(201).json(result);
     } catch (error) {
@@ -98,13 +109,12 @@ export const downloadFile = async (
       return res.status(404).json({ error: 'Файл не найден' });
     }
 
+    const downloadName = file.originalFileName || file.fileName;
     // Заголовки минимум
     res.set({
       'Content-Type': file.contentType,
-      'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(file.fileName)}; filename="${encodeURIComponent(file.fileName)}"`,
+      'Content-Disposition': `attachment; filename="${downloadName}"`,
       'Content-Length': file.sizeBytes,
-      'Cache-Control': 'no-cache',
-      'Access-Control-Expose-Headers': 'Content-Disposition',
     });
 
     // Отправляем файл как бинарные данные
@@ -117,10 +127,19 @@ export const downloadFile = async (
 
 export const deleteFile = async (req: Request<{ id: string }>, res: Response) => {
   try {
+    const oldData = await getById(req.params.id);
     const result = await deleteItem(req.params.id);
     if (!result) {
       return res.status(404).json({ error: 'Файл не найден' });
     }
+    await auditService.log({
+      userId: (req as any).user?.userId,
+      userName: (req as any).user?.userName || 'system',
+      action: 'DELETE',
+      entityType: 'employee',
+      entityId: req.params.id,
+      oldData: oldData,
+    });
     res.status(205).json(result);
   } catch (error) {
     res.status(500).json({ message: 'Ошибка при удалении файла' });

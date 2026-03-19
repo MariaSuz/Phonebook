@@ -12,6 +12,7 @@
             label="Наименование отдела"
             placeholder="Например: Бухгалтерия"
             icon="mdi-office-building"
+            :readonly="disabled"
             :error-messages="v.name.$errors.map((e: any) => e.$message)"
             :error="v.name.$error"
             @blur="v.name.$touch"
@@ -22,6 +23,7 @@
             label="Приоритет сортировки"
             placeholder="999"
             icon="mdi-sort-numeric-ascending"
+            :readonly="disabled"
             :error-messages="v.sortOrder.$errors.map((e: any) => e.$message)"
             :error="v.sortOrder.$error"
             @blur="v.sortOrder.$touch"
@@ -75,6 +77,7 @@ const createDepartment = (): DepartmentFormModel => ({
 const department = ref<DepartmentFormModel>(props.data ? { ...props.data } : createDepartment());
 const v = useVuelidate(departmentRules, department);
 const emit = defineEmits(['cancel']);
+const disabled = computed(() => props.formType === FormTypes.SHOW);
 
 const cancelAction = () => {
   emit('cancel');
@@ -87,7 +90,7 @@ const formTitle = computed(() => {
     case FormTypes.ADD:
       return `Добавление нового отдела`;
     default:
-      return `Просмотр отдела ${department.value.name}`;
+      return `Просмотр отдела "${department.value.name}"`;
   };
 });
 
