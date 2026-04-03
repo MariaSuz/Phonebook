@@ -48,7 +48,7 @@
                 <span v-html="highlightText(item.position) || '—'"></span>
               </template>
               <template v-slot:item.fullName="{ item }">
-                <span v-html="highlightText(item.fullName) || '—'"></span>
+                <span class="text-nowrap" v-html="highlightText(item.fullName) || '—'"></span>
               </template>
               <template v-slot:item.internalPhone="{ item }">
                 <span v-html="highlightText(item.internalPhone) || '—'"></span>
@@ -156,7 +156,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useEmployeesStore } from '@/store/employeesStore';
 import { useDepartmentStore } from '@/store/departmentsStore';
 import FormModal from '@/components/modals/FormModal.vue';
@@ -190,13 +190,12 @@ const modals = reactive({
 });
 
 const search = computed(() => props.searchValue ?? '');
-const departmentsList = computed(() => departmentStore.list);
 const department = computed(() =>
-  departmentsList.value.find(dep => dep.id === +props.departmentId)
+  departmentStore.list.find(dep => dep.id === +props.departmentId)
 );
-const authenticationUser = computed(() => authStore.isAuthenticated);
+const authenticationUser = authStore.isAuthenticated;
 const users = computed(() => {
-  return userStore.list.filter(user => user.departmentId == +props.departmentId);
+  return (userStore.list || []).filter(user => user.departmentId == +props.departmentId);
 })
 
 // const isEmpty = computed(() => users.value.length === 0);
@@ -277,6 +276,9 @@ const highlightText = (text: string | number) => {
 
 <style lang="scss">
 .departments {
+  .text-nowrap {
+    white-space: nowrap !important;
+  }
   &-table-header {
     display: flex;
     justify-content: space-between;

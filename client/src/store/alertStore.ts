@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { ref } from 'vue';
 
 interface Alert {
   message: string;
@@ -6,21 +7,22 @@ interface Alert {
   id?: number;
 }
 
-export const useAlertStore = defineStore('alert', {
-  state: () => ({
-    alert: null as Alert | null,
-  }),
-  actions: {
-    error(message: string) {
-      this.alert = {
-        message,
-        type: 'error',
-        id: Date.now(),
-      };
-    },
+export const useAlertStore = defineStore('alert', () => {
+  const alert = ref<Alert | null>(null);
 
-    clear() {
-      this.alert = null;
-    },
-  },
+  function error(message: string) {
+    alert.value= {
+      message,
+      type: 'error',
+      id: Date.now(),
+    };
+  }
+  function clear() {
+    alert.value= null;
+  }
+  return {
+    alert,
+    error,
+    clear,
+  }
 });

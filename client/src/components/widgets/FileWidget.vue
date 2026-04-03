@@ -106,7 +106,6 @@ const emit = defineEmits<{
 
 const filesStore = useFileStore();
 const authStore = useAuthStore();
-const files = computed(() => filesStore.list);
 const selectedFile = ref<FileFormModel | null>(null)
 const activeTab = ref(2);
 const modals = reactive({
@@ -121,7 +120,7 @@ const closePanel = () => {
 };
 
 const filteredFiles = computed(() => {
-  return files.value.filter(file => file.groupId === activeTab.value);
+  return filesStore.list.filter(file => file.groupId === activeTab.value);
 });
 
 const downloadFile = async (file: FileFormModel) => {
@@ -145,7 +144,7 @@ const closeModal = () => {
   selectedFile.value = null;
 };
 
-const authenticationUser = computed(() => authStore.isAuthenticated);
+const authenticationUser = authStore.isAuthenticated;
 
 watch(() => props.modelValue, async (newValue) => {
   if (newValue) {

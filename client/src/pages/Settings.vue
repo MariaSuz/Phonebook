@@ -56,14 +56,6 @@
       @cancel="closeModal"
     />
     <FormModal
-      v-model="isShowModalEditAuthUser"
-      :form-component="modal.showUser"
-      :form-type="FormTypes.SHOW"
-      :data="selectedUser"
-      :id="selectedUser?.id"
-      @cancel="closeModal"
-    />
-    <FormModal
       v-model="modal.editUser"
       :form-component="AuthUserForm"
       :form-type="FormTypes.EDIT"
@@ -112,7 +104,7 @@ const modal = reactive({
   deleteUser: false,
 });
 
-const isAdmin = computed(() => authStore.isAdmin);
+const isAdmin = authStore.isAdmin;
 
 // Функция для получения названия роли
 const getRoleName = (roleId: number) => {

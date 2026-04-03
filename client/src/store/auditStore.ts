@@ -1,30 +1,32 @@
 import { defineStore } from 'pinia';
 import { api } from "../api/api";
 import type { AuditFormModel } from '@/logic/types/forms/AuditFormModel';
+import { computed, ref } from 'vue';
+import { useAlertStore } from './alertStore';
+import { getErrorMessage } from '@/logic/utils/errorUtils';
 
-export const useAuditLogStore = defineStore('audit', {
-  state: () => ({
-    auditLog: [] as AuditFormModel[],
-    loading: false,
-    error: null as string | null,
-  }),
+export const useAuditLogStore = defineStore('audit', () => {
+  const auditLog = ref<AuditFormModel[]>([]);
+  const loading = ref(false);
+  const alertStore = useAlertStore();
 
-  actions: {
-    async getlogs() {
-      this.loading = true;
-      this.error = null;
-      try {
-        const response = await api.get('/audit');
-        this.auditLog = response.data;
-      } catch (error) {
-        this.error = error.message;
-      } finally {
-        this.loading = false;
-      }
-    },
-  },
 
-  getters: {
-    list: (state) => state.auditLog,
-  },
+  async function getlogs() {
+    loading.value = true;
+    try {
+      const response = await api.get('/audit');
+      auditLog.value = response.data;
+    } catch (error: any) {
+      alertStore.error(getErrorMessage(error));
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  const list = computed(() => auditLog.value);
+
+  return {
+    getlogs,
+    list,
+  }
 });
