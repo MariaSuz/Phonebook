@@ -15,9 +15,8 @@
           :key="auditList.id"
           :headers="headers"
           :items="auditList"
-          hide-default-footer
           :search="searchValue"
-          :items-per-page="20"
+          :items-per-page="10"
           class="audit__table"
         >
         <template v-slot:item.timestamp="{ item }">
@@ -98,25 +97,29 @@ onMounted(async () => {
 .audit {
   &__header {
     padding: 24px 28px 16px;
-    background: linear-gradient(135deg, #f8fff8, #f0f7f0);
+    background: linear-gradient(135deg, #FDF5F5, #FCE9E9);
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: 16px;
   }
+
   &-title {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #1e3c2c;
+    color: #722F37;
     margin: 0 0 4px 0;
-    letter-spacing: -0.01em;
   }
+
   &__table {
     background: transparent !important;
     :deep(tbody tr:hover) {
-      background: #f8fff8 !important;
+      background: #FDF5F5 !important;
       transition: background 0.2s ease;
+    }
+    :deep(.v-data-table-footer) {
+      background: #FDF5F5;
     }
   }
 }

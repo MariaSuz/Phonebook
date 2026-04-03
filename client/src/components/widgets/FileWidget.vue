@@ -160,7 +160,7 @@ watch(() => props.modelValue, async (newValue) => {
   left: 0;
   right: 0;
   background: white;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 30px rgba(114, 47, 55, 0.25);
   z-index: 1000;
   max-height: calc(100vh - 64px);
   overflow-y: auto;
@@ -171,12 +171,13 @@ watch(() => props.modelValue, async (newValue) => {
     justify-content: space-between;
     align-items: center;
     padding: 16px 24px;
-    background: linear-gradient(135deg, #1e3c2c, #2a5a3a);
+    background: linear-gradient(135deg, #722F37, #B22222);
     &-title {
       font-size: 1.2rem;
       font-weight: 600;
       color: white;
       margin: 0;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     }
     &-actions {
       display: flex;
@@ -184,16 +185,18 @@ watch(() => props.modelValue, async (newValue) => {
     }
     &-close, &-upload {
       color: white !important;
-      background: rgba(255, 255, 255, 0.1) !important;
+      background: rgba(255, 255, 255, 0.15) !important;
+      border-radius: 8px !important;
+      transition: all 0.2s ease !important;
       &:hover {
-        background: rgba(255, 255, 255, 0.2) !important;
+        background: rgba(255, 255, 255, 0.25) !important;
+        transform: scale(1.05);
       }
     }
   }
   &__content {
     padding: 24px;
     min-height: 200px;
-    color: #1e3c2c;
   }
 }
 /* Анимация */

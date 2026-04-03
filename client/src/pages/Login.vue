@@ -26,19 +26,17 @@
           />
         </div>
         <div class="login-form__actions">
-          <VBtn
+          <ButtonComponent
             @click="cancelAction"
-            class="login-form__actions__btn login-form__actions__btn--cancel"
-          >
-            Отмена
-          </VBtn>
-          <VBtn
+            title="Отмена"
+            buttonType="cancel"
+          />
+          <ButtonComponent
             type="Submit"
-            class="login-form__actions__btn login-form__actions__btn--save"
+            title="Войти"
+            buttonType="save"
             :disabled="v.$invalid"
-          >
-            Войти
-          </VBtn>
+          />
         </div>
       </VForm>
     </VCard>
@@ -54,6 +52,7 @@ import { loginRules } from "@/logic/validation/loginValidation";
 import { useAlertStore } from "@/store/alertStore";
 import AlertMessage from "@/components/widgets/AlertMessage.vue"
 import TextField from "@/components/inputs/TextField.vue";
+import ButtonComponent from "@/components/ButtonComponent.vue";
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -103,7 +102,7 @@ const sendLoginForm = async() => {
   }
   &__header {
     padding: 24px 28px 16px;
-    background: linear-gradient(135deg, #f8fff8, #f0f7f0);
+    background: linear-gradient(135deg, #FDF5F5, #FCE9E9);
     border-bottom: 1px solid #ddebe0;
     display: flex;
     justify-content: center;
@@ -112,7 +111,7 @@ const sendLoginForm = async() => {
     &__title {
       font-size: 1.25rem;
       font-weight: 600;
-      color: #1e3c2c;
+      color: #722F37;
       margin: 0;
       line-height: 1.4;
       max-width: 80%;
@@ -129,25 +128,7 @@ const sendLoginForm = async() => {
     justify-content: flex-end;
     gap: 16px;
     padding: 20px 28px 28px;
-    background: #fafffa;
-      &__btn {
-      border-radius: 30px !important;
-      padding: 0 28px !important;
-      height: 44px !important;
-      font-weight: 600 !important;
-      text-transform: none !important;
-      letter-spacing: 0.3px !important;
-        &--save {
-          background: linear-gradient(135deg, #1e3c2c, #2a5a3a) !important;
-          color: white !important;
-          border: none !important;
-          box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3) !important;
-          &:hover {
-            background: linear-gradient(135deg, #2a5a3a, #1e3c2c) !important;
-            box-shadow: 0 6px 16px rgba(46, 125, 50, 0.4) !important;
-          }
-        }
-      }
+    background: #FDF5F5;
   }
 }
 </style>

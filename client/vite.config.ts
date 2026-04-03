@@ -6,6 +6,7 @@ import vue from '@vitejs/plugin-vue';
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue()],
+  base: '/',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -17,6 +18,18 @@ export default defineConfig({
         target: 'http://localhost:5000',
         changeOrigin: true,
         secure: false,
+      },
+    },
+  },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false,
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        silenceDeprecations: ['import', 'legacy-js-api'],
       },
     },
   },

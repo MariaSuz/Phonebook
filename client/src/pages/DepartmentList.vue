@@ -26,14 +26,12 @@
                   class="departments-edit-icon"
                 ></VIcon>
               </div>
-              <VBtn
+              <ButtonComponent
                 v-if="authenticationUser"
                 prepend-icon="mdi-plus"
+                title="Добавить сотрудника"
                 @click="addUser"
-                class="departments-btn"
-              >
-                Добавить сотрудника
-              </VBtn>
+              />
             </div>
             <VDataTable
               :key="department?.id"
@@ -95,14 +93,14 @@
               </template>
               <template v-slot:no-data>
                 <div class="departments-empty">
-                  <VBtn
-                    v-if="authenticationUser"
-                    prepend-icon="mdi-plus"
-                    @click="addUser"
-                    class="departments-btn__first"
-                  >
-                    Добавить первого сотрудника
-                  </VBtn>
+                <ButtonComponent
+                  v-if="authenticationUser"
+                  prepend-icon="mdi-plus"
+                  title="Добавить первого сотрудника"
+                  @click="addUser"
+                  buttonType="save"
+                  class="btn-first"
+                />
                   <span  v-if="!authenticationUser">
                     Сотрудники отсутствуют
                 </span>
@@ -170,6 +168,7 @@ import EmployeeForm from '@/components/forms/EmployeeForm.vue';
 import { useAuthStore } from '@/store/authStore';
 import { reactive } from 'vue';
 import ComfirmDelete from '@/components/modals/ComfirmDelete.vue';
+import ButtonComponent from '@/components/ButtonComponent.vue';
 
 const props = defineProps<{
   departmentId: number;
@@ -281,11 +280,11 @@ const highlightText = (text: string | number) => {
   &-table-header {
     display: flex;
     justify-content: space-between;
-    background: linear-gradient(135deg, #1e3c2c, #2a5a3a);
-    border-left: 4px solid #7ccf7c;
+    background: linear-gradient(135deg, #722F37, #B22222);
+    border-left: 4px solid #C06060;
     padding: 10px 15px;
     margin-bottom: 8px;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+    box-shadow: 0 4px 12px rgba(114, 47, 55, 0.3);
     border-radius: 0 0 8px 8px;
     &-left {
       display: flex;
@@ -293,73 +292,58 @@ const highlightText = (text: string | number) => {
       align-items: center;
     }
   }
+
   &-header-department {
     font-size: 1.25rem;
     font-weight: 600;
     color: white;
     white-space: nowrap;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
+
   &-search {
     padding: 20px 20px 16px;
-    background: white;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border-bottom: 1px solid #e5e7eb;
+    background: #FDF5F5;
+    box-shadow: 0 2px 8px rgba(114, 47, 55, 0.1);
+    border-bottom: 1px solid #E5C7C7;
   }
+
   &-not-found {
     width: 100%;
     font-size: 1.25rem;
     font-weight: 600;
-    color: #065f46;
+    color: #722F37;
     padding: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
   }
-  &-btn {
-    background: #ffffff !important;
-    color: #1e3c2c !important;
-    border-radius: 30px !important;
-    font-weight: 600 !important;
-    text-transform: none !important;
-    padding: 0 20px !important;
-    height: 40px !important;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15) !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    &:hover {
-      background: #f0f7f0 !important;
-      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2) !important;
-    }
-    i {
-      color: #2e7d32 !important;
-      font-size: 1.2rem !important;
-    }
-    &__first {
-      background: linear-gradient(135deg, #1e3c2c, #2a5a3a) !important;
-      color: white !important;
-      border: 1px solid rgba(255, 255, 255, 0.2) !important;
-      i {
-        color: white !important;
-      }
-      &:hover {
-        background: linear-gradient(135deg, #2a5a3a, #1e3c2c) !important;
-      }
-    }
-  }
+
   .highlight {
-    background-color: #fbbf24;
-    color: #000;
+    background-color: #C06060;
+    color: white;
     padding: 2px 4px;
     border-radius: 3px;
     font-weight: 600;
   }
 
+  .btn-first {
+    margin: 20px;
+    .v-icon {
+      color: white;
+    }
+
+  }
+
   .v-icon {
     transition: all 0.2s;
-    opacity: 0.6;
+    opacity: 0.7;
+    color: #8B4C39;
+
     &:hover {
       opacity: 1;
       transform: scale(1.15);
+      color: #B22222;
     }
   }
 }

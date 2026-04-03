@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 
 interface Alert {
   message: string;
+  type?: 'error';
   id?: number;
 }
 
@@ -13,6 +14,7 @@ export const useAlertStore = defineStore('alert', {
     error(message: string) {
       this.alert = {
         message,
+        type: 'error',
         id: Date.now(),
       };
     },

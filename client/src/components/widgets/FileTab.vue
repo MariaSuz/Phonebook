@@ -39,15 +39,15 @@ const groupOptions = [
     font-weight: 500;
     font-size: 0.95rem;
     letter-spacing: 0.3px;
-    color: #4b5563;
+    color: #8B4C39;
     min-height: 48px;
     transition: all 0.2s ease;
     &:hover {
-      color: #1e3c2c;
-      background: rgba(30, 60, 44, 0.05);
+      color: #722F37;
+      background: rgba(178, 34, 34, 0.05);
     }
     &--selected {
-      color: #1e3c2c !important;
+      color: #722F37 !important;
       font-weight: 600;
     }
   }
