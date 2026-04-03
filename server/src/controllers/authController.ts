@@ -9,6 +9,7 @@ import {
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { JWT_SECRET } from "../config/authCongig";
+import { User } from "../types/userType";
 
 // Helper функция для проверки пароля
 const validatePassword = async (plainPassword: string, hashedPassword: string): Promise<boolean> => {
@@ -27,11 +28,7 @@ export const getUsers = async (req: Request, res: Response): Promise<void> => {
 };
 
 export const editUser = async (
-  req: Request<
-    { id: string },
-    {},
-    { userName: string; password: string; roleId: string; avatar: string }
-  >,
+  req: Request<{ id: string }, {}, User>,
   res: Response,
 ) => {
   try {
@@ -40,8 +37,7 @@ export const editUser = async (
       id: parseInt(req.params.id, 10),
       userName: req.body.userName,
       password: req.body.password,
-      roleId: parseInt(req.body.roleId, 10),
-      avatar: req.body.avatar,
+      roleId: req.body.roleId,
     });
 
     if (!result) {
@@ -98,7 +94,6 @@ export const login = async (
         id: user.id,
         userName: user.userName,
         roleId: user.roleId,
-        avatar: user.avatar,
       },
       token,
     });
@@ -107,14 +102,7 @@ export const login = async (
   }
 };
 
-export const register = async (
-  req: Request<
-    {},
-    {},
-    { userName: string; password: string; roleId: string; avatar?: string }
-  >,
-  res: Response,
-) => {
+export const register = async (req: Request<{}, {}, User>, res: Response) => {
   try {
     // Проверяю если ли уже пользователь
     const duplicate = await findOne(req.body.userName);
@@ -127,15 +115,13 @@ export const register = async (
     const result = await create({
       userName: req.body.userName,
       password: req.body.password,
-      roleId: req.body.roleId ? parseInt(req.body.roleId, 10) : 2,
-      avatar: req.body.avatar,
+      roleId: req.body.roleId ? req.body.roleId: 2,
     });
     res.status(201).json({
       user: {
         id: result.id,
         userName: result.userName,
         roleId: result.roleId,
-        avatar: result.avatar,
       },
       message: 'Пользователь успешно создан',
     });
@@ -146,7 +132,6 @@ export const register = async (
 
 export const deleteUser = async (req: Request<{ id: string }>, res: Response) => {
   try {
-    // TODO: Добавить проверку прав (только админ)
     const result = await deleteItem(parseInt(req.params.id));
     if (!result) {
       return res.status(404).json({ error: 'Пользователь не найден' });

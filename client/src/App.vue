@@ -5,6 +5,7 @@
     <VMain>
       <div class="app-content">
         <div class="app-content__wrapper">
+          <AlertMessage />
           <RouterView />
         </div>
       </div>
@@ -15,6 +16,7 @@
 <script setup lang="ts">
 import AppSidebar from '@/layouts/AppSidebar.vue';
 import AppHeader from '@/layouts/AppHeader.vue';
+import AlertMessage from './components/widgets/AlertMessage.vue';
 </script>
 
 <style lang="scss">

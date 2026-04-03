@@ -8,14 +8,13 @@
       <h3 class="sidebar__title">Отделы</h3>
     </div>
     <div class="sidebar__content">
-      <VBtn
+      <ButtonComponent
         v-if="authenticationUser"
         prepend-icon="mdi-plus"
+        title="Создать отдел"
         @click="addDepartment"
-        class="sidebar__btn"
-      >
-        Создать отдел
-      </VBtn>
+        buttonType="save"
+      />
       <VList class="sidebar__list">
         <VListItem
           v-for="department in departments"
@@ -54,6 +53,7 @@ import { useEmployeesStore } from '@/store/employeesStore';
 import DepartmentForm from '@/components/forms/DepartmentForm.vue';
 import { FormTypes } from '@/logic/types/FormTypes';
 import { useAuthStore } from '@/store/authStore';
+import ButtonComponent from '@/components/ButtonComponent.vue';
 
 const departmentStore = useDepartmentStore();
 const sidebarStore = useSidebarStore();
@@ -107,7 +107,7 @@ const addDepartment = () => {
   justify-content: space-between;
   align-items: center;
   padding: 20px 16px 12px;
-  background: linear-gradient(135deg, #1e3c2c, #2a5a3a);
+  background: linear-gradient(135deg, #722F37, #B22222);
     .sidebar__title {
       font-size: 1.2rem;
       font-weight: 600;
@@ -121,40 +121,22 @@ const addDepartment = () => {
   flex-direction: column;
   padding: 16px;
   }
-  &__btn {
-    border-radius: 30px !important;
-    padding: 28px;
-    height: 44px !important;
-    font-weight: 600 !important;
-    text-transform: none !important;
-    letter-spacing: 0.3px !important;
-    background: linear-gradient(135deg, #1e3c2c, #2a5a3a) !important;
-    color: white !important;
-    border: none !important;
-    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3) !important;
-    &:hover {
-      background: linear-gradient(135deg, #2a5a3a, #1e3c2c) !important;
-      box-shadow: 0 6px 16px rgba(46, 125, 50, 0.4) !important;
-    }
-  }
   &__list-item {
     border-radius: 30px !important;
     margin: 4px 0;
     transition: all 0.2s ease;
-    :deep(.v-list-item__prepend) {
-      .v-icon {
-        color: #7ccf7c !important;
-      }
-    }
-    :deep(.v-list-item__content) {
-      font-weight: 500;
-      color: #1e3c2c;
-    }
     &:hover {
-      background: #f0f7f0 !important;
-      :deep(.v-list-item__prepend .v-icon) {
-        color: #2e7d32 !important;
-      }
+      background: #FCE9E9 !important;
+      border-color: #C06060 !important;
+      transform: translateY(-1px);
+    }
+    &.v-list-item--active {
+      background: #FCE9E9 !important;
+      border-color: #B22222 !important;
+    }
+     &:active {
+      background: #C06060 !important;
+      transform: scale(0.98);
     }
   }
 }

@@ -40,21 +40,18 @@
             @blur="v.groupId.$touch"
           />
         </div>
-        <VDivider class="file-form__divider" />
         <div class="file-form__actions">
-          <VBtn
+          <ButtonComponent
             @click="cancelAction"
-            class="file-form__actions__btn file-form__actions__btn--cancel"
-          >
-            Отмена
-          </VBtn>
-          <VBtn
+            title="Отмена"
+            buttonType="cancel"
+          />
+          <ButtonComponent
             v-if="formType !== FormTypes.SHOW"
-            class="file-form__actions__btn file-form__actions__btn--save"
+            title="Сохранить"
             type="submit"
-          >
-            Сохранить
-          </VBtn>
+            buttonType="save"
+          />
         </div>
       </VForm>
     </div>
@@ -72,6 +69,7 @@ import { useVuelidate } from '@vuelidate/core';
 import { fileRules } from '@/logic/validation/fileValidation';
 import { useAlertStore } from '@/store/alertStore';
 import { useFileStore } from '@/store/filesStore';
+import ButtonComponent from '../ButtonComponent.vue';
 
 const store = useFileStore();
 interface fileProps {
@@ -139,71 +137,30 @@ const onSubmitForm = async () => {
   display: flex;
   flex-direction: column;
   background: #ffffff;
+
   &__header {
     padding: 24px 28px 16px;
-    background: linear-gradient(135deg, #f8fff8, #f0f7f0);
-    border-bottom: 1px solid #ddebe0;
+    background: linear-gradient(135deg, #FDF5F5, #FCE9E9);
+    border-bottom: 1px solid #E5C7C7;
   }
 
   &__title {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #1e3c2c;
+    color: #722F37;
     margin: 0 0 4px 0;
-    letter-spacing: -0.01em;
-  }
-
-  &__subtitle {
-    font-size: 0.95rem;
-    color: #5a7a6a;
-    margin: 0;
   }
 
   &__content {
     padding: 28px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
   }
-  &__divider {
-    margin: 0 28px;
-    border-color: #ddebe0;
-    opacity: 0.6;
-  }
+
   &__actions {
     display: flex;
     justify-content: flex-end;
     gap: 16px;
     padding: 20px 28px 28px;
-    background: #fafffa;
-      &__btn {
-      border-radius: 30px !important;
-      padding: 0 28px !important;
-      height: 44px !important;
-      font-weight: 600 !important;
-      text-transform: none !important;
-      letter-spacing: 0.3px !important;
-        &--cancel {
-          background: transparent !important;
-          color: #5a7a6a !important;
-          border: 1px solid #c0d6c0 !important;
-
-          &:hover {
-            background: #f0f7f0 !important;
-            border-color: #7ccf7c !important;
-          }
-        }
-        &--save {
-          background: linear-gradient(135deg, #1e3c2c, #2a5a3a) !important;
-          color: white !important;
-          border: none !important;
-          box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3) !important;
-          &:hover {
-            background: linear-gradient(135deg, #2a5a3a, #1e3c2c) !important;
-            box-shadow: 0 6px 16px rgba(46, 125, 50, 0.4) !important;
-          }
-        }
-      }
+    background: #FDF5F5;
   }
 }
 </style>

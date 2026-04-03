@@ -23,32 +23,27 @@
           :error="v.password.$error"
           @blur="v.password.$touch"
         />
-        <VSelect
+        <Select
           v-model="user.roleId"
           label="Выберите роль"
           :items="roleOptions"
           item-title="title"
           item-value="value"
-          variant="outlined"
-        >
-          <template v-slot:prepend>
-            <VIcon icon="mdi-shield-account" color="#7ccf7c" size="small" />
-          </template>
-        </VSelect>
+          icon="mdi-shield-account"
+        />
       </div>
-      <VDivider class="auth-form__divider" />
       <div class="auth-form__actions">
-        <VBtn
+        <ButtonComponent
           @click="cancelAction"
-          class="auth-form__actions__btn auth-form__actions__btn--cancel"
-        > Отмена
-        </VBtn>
-        <VBtn
+          title="Отмена"
+          buttonType="cancel"
+        />
+        <ButtonComponent
           v-if="formType !== FormTypes.SHOW"
+          title="Сохранить"
           @click="onSubmitForm"
-          class="auth-form__actions__btn auth-form__actions__btn--save"
-        >  {{ formType === FormTypes.ADD ? 'Создать' : 'Сохранить' }}
-        </VBtn>
+          buttonType="save"
+        />
       </div>
     </div>
   </VCard>
@@ -62,6 +57,8 @@ import { ref, computed } from 'vue';
 import TextField from '../inputs/TextField.vue';
 import useVuelidate from '@vuelidate/core';
 import { userRules } from '@/logic/validation/userValidation';
+import ButtonComponent from '../ButtonComponent.vue';
+import Select from '../inputs/Select.vue';
 
 interface AuthUserProps {
   data?: AuthFormModel;
@@ -135,22 +132,15 @@ const onSubmitForm = async () => {
 
   &__header {
     padding: 24px 28px 16px;
-    background: linear-gradient(135deg, #f8fff8, #f0f7f0);
-    border-bottom: 1px solid #ddebe0;
+    background: linear-gradient(135deg, #FDF5F5, #FCE9E9);
+    border-bottom: 1px solid #E5C7C7;
   }
 
   &__title {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #1e3c2c;
+    color: #722F37;
     margin: 0 0 4px 0;
-    letter-spacing: -0.01em;
-  }
-
-  &__subtitle {
-    font-size: 0.95rem;
-    color: #5a7a6a;
-    margin: 0;
   }
 
   &__content {
@@ -160,46 +150,12 @@ const onSubmitForm = async () => {
     gap: 10px;
   }
 
-  &__divider {
-    margin: 0 28px;
-    border-color: #ddebe0;
-    opacity: 0.6;
-  }
-
   &__actions {
     display: flex;
     justify-content: flex-end;
     gap: 16px;
     padding: 20px 28px 28px;
-    background: #fafffa;
-      &__btn {
-      border-radius: 30px !important;
-      padding: 0 28px !important;
-      height: 44px !important;
-      font-weight: 600 !important;
-      text-transform: none !important;
-      letter-spacing: 0.3px !important;
-        &--cancel {
-          background: transparent !important;
-          color: #5a7a6a !important;
-          border: 1px solid #c0d6c0 !important;
-
-          &:hover {
-            background: #f0f7f0 !important;
-            border-color: #7ccf7c !important;
-          }
-        }
-        &--save {
-          background: linear-gradient(135deg, #1e3c2c, #2a5a3a) !important;
-          color: white !important;
-          border: none !important;
-          box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3) !important;
-          &:hover {
-            background: linear-gradient(135deg, #2a5a3a, #1e3c2c) !important;
-            box-shadow: 0 6px 16px rgba(46, 125, 50, 0.4) !important;
-          }
-        }
-      }
+    background: #FDF5F5;
   }
 }
 </style>

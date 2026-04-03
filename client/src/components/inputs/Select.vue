@@ -11,7 +11,11 @@
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <template v-slot:prepend>
-      <VIcon icon="mdi-office-building" color="#7ccf7c" size="small" />
+      <VIcon
+      :icon="icon"
+      color="#C06060"
+      size="small"
+      />
     </template>
   </VSelect>
 </template>

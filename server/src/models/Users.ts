@@ -1,14 +1,7 @@
 import pool from '../config/db';
 import camelcaseKeys from 'camelcase-keys';
 import bcrypt from 'bcrypt';
-
-interface User {
-  id?: number;
-  userName: string;
-  password: string;
-  roleId: number;
-  avatar?: string | null;
-}
+import { User } from '../types/userType';
 
 export const getAll = async () => {
   const { rows: users } = await pool.query(`SELECT * FROM users`);
@@ -27,17 +20,16 @@ export const create = async ({
   userName,
   password,
   roleId = 2,
-  avatar = null,
 }: User) => {
 
   const salt = await bcrypt.genSalt();
   const hashedPassword = bcrypt.hashSync(password, salt);
 
   const { rows: users } = await pool.query(
-    `INSERT INTO users(user_name, password, role_id, avatar)
-    VALUES($1, $2, $3, $4)
-    RETURNING id, user_name, role_id, avatar`,
-    [userName, hashedPassword, roleId, avatar],
+    `INSERT INTO users(user_name, password, role_id)
+    VALUES($1, $2, $3)
+    RETURNING id, user_name, role_id`,
+    [userName, hashedPassword, roleId],
   );
   return camelcaseKeys(users[0]);
 };
@@ -47,26 +39,25 @@ export const edit = async ({
   userName,
   password,
   roleId,
-  avatar,
 }: User) => {
   if (password) {
     const salt = await bcrypt.genSalt();
     const hashedPassword = bcrypt.hashSync(password, salt);
     const { rows: users } = await pool.query(
       `UPDATE users
-        SET user_name = $1, password = $2, role_id = $3, avatar = $4
-        WHERE id = $5
-        RETURNING id, user_name, role_id, avatar`,
-      [userName, hashedPassword, roleId, avatar, id],
+        SET user_name = $1, password = $2, role_id = $3
+        WHERE id = $4
+        RETURNING id, user_name, role_id`,
+      [userName, hashedPassword, roleId, id],
     );
     return users[0] ? camelcaseKeys(users[0]) : null;
   } else {
       const { rows: users } = await pool.query(
         `UPDATE users
-        SET user_name = $1, role_id = $2, avatar = $3
-        WHERE id = $4
-        RETURNING id, user_name, role_id, avatar`,
-        [userName, roleId, avatar, id],
+        SET user_name = $1, role_id = $2,
+        WHERE id = $3
+        RETURNING id, user_name, role_id`,
+        [userName, roleId, id],
       );
     return users[0] ? camelcaseKeys(users[0]) : null;
     }

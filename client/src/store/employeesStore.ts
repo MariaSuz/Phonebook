@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { api } from '@/api/api';
 import type { EmployeeFormModel } from '../logic/types/forms/EmployeeFormModel';
 import type { DepartmentFormModel } from '../logic/types/forms/DepartmentFormModel';
+import { useAlertStore } from './alertStore';
 
 export const useEmployeesStore = defineStore('employee', {
   state: () => ({
@@ -26,6 +27,8 @@ export const useEmployeesStore = defineStore('employee', {
       } catch (error) {
         this.error = error.message;
         console.error('Ошибка загрузки пользователей справочника:', error);
+        const alertStore = useAlertStore();
+        alertStore.error(error.message || 'Ошибка при загрузке сотрудников');
       } finally {
         this.loading = false;
       }
@@ -42,6 +45,8 @@ export const useEmployeesStore = defineStore('employee', {
       } catch (error) {
         this.error = error.message;
         console.error('Ошибка создания пользователя справочника:', error);
+        const alertStore = useAlertStore();
+        alertStore.error(error.message || 'Ошибка при добавлении сотрудника');
         throw error;
       } finally {
         this.loading = false;
@@ -62,6 +67,8 @@ export const useEmployeesStore = defineStore('employee', {
       } catch (error) {
         this.error = error.message;
         console.error('Ошибка обновления пользователя справочника:', error);
+        const alertStore = useAlertStore();
+        alertStore.error(error.message || 'Ошибка при обновлении сотрудника');
         throw error;
       } finally {
         this.loading = false;
@@ -77,6 +84,8 @@ export const useEmployeesStore = defineStore('employee', {
       } catch (error) {
         this.error = error.message;
         console.error('Ошибка удаления пользователя справочника:', error);
+        const alertStore = useAlertStore();
+        alertStore.error(error.message || 'Ошибка при удалении сотрудника');
         throw error;
       } finally {
         this.loading = false;
@@ -93,6 +102,10 @@ export const useEmployeesStore = defineStore('employee', {
         return users;
       } catch (error) {
         this.error = error.message;
+        const alertStore = useAlertStore();
+        alertStore.error(
+          error.message || 'Ошибка при загрузке сотрудников отдела',
+        );
         throw error;
       } finally {
         this.loading = false;
@@ -109,6 +122,10 @@ export const useEmployeesStore = defineStore('employee', {
         await Promise.all(promises);
       } catch (error) {
         this.error = error.message;
+        const alertStore = useAlertStore();
+        alertStore.error(
+          error.message || 'Ошибка при загрузке сотрудников всех отделов',
+        );
         throw error;
       } finally {
         this.loading = false;

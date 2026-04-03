@@ -64,33 +64,14 @@ onMounted(async () => {
 
 <style lang="scss">
 .phone-book {
-  &-table-header {
-    // background: linear-gradient(135deg, #10b981 0%, #0d9668 100%);
-    background: #344e41;
-    border-left: 4px solid #065f46;
-    padding: 10px 15px;
-    margin-bottom: 8px;
-    color: white;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
-  }
-  &-header-department {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: white;
-    white-space: nowrap;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  }
   &-search {
     padding: 20px 20px 16px;
-    background: white;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border-bottom: 1px solid #e5e7eb;
   }
   &-not-found {
     width: 100%;
     font-size: 1.25rem;
     font-weight: 600;
-    color: #065f46;
+    color: #722F37;
     padding: 40px 20px;
     display: flex;
     justify-content: center;

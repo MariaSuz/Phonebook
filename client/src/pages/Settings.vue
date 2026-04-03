@@ -3,25 +3,23 @@
     <div class="settings">
       <div class="settings__header">
         <span class="settings-title">Управление пользователями</span>
-        <VBtn
+        <ButtonComponent
           v-if="isAdmin"
           prepend-icon="mdi-plus"
+          title="Создать пользователя"
           @click="createUser"
-          class="settings__btn"
-        >
-          Создать пользователя
-        </VBtn>
+          buttonType="save"
+        />
       </div>
       <div class="settings-table">
         <VDataTable
           :headers="headers"
           :items="users"
-          hide-default-footer
           class="settings-data-table"
         >
           <template v-slot:item.roleId="{ item }">
             <VChip
-              color="#5a7a6a"
+              color="#8B4C39"
               size="small"
               class="role-chip"
             >
@@ -90,6 +88,7 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import AuthUserForm from '@/components/forms/AuthUserForm.vue';
 import FormModal from '@/components/modals/FormModal.vue';
 import ComfirmDelete from '@/components/modals/ComfirmDelete.vue';
+import ButtonComponent from '@/components/ButtonComponent.vue';
 
 const authStore = useAuthStore();
 
@@ -162,37 +161,22 @@ onMounted(async () => {
 .settings {
   &__header {
     padding: 24px 28px 16px;
-    background: linear-gradient(135deg, #f8fff8, #f0f7f0);
+    background: linear-gradient(135deg, #FDF5F5, #FCE9E9);
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: 16px;
   }
+
   &-title {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #1e3c2c;
+    color: #722F37;
     margin: 0 0 4px 0;
     letter-spacing: -0.01em;
   }
 
-  &__btn {
-    border-radius: 30px !important;
-    padding: 0 28px !important;
-    height: 44px !important;
-    font-weight: 600 !important;
-    text-transform: none !important;
-    letter-spacing: 0.3px !important;
-    background: linear-gradient(135deg, #1e3c2c, #2a5a3a) !important;
-    color: white !important;
-    border: none !important;
-    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3) !important;
-    &:hover {
-      background: linear-gradient(135deg, #2a5a3a, #1e3c2c) !important;
-      box-shadow: 0 6px 16px rgba(46, 125, 50, 0.4) !important;
-    }
-  }
   .v-icon {
     transition: all 0.2s;
     opacity: 0.6;
@@ -200,6 +184,10 @@ onMounted(async () => {
       opacity: 1;
       transform: scale(1.15);
     }
+  }
+
+  :deep(.v-data-table-footer) {
+    background: #FDF5F5;
   }
 }
 </style>
