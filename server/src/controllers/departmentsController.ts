@@ -86,6 +86,8 @@ export const deleteDepartment = async (req: Request<{ id: string }>, res: Respon
     const id = parseInt(req.params.id, 10);
     const oldData = await getById(id);
     const result = await deleteItem(id);
+    console.log('DELETE request received for id:', req.params.id);
+    console.log('User:', (req as any).user);
     if (!result) {
       return res.status(404).json({ error: 'Отдел не найден' });
     }
@@ -99,6 +101,7 @@ export const deleteDepartment = async (req: Request<{ id: string }>, res: Respon
     });
     res.status(205).json(result);
   } catch (error) {
+    console.error('Delete error:', error);
     res.status(500).json({ message: 'Отдел не найден' });
   }
 };

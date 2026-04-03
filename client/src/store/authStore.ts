@@ -2,6 +2,9 @@ import { defineStore } from 'pinia';
 import { api } from '@/api/api';
 import type { AuthFormModel } from '../logic/types/forms/AuthFormModel';
 import router from '@/router';
+import { computed, ref } from 'vue';
+import { useAlertStore } from './alertStore';
+import { getErrorMessage } from '@/logic/utils/errorUtils';
 
 
 interface AuthResponse {
@@ -9,123 +12,121 @@ interface AuthResponse {
   token: string;
 }
 
-export const useAuthStore = defineStore('auth', {
-  state: () => ({
-    authUsers: [] as AuthFormModel[],
-    loading: false,
-    error: null as string | null,
-    currentUser: JSON.parse(
+export const useAuthStore = defineStore('auth', () => {
+  const authUsers = ref<AuthFormModel[]>([]);
+  const loading = ref(false);
+  const alertStore = useAlertStore();
+  const currentUser = ref<AuthFormModel | null>(JSON.parse(
       localStorage.getItem('currentUser') || 'null',
-    ) as AuthFormModel | null,
-    token: localStorage.getItem('token') as string | null,
-  }),
+    ));
+  const token = ref<string | null>(localStorage.getItem('token'));
 
-  getters: {
-    isAuthenticated: (state) => !!state.token,
-    isAdmin: (state) => state.currentUser?.roleId === 1,
-    list: (state) => state.authUsers,
-    authUser: (state) => state.currentUser,
-  },
+  const list = computed(() => authUsers.value);
+  const isAuthenticated = computed(() => !!token.value);
+  const isAdmin = computed(() => currentUser.value?.roleId === 1);
+  const authUser = computed(() => currentUser.value);
 
-  actions: {
-    clearAuth() {
-      this.currentUser = null;
-      this.token = null;
-      localStorage.removeItem('token');
-      localStorage.removeItem('currentUser');
-    },
-    async login(credentials: { userName: string; password: string }) {
-      try {
-        this.loading = true;
-        this.error = null;
+  function clearAuth() {
+    currentUser.value = null;
+    token.value = null;
+    localStorage.removeItem('token');
+    localStorage.removeItem('currentUser');
+  }
 
-        const response = await api.post<AuthResponse>('/login', credentials);
+  async function login(credentials: { userName: string; password: string }) {
+    try {
+      loading.value = true;
 
-        const { user: userData, token: authToken } = response.data;
+      const response = await api.post<AuthResponse>('/login', credentials);
+      const { user: userData, token: authToken } = response.data;
 
-        this.currentUser = userData;
-        this.token = authToken;
+      currentUser.value = userData;
+      token.value = authToken;
 
-        localStorage.setItem('token', authToken);
-        localStorage.setItem('currentUser', JSON.stringify(userData));
+      localStorage.setItem('token', authToken);
+      localStorage.setItem('currentUser', JSON.stringify(userData));
 
-        return { success: true, data: response.data };
-      } catch (err: any) {
-        const errorMessage = err.response?.data?.message || 'Ошибка входа';
-        this.error = errorMessage;
-        this.clearAuth();
-        throw new Error(errorMessage);
-      } finally {
-        this.loading = false;
+      return { success: true, data: response.data };
+    } catch (error: any) {
+      alertStore.error(getErrorMessage(error));
+      clearAuth();
+      throw error;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function register(data: AuthFormModel) {
+    try {
+      loading.value = true;
+      const response = await api.post('/register', data);
+      return response.data;
+    } catch (error: any) {
+      alertStore.error(getErrorMessage(error));
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  function logout() {
+    clearAuth();
+    router.push('/');
+  }
+
+  async function updateAuthUser(id: number, data: AuthFormModel) {
+    loading.value = true;
+    try {
+      const response = await api.put(`/users/${id}`, data);
+      const updatedUser = response.data;
+      const index = authUsers.value.findIndex((u) => u.id === id);
+      if (index !== -1) {
+        authUsers.value[index] = updatedUser;
       }
-    },
+      return updatedUser;
+    } catch (error: any) {
+      alertStore.error(getErrorMessage(error));
+      throw error;
+    } finally {
+      loading.value = false;
+    }
+  }
+  async function getAuthUsers() {
+    loading.value = true;
+    try {
+      authUsers.value = [];
+      const response = await api.get('/users');
+      authUsers.value = response.data;
+    } catch (error: any) {
+      alertStore.error(getErrorMessage(error));
+    } finally {
+      loading.value = false;
+    }
+  }
 
-    async register(data: AuthFormModel) {
-      try {
-        this.loading = true;
-        this.error = null;
-        const response = await api.post('/register', data);
-        return response.data;
-      } catch (err: any) {
-        this.error = err.response?.data?.message || 'Ошибка регистрации';
-        return { success: false, error: this.error };
-      } finally {
-        this.loading = false;
-      }
-    },
+  async function deleteAuthUser(id: number) {
+    loading.value = true;
+    try {
+      await api.delete(`/users/${id}`);
+      authUsers.value = authUsers.value.filter((u) => u.id !== id);
+    } catch (error: any) {
+      alertStore.error(getErrorMessage(error));
+      throw error;
+    } finally {
+      loading.value = false;
+    }
+  }
 
-    logout() {
-      this.clearAuth();
-      router.push('/');
-    },
-
-    async updateAuthUser(id: number, data: AuthFormModel) {
-      this.loading = true;
-      this.error = null;
-      try {
-        const response = await api.put(`/users/${id}`, data);
-        const updatedUser = response.data;
-        const index = this.authUsers.findIndex((u) => u.id === id);
-        if (index !== -1) {
-          this.authUsers[index] = updatedUser;
-        }
-        return updatedUser;
-      } catch (error) {
-        this.error = error.message;
-        console.error('Ошибка обновления пользователя:', error);
-        throw error;
-      } finally {
-        this.loading = false;
-      }
-    },
-    async getAuthUsers() {
-      this.loading = true;
-      this.error = null;
-      try {
-        this.authUsers = [];
-        const response = await api.get('/users');
-        this.authUsers = response.data;
-      } catch (error) {
-        this.error = error.message;
-        console.error('Ошибка загрузки пользователей:', error);
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    async deleteAuthUser(id: number) {
-      this.loading = true;
-      this.error = null;
-      try {
-        await api.delete(`/users/${id}`);
-        this.authUsers = this.authUsers.filter((u) => u.id !== id);
-      } catch (error) {
-        this.error = error.message;
-        console.error('Ошибка удаления пользователя:', error);
-        throw error;
-      } finally {
-        this.loading = false;
-      }
-    },
-  },
+  return {
+    list,
+    isAuthenticated,
+    isAdmin,
+    authUser,
+    clearAuth,
+    login,
+    register,
+    logout,
+    updateAuthUser,
+    getAuthUsers,
+    deleteAuthUser,
+  };
 });

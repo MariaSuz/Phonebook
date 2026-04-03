@@ -3,133 +3,113 @@ import { api } from '@/api/api';
 import type { EmployeeFormModel } from '../logic/types/forms/EmployeeFormModel';
 import type { DepartmentFormModel } from '../logic/types/forms/DepartmentFormModel';
 import { useAlertStore } from './alertStore';
+import { computed, ref } from 'vue';
+import { getErrorMessage } from '@/logic/utils/errorUtils';
 
-export const useEmployeesStore = defineStore('employee', {
-  state: () => ({
-    employees: [] as EmployeeFormModel[],
-    employeesByDepartment: new Map<number, EmployeeFormModel[]>(),
-    loading: false,
-    error: null as string | null,
-  }),
+export const useEmployeesStore = defineStore('employee', () => {
 
-  getters: {
-    list: (state) => state.employees,
-  },
+  const employees = ref<EmployeeFormModel[]>([]);
+  const employeesByDepartment = ref<Map<number, EmployeeFormModel[]>>(new Map());
+  const loading = ref(false);
+  const alertStore = useAlertStore();
 
-  actions: {
-    async getEmployees() {
-      this.loading = true;
-      this.error = null;
-      try {
-        this.employees = [];
-        const response = await api.get('/employees');
-        this.employees = response.data;
-      } catch (error) {
-        this.error = error.message;
-        console.error('Ошибка загрузки пользователей справочника:', error);
-        const alertStore = useAlertStore();
-        alertStore.error(error.message || 'Ошибка при загрузке сотрудников');
-      } finally {
-        this.loading = false;
+  const list = computed(() => employees.value);
+
+  async function getEmployees() {
+    loading.value = true;
+    try {
+      const response = await api.get('/employees');
+      employees.value = response.data;
+    } catch (error: any) {
+      alertStore.error(getErrorMessage(error));
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function addEmployees(data: EmployeeFormModel) {
+    loading.value = true;
+    try {
+      const response = await api.post('/employees', data);
+      const newUser = response.data;
+      employees.value.push(newUser);
+      return newUser;
+    } catch (error: any) {
+      alertStore.error(getErrorMessage(error));
+      throw error;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function updateEmployee(id: number, data: EmployeeFormModel) {
+    loading.value = true;
+    try {
+      const response = await api.put(`/employees/${id}`, data);
+      const updatedEmployee = response.data;
+      const index = employees.value.findIndex((u) => u.id === id);
+      if (index !== -1) {
+        employees.value[index] = updatedEmployee;
       }
-    },
+      return updatedEmployee;
+    } catch (error: any) {
+      alertStore.error(getErrorMessage(error));
+      throw error;
+    } finally {
+      loading.value = false;
+    }
+  }
 
-    async addEmployees(data: EmployeeFormModel) {
-      this.loading = true;
-      this.error = null;
-      try {
-        const response = await api.post('/employees', data);
-        const newUser = response.data;
-        this.employees.push(newUser);
-        return newUser;
-      } catch (error) {
-        this.error = error.message;
-        console.error('Ошибка создания пользователя справочника:', error);
-        const alertStore = useAlertStore();
-        alertStore.error(error.message || 'Ошибка при добавлении сотрудника');
-        throw error;
-      } finally {
-        this.loading = false;
-      }
-    },
+  async function deleteEmployee(id: number) {
+    loading.value = true;
+    try {
+      await api.delete(`/employees/${id}`);
+      employees.value = employees.value.filter((u) => u.id !== id);
+    } catch (error: any) {
+      alertStore.error(getErrorMessage(error));
+      throw error;
+    } finally {
+      loading.value = false;
+    }
+  }
 
-    async updateEmployee(id: number, data: EmployeeFormModel) {
-      this.loading = true;
-      this.error = null;
-      try {
-        const response = await api.put(`/employees/${id}`, data);
-        const updatedEmployee = response.data;
-        const index = this.employees.findIndex((u) => u.id === id);
-        if (index !== -1) {
-          this.employees[index] = updatedEmployee;
-        }
-        return updatedEmployee;
-      } catch (error) {
-        this.error = error.message;
-        console.error('Ошибка обновления пользователя справочника:', error);
-        const alertStore = useAlertStore();
-        alertStore.error(error.message || 'Ошибка при обновлении сотрудника');
-        throw error;
-      } finally {
-        this.loading = false;
-      }
-    },
+  async function getEmployeesByDepartment(id: number) {
+    loading.value = true;
+    try {
+      const response = await api.get(`/employees/department/${id}`);
+      const users = response.data;
+      employeesByDepartment.value.set(id, users);
+      return users;
+    } catch (error: any) {
+      alertStore.error(getErrorMessage(error));
+    } finally {
+      loading.value = false;
+    }
+  }
 
-    async deleteEmployee(id: number) {
-      this.loading = true;
-      this.error = null;
-      try {
-        await api.delete(`/employees/${id}`);
-        this.employees = this.employees.filter((u) => u.id !== id);
-      } catch (error) {
-        this.error = error.message;
-        console.error('Ошибка удаления пользователя справочника:', error);
-        const alertStore = useAlertStore();
-        alertStore.error(error.message || 'Ошибка при удалении сотрудника');
-        throw error;
-      } finally {
-        this.loading = false;
-      }
-    },
+  async function allDepartmentsEmployees(departments: DepartmentFormModel[]) {
+    loading.value = true;
+    try {
+      const promises = departments.map((dept) =>
+        getEmployeesByDepartment(dept.id),
+      );
+      await Promise.all(promises);
+    } catch (error: any) {
+      alertStore.error(getErrorMessage(error));
+    } finally {
+      loading.value = false;
+    }
+  }
 
-    async getEmployeesByDepartment(id: number) {
-      this.loading = true;
-      this.error = null;
-      try {
-        const response = await api.get(`/employees/department/${id}`);
-        const users = response.data;
-        this.employeesByDepartment.set(id, users);
-        return users;
-      } catch (error) {
-        this.error = error.message;
-        const alertStore = useAlertStore();
-        alertStore.error(
-          error.message || 'Ошибка при загрузке сотрудников отдела',
-        );
-        throw error;
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    async allDepartmentsEmployees(departments: DepartmentFormModel[]) {
-      this.loading = true;
-      this.error = null;
-      try {
-        const promises = departments.map((dept) =>
-          this.getEmployeesByDepartment(dept.id),
-        );
-        await Promise.all(promises);
-      } catch (error) {
-        this.error = error.message;
-        const alertStore = useAlertStore();
-        alertStore.error(
-          error.message || 'Ошибка при загрузке сотрудников всех отделов',
-        );
-        throw error;
-      } finally {
-        this.loading = false;
-      }
-    },
-  },
+  return {
+    list,
+    employees,
+    employeesByDepartment,
+    getEmployees,
+    addEmployees,
+    updateEmployee,
+    deleteEmployee,
+    getEmployeesByDepartment,
+    allDepartmentsEmployees,
+  };
 });

@@ -76,7 +76,7 @@ const getEmployeeCount = (departmentId) => {
   return userStore.list.filter(user => user.departmentId === departmentId).length;
 };
 
-const authenticationUser = computed(() => authStore.isAuthenticated);
+const authenticationUser = authStore.isAuthenticated;
 
 const goToDepartment = (id) => {
   sidebarStore.toggleSidebar();
