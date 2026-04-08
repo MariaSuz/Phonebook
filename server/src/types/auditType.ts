@@ -6,9 +6,9 @@ export interface Audit {
   action: 'CREATE' | 'UPDATE' | 'DELETE';
   entityType: 'employee' | 'department' | 'file';
   entityId: number | string;
-  oldData?: Record<string, any> | null;
-  newData?: Record<string, any> | null;
-  diff?: Record<string, any> | null;
+  oldData?: any | null;
+  newData?: any | null;
+  diff?: any | null;
 }
 
 export type CreateAudit = Omit<Audit, 'id' | 'timestamp'>;

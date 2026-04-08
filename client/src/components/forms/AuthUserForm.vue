@@ -1,52 +1,37 @@
 <template>
-  <VCard>
-    <div div class="auth-form">
-      <div class="auth-form__header">
-        <h2 class="auth-form__title">{{ formTitle }}</h2>
-      </div>
-      <div class="auth-form__content">
-        <TextField
-          v-model="user.userName"
-          label="Имя пользователя"
-          placeholder="Введите логин"
-          icon="mdi-account"
-          :error-messages="v.userName.$errors.map((e: any) => e.$message)"
-          :error="v.userName.$error"
-          @blur="v.userName.$touch"
-        />
-        <TextField
-          v-model="user.password"
-          label="Пароль пользователя"
-          type="password"
-          icon="mdi-lock"
-          :error-messages="v.password.$errors.map((e: any) => e.$message)"
-          :error="v.password.$error"
-          @blur="v.password.$touch"
-        />
-        <Select
-          v-model="user.roleId"
-          label="Выберите роль"
-          :items="roleOptions"
-          item-title="title"
-          item-value="value"
-          icon="mdi-shield-account"
-        />
-      </div>
-      <div class="auth-form__actions">
-        <ButtonComponent
-          @click="cancelAction"
-          title="Отмена"
-          buttonType="cancel"
-        />
-        <ButtonComponent
-          v-if="formType !== FormTypes.SHOW"
-          title="Сохранить"
-          @click="onSubmitForm"
-          buttonType="save"
-        />
-      </div>
-    </div>
-  </VCard>
+  <BaseForm
+    :title="formTitle"
+    :form-type="formType"
+    @cancel="emit('cancel')"
+    @submit="onSubmitForm"
+  >
+    <TextField
+      v-model="user.userName"
+      label="Имя пользователя"
+      placeholder="Введите логин"
+      icon="mdi-account"
+      :error-messages="v.userName.$errors.map((e: any) => e.$message)"
+      :error="v.userName.$error"
+      @blur="v.userName.$touch"
+    />
+    <TextField
+      v-model="user.password"
+      label="Пароль пользователя"
+      type="password"
+      icon="mdi-lock"
+      :error-messages="v.password.$errors.map((e: any) => e.$message)"
+      :error="v.password.$error"
+      @blur="v.password.$touch"
+    />
+    <Select
+      v-model="user.roleId"
+      label="Выберите роль"
+      :items="roleOptions"
+      item-title="title"
+      item-value="value"
+      icon="mdi-shield-account"
+    />
+  </BaseForm>
 </template>
 
 <script setup lang="ts">
@@ -57,8 +42,8 @@ import { ref, computed } from 'vue';
 import TextField from '../inputs/TextField.vue';
 import useVuelidate from '@vuelidate/core';
 import { userRules } from '@/logic/validation/userValidation';
-import ButtonComponent from '../ButtonComponent.vue';
 import Select from '../inputs/Select.vue';
+import BaseForm from './BaseForm.vue';
 
 interface AuthUserProps {
   data?: AuthFormModel;
@@ -100,10 +85,6 @@ const formTitle = computed(() => {
 
 const emit = defineEmits(['cancel']);
 
-const cancelAction = () => {
-  emit('cancel');
-};
-
 const onSubmitForm = async () => {
   const isValid = await v.value.$validate();
   if (!isValid) {
@@ -123,39 +104,3 @@ const onSubmitForm = async () => {
   }
 };
 </script>
-
-<style lang="scss">
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  background: #ffffff;
-
-  &__header {
-    padding: 24px 28px 16px;
-    background: linear-gradient(135deg, #FDF5F5, #FCE9E9);
-    border-bottom: 1px solid #E5C7C7;
-  }
-
-  &__title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #722F37;
-    margin: 0 0 4px 0;
-  }
-
-  &__content {
-    padding: 28px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  &__actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 16px;
-    padding: 20px 28px 28px;
-    background: #FDF5F5;
-  }
-}
-</style>

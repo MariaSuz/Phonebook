@@ -1,8 +1,8 @@
 import pool from '../config/db';
 import camelcaseKeys from 'camelcase-keys';
-import { Department } from '../types/departmentType';
+import { Department, DepartmentCreateInput, DepartmentUpdateInput } from '../types/departmentType';
 
-export const getAll = async () => {
+export const getAll = async (): Promise<Department[]> => {
   const { rows: departments } = await pool.query(
     `SELECT * FROM departments
      ORDER BY sort_order ASC, name ASC`,
@@ -10,7 +10,10 @@ export const getAll = async () => {
   return camelcaseKeys(departments);
 };
 
-export const create = async ({ name, sortOrder = 999 }: Department) => {
+export const create = async ({
+  name,
+  sortOrder = 999,
+}: DepartmentCreateInput): Promise<Department> => {
   const { rows: departments } = await pool.query(
     `INSERT INTO departments(name, sort_order)
     VALUES($1, $2)
@@ -20,15 +23,19 @@ export const create = async ({ name, sortOrder = 999 }: Department) => {
   return camelcaseKeys(departments[0]);
 };
 
-export const getById = async (id: number) => {
+export const getById = async (id: number): Promise<Department | null> => {
   const { rows: departments } = await pool.query(
     `SELECT * FROM departments WHERE id = $1`,
-    [id]
+    [id],
   );
   return departments[0] ? camelcaseKeys(departments[0]) : null;
 };
 
-export const edit = async ({ name, sortOrder, id }: Department) => {
+export const edit = async ({
+  name,
+  sortOrder,
+  id,
+}: DepartmentUpdateInput & { id: number }): Promise<Department | null> => {
   const { rows: departments } = await pool.query(
     `UPDATE departments
     SET name = $1, sort_order =$2
@@ -39,7 +46,7 @@ export const edit = async ({ name, sortOrder, id }: Department) => {
   return departments[0] ? camelcaseKeys(departments[0]) : null;
 };
 
-export const deleteItem = async (id: number) => {
+export const deleteItem = async (id: number): Promise<Department | null> => {
   const { rows: departments } = await pool.query(
     `DELETE FROM departments
     WHERE id = $1

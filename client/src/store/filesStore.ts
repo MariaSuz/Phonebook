@@ -6,7 +6,7 @@ import type {
 import { api } from '../api/api';
 import { useAlertStore } from './alertStore';
 import { computed, ref } from 'vue';
-import { getErrorMessage } from '@/logic/utils/errorUtils';
+import { getErrorMessage, showError } from '@/logic/utils/errorUtils';
 
 export const useFileStore = defineStore('file', () => {
   const files = ref<FileFormModel[]>([]);
@@ -56,8 +56,7 @@ export const useFileStore = defineStore('file', () => {
 
       window.URL.revokeObjectURL(url);
     } catch (error: any) {
-      alertStore.error(getErrorMessage(error));
-      throw error;
+      showError(error);
     } finally {
       loading.value = false;
     }
@@ -84,8 +83,7 @@ export const useFileStore = defineStore('file', () => {
       files.value.push(newDoc);
       return newDoc;
     } catch (error: any) {
-      alertStore.error(getErrorMessage(error));
-      throw error;
+      showError(error);
     } finally {
       loading.value = false;
     }
@@ -97,8 +95,7 @@ export const useFileStore = defineStore('file', () => {
       await api.delete(`/files/${id}`);
       files.value = files.value.filter((d) => d.id !== id);
     } catch (error: any) {
-      alertStore.error(getErrorMessage(error));
-      throw error;
+      showError(error);
     } finally {
       loading.value = false;
     }

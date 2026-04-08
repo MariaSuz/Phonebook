@@ -5,7 +5,7 @@ import isEqual from 'lodash/isEqual';
 export const auditService = {
   async log(data: CreateAudit) {
     try {
-      let diff: Record<string, any> | null = null;
+      let diff: any | null = null;
       if (data.action === 'UPDATE' && data.oldData && data.newData) {
         diff = {};
         const allKeys = [

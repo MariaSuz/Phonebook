@@ -7,101 +7,81 @@ import {
   deleteItem,
 } from '../models/Department';
 import { Department } from "../types/departmentType";
-import { auditService } from "../services/auditService";
+import { logAction } from "../utils/auditHelper";
+import expressAsyncHandler from 'express-async-handler';
+import { AppError } from "../utils/errorHelper";
 
-export const allDepartments = async (req: Request, res: Response): Promise<void> => {
-  try {
+export const allDepartments = expressAsyncHandler(
+  async (_req: Request, res: Response) => {
     const result = await getAll();
     res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ message: 'Отделы не найдены'});
-  }
-};
+  },
+);
 
-export const createDepartment = async (req: Request<{}, {}, Department>, res: Response): Promise<void> => {
-  try {
+export const createDepartment = expressAsyncHandler(
+  async (req: Request<{}, {}, Department>, res: Response) => {
     const result = await create(req.body);
-    await auditService.log({
-      userId: (req as any).user?.userId,
-      userName: (req as any).user?.userName,
+    await logAction({
+      req,
       action: 'CREATE',
       entityType: 'department',
       entityId: result.id,
       newData: result,
     });
     res.status(201).json(result);
-  } catch (error) {
-    res.status(500).json({ message: 'Отдел не создан'});
-  }
-};
+  },
+);
 
-export const departmentById = async (req: Request<{ id: string }>, res: Response) => {
-  try {
+export const departmentById = expressAsyncHandler(
+  async (req: Request<{ id: string }>, res: Response) => {
     const id = parseInt(req.params.id, 10);
     const result = await getById(id);
     if (!result) {
-      return res.status(404).json({ error: 'Отдел не найден' });
+      throw new AppError('Отдел не найден', 404);
     }
     res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ message: 'Отдел не найден'});
-  }
-};
+  },
+);
 
-export const editDepartment = async (
-  req: Request<{ id: string }, {}, Department>,
-  res: Response,
-) => {
-  try {
+export const editDepartment = expressAsyncHandler(
+  async (req: Request<{ id: string }, {}, Department>, res: Response) => {
     const id = parseInt(req.params.id, 10);
     const oldData = await getById(id);
+    if (!oldData) {
+      throw new AppError('Отдел не найден', 404);
+    }
     const result = await edit({
       id: id,
       name: req.body.name,
       sortOrder: req.body.sortOrder,
     });
-    if (!result) {
-      return res.status(404).json({ error: 'Отдел не найден' });
-    }
-    const hasChanges = JSON.stringify(oldData) !== JSON.stringify(result);
-    if (hasChanges) {
-      await auditService.log({
-        userId: (req as any).user?.userId,
-        userName: (req as any).user?.userName || 'system',
-        action: 'UPDATE',
-        entityType: 'department',
-        entityId: id,
-        oldData: oldData,
-        newData: result,
-      });
-    }
+    await logAction({
+      req,
+      action: 'UPDATE',
+      entityType: 'department',
+      entityId: id,
+      oldData: oldData,
+      newData: result,
+    });
     res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ message: 'Отдел не найден' });
-  }
-};
+  },
+);
 
-export const deleteDepartment = async (req: Request<{ id: string }>, res: Response) => {
-  try {
+export const deleteDepartment = expressAsyncHandler(
+  async (req: Request<{ id: string }>, res: Response) => {
     const id = parseInt(req.params.id, 10);
     const oldData = await getById(id);
-    const result = await deleteItem(id);
-    console.log('DELETE request received for id:', req.params.id);
-    console.log('User:', (req as any).user);
-    if (!result) {
-      return res.status(404).json({ error: 'Отдел не найден' });
+    if (!oldData) {
+      throw new AppError('Отдел не найден', 404);
     }
-    await auditService.log({
-      userId: (req as any).user?.userId,
-      userName: (req as any).user?.userName || 'system',
+    const result = await deleteItem(id);
+    await logAction({
+      req,
       action: 'DELETE',
       entityType: 'department',
       entityId: id,
       oldData: oldData,
     });
-    res.status(205).json(result);
-  } catch (error) {
-    console.error('Delete error:', error);
-    res.status(500).json({ message: 'Отдел не найден' });
-  }
-};
+    res.status(200).json(result);
+  },
+);

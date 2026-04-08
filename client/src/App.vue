@@ -27,7 +27,7 @@ import AlertMessage from './components/widgets/AlertMessage.vue';
   background: #f8f8f8;
 
   &__wrapper {
-    max-width: 1270px;
+    max-width: 1440px;
     margin: 0 auto;
     background: #ffffff;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);

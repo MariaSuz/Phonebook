@@ -7,7 +7,9 @@ import {
   downloadById,
 } from '../models/File';
 import multer from 'multer';
-import { auditService } from "../services/auditService";
+import { logAction } from "../utils/auditHelper";
+import expressAsyncHandler from "express-async-handler";
+import { AppError } from "../utils/errorHelper";
 
 // Храним файл в памяти для последующей записи в БД
 const storage = multer.memoryStorage();
@@ -42,71 +44,68 @@ const upload = multer({
   },
 }).single('document');
 
-export const allFiles = async (req: Request, res: Response): Promise<void> => {
-  try {
+export const allFiles = expressAsyncHandler(
+  async (_req: Request, res: Response) => {
     const result = await getAll();
     res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ message: 'Ошибка при получении списка файлов' });
   }
-};
+);
 
-export const fileById = async (req: Request<{ id: string }>, res: Response) => {
-  try {
+export const fileById = expressAsyncHandler(
+  async (req: Request<{ id: string }>, res: Response) => {
     const result = await getById(req.params.id);
     if (!result) {
-      return res.status(404).json({ error: 'Файл не найден' });
+      throw new AppError('Файл не найден', 404);
     }
     res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ message: 'Ошибка при получении списка файлов' });
   }
-};
+);
 
 
-export const uploadFile = async (
+export const uploadFile = expressAsyncHandler(async (
   req: Request<{ id: string }>,
   res: Response,
 ) => {
-  upload(req, res, async (err) => {
-    if (err) {
-      // Ошибка от multer (неверный тип файла, превышен размер и т.д.)
-      return res.status(400).json({ error: err.message });
-    }
-    if (!req.file) return res.status(400).json({ error: 'Файл не выбран' });
-    try {
-      const result = await create({
-        fileName: req.body.fileName?.trim() || req.file.originalname,
-        fileContent: req.file.buffer,
-        contentType: req.file.mimetype,
-        sizeBytes: req.file.size,
-        description: req.body.description,
-        groupId: req.body.groupId,
-        originalFileName: req.file.originalname,
-      });
-      await auditService.log({
-        userId: (req as any).user?.userId,
-        userName: (req as any).user?.userName,
-        action: 'CREATE',
-        entityType: 'file',
-        entityId: result.id,
-        newData: result,
-      });
-      res.status(201).json(result);
-    } catch (error) {
-      res.status(500).json({ message: 'Ошибка при сохранении файла' });
-    }
+   await new Promise((resolve, reject) => {
+    upload(req, res, (err) => {
+      if (err) {
+        reject(new AppError(err.message, 400)); // 👈 reject, а не res.status
+      } else {
+        resolve(null);
+      }
+    });
   });
-};
-export const downloadFile = async (
+
+  if (!req.file) {
+    throw new AppError('Файл не выбран', 400);
+  }
+  const result = await create({
+    fileName: req.body.fileName?.trim() || req.file.originalname,
+    fileContent: req.file.buffer,
+    contentType: req.file.mimetype,
+    sizeBytes: req.file.size,
+    description: req.body.description,
+    groupId: req.body.groupId,
+    originalFileName: req.file.originalname,
+  });
+
+  await logAction({
+    req,
+    action: 'CREATE',
+    entityType: 'file',
+    entityId: result.id,
+    newData: result,
+  });
+  res.status(201).json(result);
+});
+
+export const downloadFile = expressAsyncHandler(async (
   req: Request<{ id: string }>,
   res: Response,
 ) => {
-  try {
     const file = await downloadById(req.params.id);
-
     if (!file) {
-      return res.status(404).json({ error: 'Файл не найден' });
+      throw new AppError('Файл не найден', 404);
     }
 
     const downloadName = file.originalFileName || file.fileName;
@@ -118,30 +117,24 @@ export const downloadFile = async (
     });
 
     // Отправляем файл как бинарные данные
-    return res.send(file.fileContent);
-  } catch (error) {
-    console.error('Ошибка при скачивании файла:', error);
-    return res.status(500).json({ message: 'Ошибка при скачивании файла' });
+    res.send(file.fileContent);
   }
-};
+);
 
-export const deleteFile = async (req: Request<{ id: string }>, res: Response) => {
-  try {
+export const deleteFile = expressAsyncHandler(
+  async (req: Request<{ id: string }>, res: Response) => {
     const oldData = await getById(req.params.id);
-    const result = await deleteItem(req.params.id);
-    if (!result) {
-      return res.status(404).json({ error: 'Файл не найден' });
+    if (!oldData) {
+      throw new AppError('Файл не найден', 404);
     }
-    await auditService.log({
-      userId: (req as any).user?.userId,
-      userName: (req as any).user?.userName || 'system',
+    const result = await deleteItem(req.params.id);
+    await logAction({
+      req,
       action: 'DELETE',
-      entityType: 'employee',
+      entityType: 'file',
       entityId: req.params.id,
       oldData: oldData,
     });
     res.status(205).json(result);
-  } catch (error) {
-    res.status(500).json({ message: 'Ошибка при удалении файла' });
   }
-};
+);

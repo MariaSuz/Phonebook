@@ -29,42 +29,39 @@
       </div>
       <FileTab v-model:active-tab="activeTab"/>
       <div class="files__content">
-        <div class="files__list">
-          <VList>
-            <VListItem
-              v-for="file in filteredFiles"
-              :key="file.id"
-              class="docs-panel__item"
-            >
-              <VListItemTitle class="files__item-title">
-                {{ file.fileName || 'Без названия' }}
-              </VListItemTitle>
-              <VListItemSubtitle class="files__item-subtitle">
-                <div v-if="file.description" class="files__item-description">
-                  {{ file.description }}
-                </div>
-              </VListItemSubtitle>
-              <template v-slot:append>
-                <div class="files__item-actions">
-                  <VBtn
-                    icon="mdi-download"
-                    variant="text"
-                    size="small"
-                    color="primary"
-                    @click="downloadFile(file)"
-                  />
-                  <VBtn
-                    v-if="authenticationUser"
-                    icon="mdi-delete"
-                    variant="text"
-                    size="small"
-                    color="error"
-                    @click="deleteFile(file)"
-                  />
-                </div>
-              </template>
-            </VListItem>
-          </VList>
+        <div class="files__grid">
+          <div
+            v-for="file in filteredFiles"
+            :key="file.id"
+            class="file-card"
+            @click="downloadFile(file)"
+          >
+            <div class="file-card__preview">
+              <VIcon
+                icon="mdi-file-document"
+                size="32"
+                color="#B22222"
+              />
+              <VBtn
+                v-if="authenticationUser"
+                class="file-card__delete"
+                @click.stop="deleteFile(file)"
+                title="Удалить"
+              >
+                <VIcon icon="mdi-delete" size="16" />
+              </VBtn>
+            </div>
+            <div class="file-card__name" :title="file.fileName">
+              {{ file.fileName }}
+            </div>
+            <div v-if="file.sizeBytes" class="file-card__size">
+              {{ formatSize(file.sizeBytes) }}
+            </div>
+          </div>
+          <div v-if="filteredFiles.length === 0" class="files__empty">
+            <VIcon icon="mdi-file-document-outline" size="48" color="#ccc" />
+            <p>Нет документов</p>
+          </div>
         </div>
       </div>
       <FormModal
@@ -107,7 +104,7 @@ const emit = defineEmits<{
 const filesStore = useFileStore();
 const authStore = useAuthStore();
 const selectedFile = ref<FileFormModel | null>(null)
-const activeTab = ref(2);
+const activeTab = ref(1);
 const modals = reactive({
   add: false,
   delete: false,
@@ -144,13 +141,21 @@ const closeModal = () => {
   selectedFile.value = null;
 };
 
-const authenticationUser = authStore.isAuthenticated;
+const authenticationUser = computed(() => authStore.isAuthenticated);
+
+const formatSize = (bytes?: number) => {
+  if (!bytes) return '';
+  const sizes = ['Б', 'КБ', 'МБ', 'ГБ'];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`;
+};
 
 watch(() => props.modelValue, async (newValue) => {
   if (newValue) {
     await filesStore.getFiles();
   }
 }, { immediate: true });
+
 </script>
 <style scoped lang="scss">
 .files {
@@ -197,6 +202,101 @@ watch(() => props.modelValue, async (newValue) => {
     padding: 24px;
     min-height: 200px;
   }
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 140px));
+    gap: 20px;
+    justify-content: center;
+  }
+
+  &__empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+    p {
+      margin: 16px 0;
+      font-size: 0.9rem;
+    }
+  }
+
+  // Карточка файла
+.file-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+
+    .file-card__preview {
+      background: #f5f0f0;
+      border-color: #C06060;
+    }
+
+    .file-card__delete {
+      opacity: 1;
+    }
+  }
+
+  &__preview {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    background: #fafafa;
+    border: 2px solid #e5e5e5;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    margin-bottom: 8px;
+  }
+
+  &__delete {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 28px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #dc3545;
+    opacity: 0;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    &:hover {
+      background: #dc3545;
+      color: white;
+      transform: scale(1.05);
+    }
+  }
+
+  &__name {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #333;
+    text-align: center;
+    word-break: break-word;
+    max-width: 100%;
+    line-height: 1.3;
+  }
+
+  &__size {
+    font-size: 0.7rem;
+    color: #999;
+    text-align: center;
+    margin-top: 2px;
+  }
+}
 }
 /* Анимация */
 .slide-down-enter-active,

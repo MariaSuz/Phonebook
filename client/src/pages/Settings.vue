@@ -104,7 +104,7 @@ const modal = reactive({
   deleteUser: false,
 });
 
-const isAdmin = authStore.isAdmin;
+const isAdmin = computed(() => authStore.isAdmin);
 
 // Функция для получения названия роли
 const getRoleName = (roleId: number) => {
