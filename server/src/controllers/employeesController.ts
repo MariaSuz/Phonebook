@@ -8,60 +8,52 @@ import {
   departmentUsers,
 } from '../models/Employees';
 import { Employee } from '../types/employeeType'
-import { auditService } from '../services/auditService';
+import { logAction } from '../utils/auditHelper';
+import expressAsyncHandler from 'express-async-handler';
+import { AppError } from '../utils/errorHelper';
 
-export const allEmployees = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
-  try {
+
+export const allEmployees = expressAsyncHandler(
+  async (_req: Request, res: Response) => {
     const result = await getAll();
     res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ message: 'Пользователи не найдены' });
-  }
-};
+  },
+);
 
-export const createEmployee = async (
+export const createEmployee = expressAsyncHandler(async (
   req: Request<{}, {}, Employee>,
   res: Response,
-): Promise<void> => {
-  try {
+) => {
     const result = await create(req.body);
-    await auditService.log({
-      userId: (req as any).user?.userId,
-      userName: (req as any).user?.userName,
+    await logAction({
+      req,
       action: 'CREATE',
       entityType: 'employee',
       entityId: result.id,
       newData: result,
     });
     res.status(201).json(result);
-  } catch (error) {
-    res.status(500).json({ message: 'Пользователь не создан' });
   }
-};
+);
 
-export const employeeById = async (req: Request<{ id: string }>, res: Response) => {
-  try {
+export const employeeById = expressAsyncHandler(
+  async (req: Request<{ id: string }>, res: Response) => {
     const id = parseInt(req.params.id, 10);
     const result = await getById(id);
     if (!result) {
-      return res.status(404).json({ error: 'Пользователь не найден' });
+      throw new AppError('Пользователь не найден', 404);
     }
     res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ message: 'Пользователь не найден' });
-  }
-};
+  },
+);
 
-export const editEmployee = async (
-  req: Request<{ id: string }, {}, Employee>,
-  res: Response,
-) => {
-  try {
+export const editEmployee = expressAsyncHandler(
+  async (req: Request<{ id: string }, {}, Employee>, res: Response) => {
     const id = parseInt(req.params.id, 10);
     const oldData = await getById(id);
+    if (!oldData) {
+      throw new AppError('Пользователь не найден', 404);
+    }
     const result = await edit({
       id: id,
       fullName: req.body.fullName,
@@ -74,63 +66,46 @@ export const editEmployee = async (
       departmentId: req.body.departmentId,
       sortOrder: req.body.sortOrder,
     });
-    if (!result) {
-      return res.status(404).json({ error: 'Пользователь не найден' });
-    }
-    const hasChanges = JSON.stringify(oldData) !== JSON.stringify(result);
-    if (hasChanges) {
-      await auditService.log({
-        userId: (req as any).user?.userId,
-        userName: (req as any).user?.userName || 'system',
-        action: 'UPDATE',
-        entityType: 'employee',
-        entityId: id,
-        oldData: oldData,
-        newData: result,
-      });
-    }
+    await logAction({
+      req,
+      action: 'UPDATE',
+      entityType: 'employee',
+      entityId: id,
+      oldData: oldData,
+      newData: result,
+    });
     res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ message: 'Пользователь не найден' });
-  }
-};
+  },
+);
 
-export const deleteEmployee = async (req: Request<{ id: string }>, res: Response) => {
-  try {
+export const deleteEmployee = expressAsyncHandler(
+  async (req: Request<{ id: string }>, res: Response) => {
     const id = parseInt(req.params.id, 10);
     const oldData = await getById(id);
-    const result = await deleteItem(id);
-    if (!result) {
-      return res.status(404).json({ error: 'Пользователь не найден' });
+    if (!oldData) {
+      throw new AppError('Пользователь не найден', 404);
     }
-    await auditService.log({
-      userId: (req as any).user?.userId,
-      userName: (req as any).user?.userName || 'system',
+    const result = await deleteItem(id);
+    await logAction({
+      req,
       action: 'DELETE',
       entityType: 'employee',
       entityId: id,
       oldData: oldData,
     });
     res.status(205).json(result);
-  } catch (error) {
-    res.status(500).json({ message: 'Пользователь не найден' });
   }
-};
+);
 
-export const getEmployeesByDepartment = async (
+export const getEmployeesByDepartment = expressAsyncHandler(async (
   req: Request<{ departmentId: string }>,
   res: Response,
 ) => {
-  try {
     const departmentId = parseInt(req.params.departmentId, 10);
     const result = await departmentUsers(departmentId);
     if (!result) {
-      return res
-        .status(404)
-        .json({ error: 'Пользователи не найдены в отделе' });
+      throw new AppError('Пользователи не найдены в отделе', 404);
     }
     res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ message: 'Пользователи не найдены в отделе' });
   }
-};
+);

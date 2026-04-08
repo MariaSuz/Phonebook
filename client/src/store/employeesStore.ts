@@ -4,7 +4,7 @@ import type { EmployeeFormModel } from '../logic/types/forms/EmployeeFormModel';
 import type { DepartmentFormModel } from '../logic/types/forms/DepartmentFormModel';
 import { useAlertStore } from './alertStore';
 import { computed, ref } from 'vue';
-import { getErrorMessage } from '@/logic/utils/errorUtils';
+import { getErrorMessage, showError } from '@/logic/utils/errorUtils';
 
 export const useEmployeesStore = defineStore('employee', () => {
 
@@ -35,8 +35,7 @@ export const useEmployeesStore = defineStore('employee', () => {
       employees.value.push(newUser);
       return newUser;
     } catch (error: any) {
-      alertStore.error(getErrorMessage(error));
-      throw error;
+      showError(error);
     } finally {
       loading.value = false;
     }
@@ -53,8 +52,7 @@ export const useEmployeesStore = defineStore('employee', () => {
       }
       return updatedEmployee;
     } catch (error: any) {
-      alertStore.error(getErrorMessage(error));
-      throw error;
+      showError(error);
     } finally {
       loading.value = false;
     }
@@ -66,8 +64,7 @@ export const useEmployeesStore = defineStore('employee', () => {
       await api.delete(`/employees/${id}`);
       employees.value = employees.value.filter((u) => u.id !== id);
     } catch (error: any) {
-      alertStore.error(getErrorMessage(error));
-      throw error;
+      showError(error);
     } finally {
       loading.value = false;
     }

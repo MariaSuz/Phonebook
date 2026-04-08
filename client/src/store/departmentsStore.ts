@@ -3,7 +3,7 @@ import type { DepartmentFormModel } from '../logic/types/forms/DepartmentFormMod
 import { api } from '../api/api';
 import { computed, ref } from 'vue';
 import { useAlertStore } from './alertStore';
-import { getErrorMessage } from '@/logic/utils/errorUtils';
+import { getErrorMessage, showError } from '@/logic/utils/errorUtils';
 
 export const useDepartmentStore = defineStore('departments', () => {
   const departments = ref<DepartmentFormModel[]>([]);
@@ -29,8 +29,7 @@ export const useDepartmentStore = defineStore('departments', () => {
       departments.value.push(newDept);
       return newDept;
     } catch (error: any) {
-      alertStore.error(getErrorMessage(error));
-      throw error;
+      showError(error);
     } finally {
       loading.value = false;
     }
@@ -47,8 +46,7 @@ export const useDepartmentStore = defineStore('departments', () => {
       }
       return updatedDept;
     } catch (error: any) {
-      alertStore.error(getErrorMessage(error));
-      throw error;
+      showError(error);
     } finally {
       loading.value = false;
     }
@@ -60,8 +58,7 @@ export const useDepartmentStore = defineStore('departments', () => {
       await api.delete(`/departments/${id}`);
       departments.value = departments.value.filter((d) => d.id !== id);
     } catch (error: any) {
-      alertStore.error(getErrorMessage(error));
-      throw error;
+      showError(error);
     } finally {
       loading.value = false;
     }

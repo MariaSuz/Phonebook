@@ -4,7 +4,7 @@ import type { AuthFormModel } from '../logic/types/forms/AuthFormModel';
 import router from '@/router';
 import { computed, ref } from 'vue';
 import { useAlertStore } from './alertStore';
-import { getErrorMessage } from '@/logic/utils/errorUtils';
+import { getErrorMessage, showError } from '@/logic/utils/errorUtils';
 
 
 interface AuthResponse {
@@ -48,9 +48,8 @@ export const useAuthStore = defineStore('auth', () => {
 
       return { success: true, data: response.data };
     } catch (error: any) {
-      alertStore.error(getErrorMessage(error));
+      showError(error);
       clearAuth();
-      throw error;
     } finally {
       loading.value = false;
     }
@@ -84,8 +83,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
       return updatedUser;
     } catch (error: any) {
-      alertStore.error(getErrorMessage(error));
-      throw error;
+      showError(error);
     } finally {
       loading.value = false;
     }
@@ -109,8 +107,7 @@ export const useAuthStore = defineStore('auth', () => {
       await api.delete(`/users/${id}`);
       authUsers.value = authUsers.value.filter((u) => u.id !== id);
     } catch (error: any) {
-      alertStore.error(getErrorMessage(error));
-      throw error;
+      showError(error);
     } finally {
       loading.value = false;
     }

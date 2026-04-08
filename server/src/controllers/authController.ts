@@ -10,65 +10,47 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { JWT_SECRET } from "../config/authCongig";
 import { User } from "../types/userType";
+import expressAsyncHandler from "express-async-handler";
+import { AppError } from "../utils/errorHelper";
 
 // Helper функция для проверки пароля
 const validatePassword = async (plainPassword: string, hashedPassword: string): Promise<boolean> => {
   return await bcrypt.compare(plainPassword, hashedPassword);
 };
 
-export const getUsers = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const result = await getAll();
-    res.status(200).json(result);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: 'Не найдены зарегистрированные пользователи' });
+export const getUsers = expressAsyncHandler(
+  async (_req: Request, res: Response): Promise<void> => {
+  const result = await getAll();
+  res.status(200).json(result);
   }
-};
+);
 
-export const editUser = async (
+export const editUser =expressAsyncHandler(async (
   req: Request<{ id: string }, {}, User>,
   res: Response,
 ) => {
-  try {
-    // TODO: Добавить проверку прав (только админ или сам пользователь)
     const result = await edit({
       id: parseInt(req.params.id, 10),
       userName: req.body.userName,
       password: req.body.password,
       roleId: req.body.roleId,
     });
-
     if (!result) {
-      return res
-        .status(404)
-        .json({ error: 'Не найдены зарегистрированные пользователи' });
+      throw new AppError('Не найдены зарегистрированные пользователи', 404);
     }
-
     res.status(200).json(result);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: 'Не найдены зарегистрированные пользователи' });
   }
-};
+);
 
-export const login = async (
-  req: Request<
-    {},
-    {},
-    { userName: string; password: string; }
-  >,
-  res: Response,
-) => {
-  try {
+export const login = expressAsyncHandler(
+  async (
+    req: Request<{}, {}, { userName: string; password: string }>,
+    res: Response,
+  ) => {
     // Проверяем существование пользователя
     const user = await findOne(req.body.userName);
     if (!user) {
-      return res
-        .status(400)
-        .json({ message: 'Неверное имя пользователя или пароль' });
+      throw new AppError('Неверное имя пользователя или пароль', 400);
     }
     // Проверяем пароль
     const isValidPassword = await validatePassword(
@@ -76,9 +58,7 @@ export const login = async (
       user.password,
     );
     if (!isValidPassword) {
-      return res
-        .status(400)
-        .json({ message: 'Неверное имя пользователя или пароль' });
+      throw new AppError('Неверное имя пользователя или пароль', 400);
     }
     //Создаю токен
     const token = jwt.sign(
@@ -88,7 +68,7 @@ export const login = async (
         expiresIn: '24h',
       },
     );
-    return res.json({
+    res.json({
       message: 'Вход выполнен успешно',
       user: {
         id: user.id,
@@ -97,19 +77,15 @@ export const login = async (
       },
       token,
     });
-  } catch (error) {
-    res.status(500).json({ message: 'Вход не выполнен' });
-  }
-};
+  },
+);
 
-export const register = async (req: Request<{}, {}, User>, res: Response) => {
-  try {
+export const register = expressAsyncHandler(
+  async (req: Request<{}, {}, User>, res: Response) => {
     // Проверяю если ли уже пользователь
     const duplicate = await findOne(req.body.userName);
     if (duplicate) {
-      return res
-        .status(400)
-        .json({ message: 'Пользователь с таким именем уже существует' });
+      throw new AppError('Пользователь с таким именем уже существует', 409);
     }
 
     const result = await create({
@@ -125,19 +101,15 @@ export const register = async (req: Request<{}, {}, User>, res: Response) => {
       },
       message: 'Пользователь успешно создан',
     });
-  } catch (error) {
-    res.status(500).json({ message: 'Пользователь не создан' });
   }
-};
+);
 
-export const deleteUser = async (req: Request<{ id: string }>, res: Response) => {
-  try {
+export const deleteUser = expressAsyncHandler(
+  async (req: Request<{ id: string }>, res: Response) => {
     const result = await deleteItem(parseInt(req.params.id));
     if (!result) {
-      return res.status(404).json({ error: 'Пользователь не найден' });
+      throw new AppError('Пользователь не найден', 404);
     }
-    res.status(205).json(result);
-  } catch (error) {
-    res.status(500).json({ message: 'Пользователь не найден' });
+    res.status(200).json(result);
   }
-};
+);

@@ -32,6 +32,41 @@
       <span class="header__docs-title">Документы</span>
     </VBtn>
     <template v-slot:append>
+      <div class="header__contacts">
+        <VBtn
+          class="header__contact-btn"
+          variant="text"
+          href="http://mail.opera-samara.net/"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Электронная почта"
+        >
+          <VIcon icon="mdi-email-outline" size="18" />
+          <span class="header__contact-text">Почта</span>
+        </VBtn>
+        <VBtn
+          class="header__contact-btn"
+          variant="text"
+          href="http://mail.opera-samara.ru/"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Обмен с ЭДО"
+        >
+          <VIcon icon="mdi-email-outline" size="18" />
+          <span class="header__contact-text">ЭДО</span>
+        </VBtn>
+        <VBtn
+          class="header__contact-btn"
+          variant="text"
+          href="https://opera-samara.ru/afisha/"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Официальный сайт"
+        >
+          <VIcon icon="mdi-web" size="18" />
+          <span class="header__contact-text">Сайт</span>
+        </VBtn>
+      </div>
       <LoginWidgets />
     </template>
     <FileWidget v-model="isDocsPanelOpen" />
@@ -68,6 +103,7 @@ const toggleDocsPanel = () => {
     display: flex;
     align-items: center;
     gap: 12px;
+    padding-left: 80px;
   }
   .logo-image {
     width: 40px;
@@ -79,6 +115,31 @@ const toggleDocsPanel = () => {
     font-size: 1.25rem;
     font-weight: 500;
     white-space: nowrap;
+  }
+
+  &__docs-btn {
+    margin-left: 5px;
+  }
+
+  &__contacts {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    color: #722F37;
+    padding-right: 5px;
+  }
+
+  &__contact-btn {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    background: transparent !important;
+    padding: 6px 12px;
+    border-radius: 8px;
+  }
+  &__contact-text {
+    font-size: 0.85rem;
+    font-weight: 500;
   }
 }
 </style>

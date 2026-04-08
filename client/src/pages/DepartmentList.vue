@@ -48,7 +48,7 @@
                 <span v-html="highlightText(item.position) || '—'"></span>
               </template>
               <template v-slot:item.fullName="{ item }">
-                <span class="text-nowrap" v-html="highlightText(item.fullName) || '—'"></span>
+                <span v-html="highlightText(item.fullName) || '—'"></span>
               </template>
               <template v-slot:item.internalPhone="{ item }">
                 <span v-html="highlightText(item.internalPhone) || '—'"></span>
@@ -156,7 +156,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useEmployeesStore } from '@/store/employeesStore';
 import { useDepartmentStore } from '@/store/departmentsStore';
 import FormModal from '@/components/modals/FormModal.vue';
@@ -193,7 +193,7 @@ const search = computed(() => props.searchValue ?? '');
 const department = computed(() =>
   departmentStore.list.find(dep => dep.id === +props.departmentId)
 );
-const authenticationUser = authStore.isAuthenticated;
+const authenticationUser = computed(() => authStore.isAuthenticated);
 const users = computed(() => {
   return (userStore.list || []).filter(user => user.departmentId == +props.departmentId);
 })
@@ -202,19 +202,19 @@ const users = computed(() => {
 
 const selectedEmployee = ref<null | EmployeeFormModel>(null);
 const headers = computed(() => [
-  { key: 'cabinet', title: '№ кабинета' },
-  { key: 'position', title: 'Должность' },
-  { key: 'fullName', title: 'ФИО' },
-  { key: 'internalPhone', title: 'Внутренний номер' },
-  { key: 'cityPhone', title: 'Городской номер' },
-  { key: 'mobilePhone', title: 'Сотовый номер' },
-  { key: 'email', title: 'Почта' },
+  { key: 'cabinet', title: '№ кабинета', width: '80px' },
+  { key: 'position', title: 'Должность', width: '180px' },
+  { key: 'fullName', title: 'Ф.И.О', width: '340px' },
+  { key: 'internalPhone', title: 'Внутренний номер', width: '100px' },
+  { key: 'cityPhone', title: 'Городской номер', width: '200px' },
+  { key: 'mobilePhone', title: 'Сотовый номер', width: '200px' },
+  { key: 'email', title: 'Почта', width: '200px' },
   {
     title: 'Действия',
     key: 'actions',
     sortable: false,
     align: 'end',
-    width: '120px'
+    width: '100px'
   }
 ]);
 
@@ -276,8 +276,11 @@ const highlightText = (text: string | number) => {
 
 <style lang="scss">
 .departments {
-  .text-nowrap {
-    white-space: nowrap !important;
+  th {
+    background: transparent !important;
+    color: #722F37 !important;
+    font-weight: 600 !important;
+    border-bottom: 2px solid #C06060 !important;
   }
   &-table-header {
     display: flex;
