@@ -7,9 +7,9 @@ import {
   deleteItem,
 } from '../models/Department';
 import { Department } from "../types/departmentType";
-import { logAction } from "../utils/auditHelper";
 import expressAsyncHandler from 'express-async-handler';
-import { AppError } from "../utils/errorHelper";
+import { checkEntityExistence } from '../utils/entiryExists';
+import { withCreateLog, withDeleteLog, withUpdateLog } from "../utils/auditHelper";
 
 export const allDepartments = expressAsyncHandler(
   async (_req: Request, res: Response) => {
@@ -20,14 +20,11 @@ export const allDepartments = expressAsyncHandler(
 
 export const createDepartment = expressAsyncHandler(
   async (req: Request<{}, {}, Department>, res: Response) => {
-    const result = await create(req.body);
-    await logAction({
+    const result = await withCreateLog(
       req,
-      action: 'CREATE',
-      entityType: 'department',
-      entityId: result.id,
-      newData: result,
-    });
+      'department',
+      () => create(req.body),
+    );
     res.status(201).json(result);
   },
 );
@@ -35,10 +32,7 @@ export const createDepartment = expressAsyncHandler(
 export const departmentById = expressAsyncHandler(
   async (req: Request<{ id: string }>, res: Response) => {
     const id = parseInt(req.params.id, 10);
-    const result = await getById(id);
-    if (!result) {
-      throw new AppError('Отдел не найден', 404);
-    }
+    const result = await checkEntityExistence(id, getById, 'Отдел');
     res.status(200).json(result);
   },
 );
@@ -46,23 +40,18 @@ export const departmentById = expressAsyncHandler(
 export const editDepartment = expressAsyncHandler(
   async (req: Request<{ id: string }, {}, Department>, res: Response) => {
     const id = parseInt(req.params.id, 10);
-    const oldData = await getById(id);
-    if (!oldData) {
-      throw new AppError('Отдел не найден', 404);
-    }
-    const result = await edit({
+    const oldData = await checkEntityExistence(id, getById, 'Отдел');
+    const result = await withUpdateLog (
+      req,
+      'department',
+      id,
+      () => edit({
       id: id,
       name: req.body.name,
       sortOrder: req.body.sortOrder,
-    });
-    await logAction({
-      req,
-      action: 'UPDATE',
-      entityType: 'department',
-      entityId: id,
-      oldData: oldData,
-      newData: result,
-    });
+      }),
+      oldData,
+    );
     res.status(200).json(result);
   },
 );
@@ -70,18 +59,14 @@ export const editDepartment = expressAsyncHandler(
 export const deleteDepartment = expressAsyncHandler(
   async (req: Request<{ id: string }>, res: Response) => {
     const id = parseInt(req.params.id, 10);
-    const oldData = await getById(id);
-    if (!oldData) {
-      throw new AppError('Отдел не найден', 404);
-    }
-    const result = await deleteItem(id);
-    await logAction({
+    const oldData = await checkEntityExistence(id, getById, 'Отдел');
+    const result = await withDeleteLog(
       req,
-      action: 'DELETE',
-      entityType: 'department',
-      entityId: id,
-      oldData: oldData,
-    });
+      'department',
+      id,
+      () => deleteItem(id),
+      oldData,
+    );
     res.status(200).json(result);
   },
 );

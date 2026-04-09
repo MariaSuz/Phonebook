@@ -21,7 +21,7 @@ const getUserFromReq = (
   };
 };
 
-export const logAction = async (params: AuditLogParams): Promise<void> => {
+const logAction = async (params: AuditLogParams): Promise<void> => {
   const {
     req,
     action,
@@ -44,4 +44,52 @@ export const logAction = async (params: AuditLogParams): Promise<void> => {
   };
 
   await auditService.log(auditData);
+};
+
+const withLogging = async <T>(
+  req: Request,
+  action: 'CREATE' | 'UPDATE' | 'DELETE',
+  entityType: 'employee' | 'department' | 'file',
+  entityId: number | string,
+  operation: () => Promise<T>,
+  oldData?: any,
+): Promise<T> => {
+  const result = await operation();
+  await logAction({
+    req,
+    action,
+    entityType,
+    entityId,
+    oldData,
+    newData: result,
+  });
+  return result;
+};
+
+export const withCreateLog = <T>(
+  req: Request,
+  entityType: 'employee' | 'department' | 'file',
+  operation: () => Promise<T>,
+): Promise<T> => {
+  return withLogging(req, 'CREATE', entityType, 0, operation);
+};
+
+export const withUpdateLog = <T>(
+  req: Request,
+  entityType: 'employee' | 'department' | 'file',
+  entityId: number | string,
+  operation: () => Promise<T>,
+  oldData: any,
+): Promise<T> => {
+  return withLogging(req, 'UPDATE', entityType, entityId, operation, oldData);
+};
+
+export const withDeleteLog = <T>(
+  req: Request,
+  entityType: 'employee' | 'department' | 'file',
+  entityId: number | string,
+  operation: () => Promise<T>,
+  oldData: any,
+): Promise<T> => {
+  return withLogging(req, 'DELETE', entityType, entityId, operation, oldData);
 };

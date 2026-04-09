@@ -7,9 +7,9 @@ import {
   downloadById,
 } from '../models/File';
 import multer from 'multer';
-import { logAction } from "../utils/auditHelper";
 import expressAsyncHandler from "express-async-handler";
 import { AppError } from "../utils/errorHelper";
+import { withCreateLog, withDeleteLog } from "../utils/auditHelper";
 
 // Храним файл в памяти для последующей записи в БД
 const storage = multer.memoryStorage();
@@ -69,7 +69,7 @@ export const uploadFile = expressAsyncHandler(async (
    await new Promise((resolve, reject) => {
     upload(req, res, (err) => {
       if (err) {
-        reject(new AppError(err.message, 400)); // 👈 reject, а не res.status
+        reject(new AppError(err.message, 400));
       } else {
         resolve(null);
       }
@@ -79,23 +79,20 @@ export const uploadFile = expressAsyncHandler(async (
   if (!req.file) {
     throw new AppError('Файл не выбран', 400);
   }
-  const result = await create({
-    fileName: req.body.fileName?.trim() || req.file.originalname,
-    fileContent: req.file.buffer,
-    contentType: req.file.mimetype,
-    sizeBytes: req.file.size,
-    description: req.body.description,
-    groupId: req.body.groupId,
-    originalFileName: req.file.originalname,
-  });
-
-  await logAction({
+  const file = req.file;
+  const result = await withCreateLog(
     req,
-    action: 'CREATE',
-    entityType: 'file',
-    entityId: result.id,
-    newData: result,
-  });
+    'file',
+    () => create({
+      fileName: req.body.fileName?.trim() || file.originalname,
+      fileContent: file.buffer,
+      contentType: file.mimetype,
+      sizeBytes: file.size,
+      description: req.body.description,
+      groupId: req.body.groupId,
+      originalFileName: file.originalname,
+    })
+  );
   res.status(201).json(result);
 });
 
@@ -127,14 +124,13 @@ export const deleteFile = expressAsyncHandler(
     if (!oldData) {
       throw new AppError('Файл не найден', 404);
     }
-    const result = await deleteItem(req.params.id);
-    await logAction({
+    const result = await withDeleteLog(
       req,
-      action: 'DELETE',
-      entityType: 'file',
-      entityId: req.params.id,
-      oldData: oldData,
-    });
-    res.status(205).json(result);
+      'file',
+      req.params.id,
+      () => deleteItem(req.params.id),
+      oldData,
+    );
+    res.status(200).json(result);
   }
 );
