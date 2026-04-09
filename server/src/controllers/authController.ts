@@ -25,7 +25,7 @@ export const getUsers = expressAsyncHandler(
   }
 );
 
-export const editUser =expressAsyncHandler(async (
+export const editUser = expressAsyncHandler(async (
   req: Request<{ id: string }, {}, User>,
   res: Response,
 ) => {

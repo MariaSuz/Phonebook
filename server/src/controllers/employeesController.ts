@@ -8,9 +8,10 @@ import {
   departmentUsers,
 } from '../models/Employees';
 import { Employee } from '../types/employeeType'
-import { logAction } from '../utils/auditHelper';
+import { withCreateLog, withDeleteLog, withUpdateLog } from '../utils/auditHelper';
 import expressAsyncHandler from 'express-async-handler';
 import { AppError } from '../utils/errorHelper';
+import { checkEntityExistence } from '../utils/entiryExists';
 
 
 export const allEmployees = expressAsyncHandler(
@@ -24,14 +25,7 @@ export const createEmployee = expressAsyncHandler(async (
   req: Request<{}, {}, Employee>,
   res: Response,
 ) => {
-    const result = await create(req.body);
-    await logAction({
-      req,
-      action: 'CREATE',
-      entityType: 'employee',
-      entityId: result.id,
-      newData: result,
-    });
+    const result = await withCreateLog(req, 'employee', () => create(req.body));
     res.status(201).json(result);
   }
 );
@@ -39,10 +33,7 @@ export const createEmployee = expressAsyncHandler(async (
 export const employeeById = expressAsyncHandler(
   async (req: Request<{ id: string }>, res: Response) => {
     const id = parseInt(req.params.id, 10);
-    const result = await getById(id);
-    if (!result) {
-      throw new AppError('Пользователь не найден', 404);
-    }
+    const result = await checkEntityExistence(id, getById, 'Пользователь');
     res.status(200).json(result);
   },
 );
@@ -50,30 +41,14 @@ export const employeeById = expressAsyncHandler(
 export const editEmployee = expressAsyncHandler(
   async (req: Request<{ id: string }, {}, Employee>, res: Response) => {
     const id = parseInt(req.params.id, 10);
-    const oldData = await getById(id);
-    if (!oldData) {
-      throw new AppError('Пользователь не найден', 404);
-    }
-    const result = await edit({
-      id: id,
-      fullName: req.body.fullName,
-      position: req.body.position,
-      cabinet: req.body.cabinet,
-      internalPhone: req.body.internalPhone,
-      cityPhone: req.body.cityPhone,
-      mobilePhone: req.body.mobilePhone,
-      email: req.body.email,
-      departmentId: req.body.departmentId,
-      sortOrder: req.body.sortOrder,
-    });
-    await logAction({
+    const oldData = await checkEntityExistence(id, getById, 'Пользователь');
+    const result = await withUpdateLog(
       req,
-      action: 'UPDATE',
-      entityType: 'employee',
-      entityId: id,
-      oldData: oldData,
-      newData: result,
-    });
+      'employee',
+      id,
+      () => edit({ id, ...req.body }),
+      oldData,
+    );
     res.status(200).json(result);
   },
 );
@@ -81,18 +56,14 @@ export const editEmployee = expressAsyncHandler(
 export const deleteEmployee = expressAsyncHandler(
   async (req: Request<{ id: string }>, res: Response) => {
     const id = parseInt(req.params.id, 10);
-    const oldData = await getById(id);
-    if (!oldData) {
-      throw new AppError('Пользователь не найден', 404);
-    }
-    const result = await deleteItem(id);
-    await logAction({
+    const oldData = await checkEntityExistence(id, getById, 'Пользователь');
+    const result = await withDeleteLog(
       req,
-      action: 'DELETE',
-      entityType: 'employee',
-      entityId: id,
-      oldData: oldData,
-    });
+      'employee',
+      id,
+      () => deleteItem(id),
+      oldData
+    );
     res.status(205).json(result);
   }
 );
