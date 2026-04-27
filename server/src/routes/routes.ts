@@ -45,46 +45,52 @@ const router = Router();
 
 // Маршруты для отделов
 router.get("/departments", allDepartments);
-router.post('/departments', departmentValidator, validate, authenticateToken, createDepartment);
+router.post(
+  '/departments',
+  authenticateToken,
+  departmentValidator,
+  validate,
+  createDepartment,
+);
 router.get('/departments/:id', validateId, validate, departmentById);
 router.put(
   '/departments/:id',
+  authenticateToken,
   validateId,
   departmentValidator,
   validate,
-  authenticateToken,
   editDepartment,
 );
 router.delete(
   '/departments/:id',
+  authenticateToken,
   validateId,
   validate,
-  authenticateToken,
   deleteDepartment,
 );
 // Маршруты для пользователей справочника
 router.get('/employees', allEmployees);
 router.post(
   '/employees',
+  authenticateToken,
   employeeValidator,
   validate,
-  authenticateToken,
   createEmployee,
 );
 router.get('/employees/:id', validateId, validate, employeeById);
 router.put(
   '/employees/:id',
+  authenticateToken,
   validateId,
   employeeValidator,
   validate,
-  authenticateToken,
   editEmployee,
 );
 router.delete(
   '/employees/:id',
+  authenticateToken,
   validateId,
   validate,
-  authenticateToken,
   deleteEmployee,
 );
 //Все пользователи в определенном отделе

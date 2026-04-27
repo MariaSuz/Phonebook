@@ -1,14 +1,22 @@
 {
   "compilerOptions": {
-    "module": "nodenext",
-    "target": "esnext",
-    "rootDir": "./src",
-    "sourceMap": true,
+    //более строгий убираем для продакшена
+    // "module": "nodenext",
+    "module": "commonjs",
+    "target": "es2022",
+    "rootDir": "./",
+    //отключаем от продакшена
+    "sourceMap": false,
     "outDir": "./dist",
     "removeComments": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "resolveJsonModule": true,
   },
   "include": ["**/*.ts"],
   "exclude": ["node_modules", "dist"]

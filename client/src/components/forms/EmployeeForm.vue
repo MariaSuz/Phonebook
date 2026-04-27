@@ -22,9 +22,6 @@
       placeholder="Например: Главный бухгалтер"
       icon="mdi-badge-account"
       :readonly="disabled"
-      :error-messages="v.position.$errors.map((e: any) => e.$message)"
-      :error="v.position.$error"
-      @blur="v.position.$touch"
     />
     <TextField
       v-model="employee.fullName"
@@ -52,9 +49,6 @@
       placeholder="Например: 340-00-00"
       icon="mdi-phone-classic"
       :readonly="disabled"
-      :error-messages="v.cityPhone.$errors.map((e: any) => e.$message)"
-      :error="v.cityPhone.$error"
-      @blur="v.cityPhone.$touch"
     />
     <TextField
       v-model="employee.mobilePhone"
@@ -126,6 +120,7 @@ interface employeeProps {
   data?: EmployeeFormModel;
   formType: FormTypes;
   id?: number;
+  departmentId?: number;
 }
 
 const props = defineProps<employeeProps>();
@@ -138,7 +133,7 @@ const createEmployee = (): EmployeeFormModel => ({
   cityPhone: '',
   mobilePhone: '',
   email: '',
-  departmentId: undefined,
+  departmentId: props.departmentId,
   sortOrder: 999,
 });
 const employee = ref<EmployeeFormModel>(props.data ? { ...props.data } : createEmployee());

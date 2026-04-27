@@ -16,7 +16,7 @@
           alt="logo-company"
           class="logo-image"
         />
-        <VAppBarTitle class="logo-title">ШОСТАКОВИЧ опера балет</VAppBarTitle>
+        <VAppBarTitle class="logo-title">Компания</VAppBarTitle>
       </div>
     </RouterLink>
     <VBtn
@@ -36,7 +36,7 @@
         <VBtn
           class="header__contact-btn"
           variant="text"
-          href="http://mail.opera-samara.net/"
+          href="#"
           target="_blank"
           rel="noopener noreferrer"
           title="Электронная почта"
@@ -47,18 +47,7 @@
         <VBtn
           class="header__contact-btn"
           variant="text"
-          href="http://mail.opera-samara.ru/"
-          target="_blank"
-          rel="noopener noreferrer"
-          title="Обмен с ЭДО"
-        >
-          <VIcon icon="mdi-email-outline" size="18" />
-          <span class="header__contact-text">ЭДО</span>
-        </VBtn>
-        <VBtn
-          class="header__contact-btn"
-          variant="text"
-          href="https://opera-samara.ru/afisha/"
+          href="#"
           target="_blank"
           rel="noopener noreferrer"
           title="Официальный сайт"

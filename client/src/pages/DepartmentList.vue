@@ -36,7 +36,7 @@
             <VDataTable
               :key="department?.id"
               :headers="headers"
-              :items="users"
+              :items="employees"
               hide-default-footer
               :search="search"
               class="departments__table"
@@ -123,6 +123,7 @@
       v-model="modals.addEmployee"
       :form-component="EmployeeForm"
       :form-type="FormTypes.ADD"
+      :department-id="department?.id"
       @cancel="closeModal"
     />
     <FormModal
@@ -130,6 +131,7 @@
       :form-component="EmployeeForm"
       :data="selectedEmployee"
       :id="selectedEmployee?.id"
+      :department-id="department?.id"
       :form-type="FormTypes.EDIT"
       @cancel="closeModal"
     />
@@ -152,6 +154,10 @@
       @confirm="confirmDeleteEmployee"
       @cancel="closeModal"
     />
+    <WarningModal
+      v-model="modals.warningDialog"
+      message="В отделе находятся сотрудники. Пожалуйста, сначала удалите всех сотрудников, а затем повторите попытку."
+     />
   </VCard>
 </template>
 
@@ -169,6 +175,7 @@ import { useAuthStore } from '@/store/authStore';
 import { reactive } from 'vue';
 import ComfirmDelete from '@/components/modals/ComfirmDelete.vue';
 import ButtonComponent from '@/components/ButtonComponent.vue';
+import WarningModal from '@/components/modals/WarningModal.vue';
 
 const props = defineProps<{
   departmentId: number;
@@ -176,7 +183,7 @@ const props = defineProps<{
   modelValue?: boolean;
 }>();
 
-const userStore = useEmployeesStore();
+const employeesStore = useEmployeesStore();
 const departmentStore = useDepartmentStore();
 const authStore = useAuthStore();
 
@@ -187,6 +194,7 @@ const modals = reactive({
   editDepartment: false,
   deleteDepartment: false,
   deleteEmployee: false,
+  warningDialog: false,
 });
 
 const search = computed(() => props.searchValue ?? '');
@@ -194,8 +202,8 @@ const department = computed(() =>
   departmentStore.list.find(dep => dep.id === +props.departmentId)
 );
 const authenticationUser = computed(() => authStore.isAuthenticated);
-const users = computed(() => {
-  return (userStore.list || []).filter(user => user.departmentId == +props.departmentId);
+const employees = computed(() => {
+  return (employeesStore.list || []).filter(user => user.departmentId == +props.departmentId);
 })
 
 // const isEmpty = computed(() => users.value.length === 0);
@@ -238,18 +246,24 @@ const removeEmployee = (user: EmployeeFormModel) => {
   selectedEmployee.value = user;
 };
 const confirmDeleteEmployee = () => {
-  userStore.deleteEmployee(selectedEmployee?.value?.id!);
+  employeesStore.deleteEmployee(selectedEmployee?.value?.id!);
 };
 const deleteDepartment = () => {
   modals.deleteDepartment = true;
 };
 const confirmDeleteDepartment = async () => {
-  try {
-    await departmentStore.deleteDepartment(department.value?.id!);
+  const hasEmployees = employees.value.length > 0;
+  if (hasEmployees) {
     modals.deleteDepartment = false;
-    router.push('/');
-  } catch (error) {
-    console.error('Ошибка при удалении отдела:', error);
+    modals.warningDialog = true;
+  } else {
+    try {
+      await departmentStore.deleteDepartment(department.value?.id!);
+      modals.deleteDepartment = false;
+      router.push('/');
+    } catch (error) {
+      console.error('Ошибка при удалении отдела:', error);
+    }
   }
 };
 

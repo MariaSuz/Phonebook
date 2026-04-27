@@ -23,24 +23,24 @@ export const employeeRules = {
       (value: string) => !value || /^\d+$/.test(value),
     ),
   },
-  position: {
-    validFormat: helpers.withMessage(
-      'Должность может содержать только буквы и пробелы',
-      (value: string) => !value || /^[a-zA-Zа-яА-Я\s-]+$/.test(value),
-    ),
-  },
+  // position: {
+  //   validFormat: helpers.withMessage(
+  //     'Должность может содержать только буквы и пробелы',
+  //     (value: string) => !value || /^[a-zA-Zа-яА-Я\s-]+$/.test(value),
+  //   ),
+  // },
   internalPhone: {
     validFormat: helpers.withMessage(
       'Внутренний номер может содержать только цифры',
       (value: string) => !value || /^\d+$/.test(value),
     ),
   },
-  cityPhone: {
-    validFormat: helpers.withMessage(
-      'Некорректный формат городского номера',
-      (value: string) => !value || /^[\d\s-()+]+$/.test(value),
-    ),
-  },
+  // cityPhone: {
+  //   validFormat: helpers.withMessage(
+  //     'Некорректный формат городского номера',
+  //     (value: string) => !value || /^[\d\s-()+]+$/.test(value),
+  //   ),
+  // },
   mobilePhone: {
     validFormat: helpers.withMessage(
       'Некорректный формат мобильного номера',

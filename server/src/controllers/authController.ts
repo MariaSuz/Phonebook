@@ -8,7 +8,7 @@ import {
 } from '../models/Users';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import { JWT_SECRET } from "../config/authCongig";
+import { JWT_SECRET } from "../config/authConfig";
 import { User } from "../types/userType";
 import expressAsyncHandler from "express-async-handler";
 import { AppError } from "../utils/errorHelper";
@@ -21,7 +21,11 @@ const validatePassword = async (plainPassword: string, hashedPassword: string): 
 export const getUsers = expressAsyncHandler(
   async (_req: Request, res: Response): Promise<void> => {
   const result = await getAll();
-  res.status(200).json(result);
+  const requestWithoutPasswords = result.map(user => {
+    const { password, ...usersWithoutPassword } = user;
+    return usersWithoutPassword;
+  })
+  res.status(200).json(requestWithoutPasswords);
   }
 );
 
@@ -29,8 +33,9 @@ export const editUser = expressAsyncHandler(async (
   req: Request<{ id: string }, {}, User>,
   res: Response,
 ) => {
+    const id = parseInt(req.params.id, 10);
     const result = await edit({
-      id: parseInt(req.params.id, 10),
+      id: id,
       userName: req.body.userName,
       password: req.body.password,
       roleId: req.body.roleId,

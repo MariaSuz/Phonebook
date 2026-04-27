@@ -2,6 +2,8 @@ import pool from '../config/db';
 import camelcaseKeys from 'camelcase-keys';
 import bcrypt from 'bcrypt';
 import { User } from '../types/userType';
+import { checkFieldExistences } from '../utils/entiryExists';
+import { AppError } from '../utils/errorHelper';
 
 export const getAll = async () => {
   const { rows: users } = await pool.query(`SELECT * FROM users`);
@@ -24,6 +26,10 @@ export const create = async ({
 
   const salt = await bcrypt.genSalt();
   const hashedPassword = bcrypt.hashSync(password, salt);
+  const nameExists = await checkFieldExistences('users', ' user_name', userName);
+  if (nameExists) {
+    throw new AppError(`Пользователь с таким именем "${userName}" уже существует`, 409);
+  }
 
   const { rows: users } = await pool.query(
     `INSERT INTO users(user_name, password, role_id)
@@ -40,6 +46,10 @@ export const edit = async ({
   password,
   roleId,
 }: User) => {
+  const nameExists = await checkFieldExistences('users', ' user_name', userName, id);
+  if (nameExists) {
+    throw new AppError(`Пользователь с таким именем "${userName}" уже существует`, 409);
+  }
   if (password) {
     const salt = await bcrypt.genSalt();
     const hashedPassword = bcrypt.hashSync(password, salt);

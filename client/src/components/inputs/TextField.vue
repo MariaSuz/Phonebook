@@ -42,9 +42,9 @@ defineEmits<{
 .text-field {
   .v-field {
     border-radius: 12px;
-    background: #ffffff;
-    transition: all 0.2s ease;
-    border: 1px solid #E5C7C7;
+  }
+  .v-field__outline {
+    color: #C06060 !important;
   }
 }
 </style>
