@@ -8,6 +8,7 @@
         :is="formComponent"
         :data="data"
         :id="id"
+        :department-id="departmentId"
         :form-type="formType"
         @cancel="closeModalEmit"
       />
@@ -26,6 +27,7 @@ interface ModalProps {
   formComponent: Component;
   formType: FormType;
   id?: number;
+  departmentId?: number;
 }
 
 const props = defineProps<ModalProps>();

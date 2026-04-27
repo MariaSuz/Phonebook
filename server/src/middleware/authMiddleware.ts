@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { JWT_SECRET } from '../config/authCongig';
+import { JWT_SECRET } from '../config/authConfig';
 
 export interface AuthRequest extends Request {
   user?: {

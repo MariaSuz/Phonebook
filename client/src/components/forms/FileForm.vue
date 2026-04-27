@@ -72,7 +72,7 @@ const emit = defineEmits(['cancel']);
 
 const groupOptions = [
   { title: 'Техническое обслуживание', value: 1 },
-  { title: 'Нормативно-Правовые документы', value: 2 },
+  { title: 'Нормативно-правовые документы', value: 2 },
   { title: 'Методические рекомендации по Противодествию коррупции', value: 3 },
 ];
 

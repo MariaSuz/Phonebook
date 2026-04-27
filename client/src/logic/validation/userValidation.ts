@@ -1,4 +1,20 @@
+import { useAuthStore } from '@/store/authStore';
 import { helpers, required, minLength } from '@vuelidate/validators';
+import { computed } from 'vue';
+
+const uniqueName = (value: string, siblings: any) => {
+  if (!value) return true;
+  const store = useAuthStore();
+  const currentId = siblings?.id;
+  const userstList = computed(() => store.list);
+  if (currentId) {
+    return !userstList.value.some(
+      (u) => u.id !== currentId && u.userName === value,
+    );
+  } else {
+    return !userstList.value.some((u) => u.userName === value);
+  }
+};
 
 export const userRules = {
   userName: {
@@ -14,6 +30,10 @@ export const userRules = {
     noSpaces: helpers.withMessage(
       'Логин не может содержать пробелы',
       (value: string) => !value || !/\s/.test(value),
+    ),
+    unique: helpers.withMessage(
+      'Такой пользователь уже существует',
+      uniqueName,
     ),
   },
   password: {

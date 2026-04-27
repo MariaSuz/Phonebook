@@ -1,3 +1,5 @@
 /build
 /node_modules
 .env
+index.ts
+/src/config/authConfig.ts

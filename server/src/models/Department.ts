@@ -1,6 +1,8 @@
 import pool from '../config/db';
 import camelcaseKeys from 'camelcase-keys';
 import { Department, DepartmentCreateInput, DepartmentUpdateInput } from '../types/departmentType';
+import { checkFieldExistences } from '../utils/entiryExists';
+import { AppError } from '../utils/errorHelper';
 
 export const getAll = async (): Promise<Department[]> => {
   const { rows: departments } = await pool.query(
@@ -14,6 +16,10 @@ export const create = async ({
   name,
   sortOrder = 999,
 }: DepartmentCreateInput): Promise<Department> => {
+  const nameExists = await checkFieldExistences('departments', 'name', name);
+  if (nameExists) {
+    throw new AppError(`Отдел с таким наименованием "${name}" уже существует`, 409);
+  }
   const { rows: departments } = await pool.query(
     `INSERT INTO departments(name, sort_order)
     VALUES($1, $2)
@@ -36,6 +42,10 @@ export const edit = async ({
   sortOrder,
   id,
 }: DepartmentUpdateInput & { id: number }): Promise<Department | null> => {
+  const nameExists = await checkFieldExistences('departments', 'name', name, id);
+  if (nameExists) {
+    throw new AppError(`Отдел с таким наименованием "${name}" уже существует`, 409);
+  }
   const { rows: departments } = await pool.query(
     `UPDATE departments
     SET name = $1, sort_order =$2
@@ -47,6 +57,13 @@ export const edit = async ({
 };
 
 export const deleteItem = async (id: number): Promise<Department | null> => {
+  const { rows: employees } = await pool.query(
+    `SELECT id FROM employees WHERE department_id = $1 LIMIT 1`,
+    [id],
+  );
+  if (employees.length > 0) {
+    throw new AppError(`Невозможно удалить отдел: к нему привязаны сотрудники`, 409);
+  };
   const { rows: departments } = await pool.query(
     `DELETE FROM departments
     WHERE id = $1

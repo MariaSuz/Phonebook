@@ -92,7 +92,7 @@ const confirmDelete = () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 14px;
+    padding: 24px 32px 20px;
   }
 
   &__close {

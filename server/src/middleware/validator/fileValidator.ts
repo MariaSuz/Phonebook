@@ -1,7 +1,6 @@
 import { body } from 'express-validator';
 
 export const fileValidator = [
-  // \\TODO сделать валидацию
   body('name')
     .notEmpty()
     .withMessage('Поле обязательно')
