@@ -2,6 +2,7 @@
   <VNavigationDrawer
     v-model="isSidebarOpen"
     class="sidebar"
+    width="400"
     temporary
   >
     <div class="sidebar__header">
@@ -15,9 +16,16 @@
         @click="addDepartment"
         buttonType="save"
       />
+      <div class="sidebar__search">
+        <SearchInput
+          v-model="searchValue"
+          label="Поиск отдела"
+          clearable
+        />
+      </div>
       <VList class="sidebar__list">
         <VListItem
-          v-for="department in departments"
+          v-for="department in filterDepartments"
           :key="department.id"
           :title="department.name"
           :value="department.name"
@@ -54,6 +62,7 @@ import DepartmentForm from '@/components/forms/DepartmentForm.vue';
 import { FormTypes } from '@/logic/types/FormTypes';
 import { useAuthStore } from '@/store/authStore';
 import ButtonComponent from '@/components/ButtonComponent.vue';
+import SearchInput from '@/components/inputs/SearchInput.vue';
 
 const departmentStore = useDepartmentStore();
 const sidebarStore = useSidebarStore();
@@ -62,6 +71,7 @@ const authStore = useAuthStore();
 const departments = computed(() => departmentStore.list);
 const router = useRouter();
 const isShowModalAddDepartment = ref(false);
+const searchValue = ref('');
 
 const isSidebarOpen = computed({
   get: () => sidebarStore.isSidebarOpen,
@@ -86,6 +96,14 @@ const goToDepartment = (id) => {
   }
   )
 };
+
+const filterDepartments = computed(() => {
+  if (!searchValue.value) return departments.value;
+  const searchTerm = searchValue.value.toLowerCase().trim();
+  return departments.value.filter(department =>
+    department.name.toLowerCase().includes(searchTerm)
+  );
+});
 onMounted(async () => {
   await departmentStore.getDepartments();
   await userStore.getEmployees();
@@ -115,6 +133,9 @@ const addDepartment = () => {
       margin: 0;
       letter-spacing: 0.3px;
     }
+  }
+  &__search {
+    margin-top: 16px;
   }
   &__content {
   display: flex;
