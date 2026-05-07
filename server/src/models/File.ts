@@ -3,9 +3,16 @@ import camelcaseKeys from 'camelcase-keys';
 import { File } from '../types/fileType';
 
 export const getAll = async () => {
-  const { rows: files } = await pool.query(
-    'SELECT * FROM files',
-  );
+  const { rows: files } = await pool.query(`SELECT
+      id,
+      file_name,
+      original_file_name,
+      content_type,
+      size_bytes,
+      description,
+      group_id
+    FROM files
+    ORDER BY file_name DESC`);
   return camelcaseKeys(files);
 };
 

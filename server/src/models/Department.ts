@@ -6,7 +6,11 @@ import { AppError } from '../utils/errorHelper';
 
 export const getAll = async (): Promise<Department[]> => {
   const { rows: departments } = await pool.query(
-    `SELECT * FROM departments
+    `SELECT
+      id,
+      name,
+      sort_order
+      FROM departments
      ORDER BY sort_order ASC, name ASC`,
   );
   return camelcaseKeys(departments);

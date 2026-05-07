@@ -3,8 +3,8 @@ import DepartmentsList from '@/pages/DepartmentList.vue';
 import PhoneBookList from '@/pages/PhoneBookList.vue';
 import Login from '@/pages/Login.vue';
 import Settings from '@/pages/Settings.vue';
-import { useAuthStore } from '@/store/authStore';
 import AuditLog from '@/pages/AuditLog.vue';
+import { isTokenExpired } from '@/logic/utils/tokenUtils';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -45,10 +45,11 @@ const router = createRouter({
 
 
 router.beforeEach((to, from, next) => {
-  const store = useAuthStore();
-  if (to.meta.requiresAuth && !store.isAuthenticated) {
+  const token = localStorage.getItem('token');
+  const isValid = token && !isTokenExpired(token);
+  if (to.meta.requiresAuth && !isValid) {
     next({ name: 'login', query: { redirect: to.fullPath } });
-  } else if (to.name === 'login' && store.isAuthenticated) {
+  } else if (to.name === 'login' && isValid) {
     next({ name: 'main' });
   } else {
     next();

@@ -4,7 +4,18 @@ import { Employee } from '../types/employeeType';
 
 export const getAll = async () => {
   const { rows: employees } = await pool.query(
-    `SELECT * FROM employees
+    `SELECT
+      id,
+      full_name,
+      position,
+      cabinet,
+      internal_phone,
+      city_phone,
+      mobile_phone,
+      email,
+      department_id,
+      sort_order
+      FROM employees
      ORDER BY sort_order ASC`,
   );
   console.log('Raw rows:', employees);
@@ -106,7 +117,18 @@ export const deleteItem = async (id: number) => {
 
 export const departmentUsers = async (departmentId: number) => {
   const { rows: employees } = await pool.query(
-    `SELECT * FROM employees
+    `SELECT
+      id,
+      full_name,
+      position,
+      cabinet,
+      internal_phone,
+      city_phone,
+      mobile_phone,
+      email,
+      department_id,
+      sort_order
+    FROM employees
     WHERE department_id = $1
     ORDER BY sort_order, full_name`,
     [departmentId],

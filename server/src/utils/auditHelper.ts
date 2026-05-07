@@ -55,15 +55,28 @@ const withLogging = async <T>(
   oldData?: any,
 ): Promise<T> => {
   const result = await operation();
+
+  let newDataForAudit: any = result;
+  if (entityType === 'file') {
+    newDataForAudit = {
+      id: (result as any).id,
+      fileName: (result as any).fileName,
+      originalFileName: (result as any).originalFileName,
+      contentType: (result as any).contentType,
+      sizeBytes: (result as any).sizeBytes,
+      description: (result as any).description,
+      groupId: (result as any).groupId,
+    };
+  }
   await logAction({
     req,
     action,
     entityType,
     entityId,
     oldData,
-    newData: result,
+    newData: newDataForAudit,
   });
-  return result;
+  return newDataForAudit;
 };
 
 export const withCreateLog = <T>(

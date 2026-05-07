@@ -5,6 +5,7 @@ import router from '@/router';
 import { computed, ref } from 'vue';
 import { useAlertStore } from './alertStore';
 import { getErrorMessage, showError } from '@/logic/utils/errorUtils';
+import { isTokenExpired } from '@/logic/utils/tokenUtils';
 
 
 interface AuthResponse {
@@ -48,8 +49,11 @@ export const useAuthStore = defineStore('auth', () => {
 
       return { success: true, data: response.data };
     } catch (error: any) {
-      showError(error);
+      const errorMessage = getErrorMessage(error);
+      const alertStore = useAlertStore();
+      alertStore.error(errorMessage);
       clearAuth();
+      return { success: false, error: errorMessage };
     } finally {
       loading.value = false;
     }
@@ -70,6 +74,14 @@ export const useAuthStore = defineStore('auth', () => {
   function logout() {
     clearAuth();
     router.push('/');
+  }
+
+  function checkToken():boolean {
+    if(token && isTokenExpired(token.value)) {
+      clearAuth();
+      return false;
+    }
+    return !!token.value;
   }
 
   async function updateAuthUser(id: number, data: AuthFormModel) {
@@ -125,5 +137,6 @@ export const useAuthStore = defineStore('auth', () => {
     updateAuthUser,
     getAuthUsers,
     deleteAuthUser,
+    checkToken,
   };
 });
