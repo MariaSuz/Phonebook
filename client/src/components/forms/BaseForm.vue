@@ -21,6 +21,7 @@
             v-if="formType !== FormTypes.SHOW"
             title="Сохранить"
             type="submit"
+            :disabled="isLoading"
             buttonType="save"
           />
         </div>
@@ -38,10 +39,12 @@ interface BaseFormProps {
   title: string;
   formType: FormTypes;
   layout?: 'grid' | 'flex';
+  isLoading?: boolean;
 }
 
 const props = withDefaults(defineProps<BaseFormProps>(), {
-  layout: 'flex'
+  layout: 'flex',
+  isLoading: false,
 });
 
 const contentClass = computed(() => ({
@@ -51,10 +54,14 @@ const contentClass = computed(() => ({
 
 const emit = defineEmits(['cancel', 'submit']);
 const cancelAction = () => {
-  emit('cancel');
+  if (!props.isLoading) {
+    emit('cancel');
+  }
 };
 const onSubmitForm = () => {
-  emit('submit');
+  if (!props.isLoading) {
+    emit('submit');
+  }
 };
 </script>
 

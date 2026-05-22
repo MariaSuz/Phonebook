@@ -204,9 +204,12 @@ watch(() => props.modelValue, async (newValue) => {
   }
   &__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 140px));
+    grid-template-columns: repeat(auto-fit, minmax(120px, 140px));
     gap: 20px;
     justify-content: center;
+    justify-items: center;
+    margin: 0 auto;
+    width: 100%;
   }
 
   &__empty {
@@ -220,11 +223,11 @@ watch(() => props.modelValue, async (newValue) => {
     }
   }
 
-  // Карточка файла
 .file-card {
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 130px;
   cursor: pointer;
   transition: all 0.2s ease;
 

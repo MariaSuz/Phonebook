@@ -18,7 +18,6 @@ export const getAll = async () => {
       FROM employees
      ORDER BY sort_order ASC`,
   );
-  console.log('Raw rows:', employees);
   return camelcaseKeys(employees);
 };
 

@@ -9,17 +9,31 @@
         />
       </div>
       <div
+        v-if="isLoading"
+        class="phone-book-loader"
+      >
+        <VProgressCircular
+          indeterminate color="#722F37"
+          size="64"
+         />
+        <p class="phone-book-loader-text">Загрузка данных...</p>
+      </div>
+      <div
         v-for="department in departmentsWithUsers"
         :key="department.id"
         class="phone-book-content"
-       >
-          <DepartmentList
-            :department-id="department.id"
-            :search-value="searchValue"
-          />
+      >
+        <DepartmentList
+          :department-id="department.id"
+          :search-value="searchValue"
+        />
       </div>
-      <div v-if="!departmentsWithUsers.length" class="phone-book-not-found">
-        {{ searchValue ? 'Сотрудники не найдены' : 'Нет доступных отделов с сотрудниками' }}
+
+      <div
+        v-if="!departmentsWithUsers.length && searchValue"
+        class="phone-book-not-found"
+      >
+        {{ 'Сотрудники не найдены' }}
       </div>
     </div>
   </VCard>
@@ -34,22 +48,23 @@ import { useEmployeesStore } from '@/store/employeesStore';
 
 const searchValue = ref('');
 const departmentStore = useDepartmentStore();
-const userStore = useEmployeesStore();
+const employeesStore = useEmployeesStore();
+const isLoading = computed(() => employeesStore.loading);
 
 const departmentsWithUsers = computed(() => {
   return departmentStore.list.filter(department => {
-    const users = userStore.employeesByDepartment.get(department.id) || [];
-    if (!users.length) return false;
-    if (searchValue.value.trim()) {
+    const employees = employeesStore.filterEmployeesByDepartment(department.id) || [];
+    if (!employees.length) return false;
+    if (searchValue.value && searchValue.value.trim()) {
       const searchTerm = searchValue.value.toLowerCase().trim();
-      return users.some(user =>
-        user.cabinet?.toLowerCase().includes(searchTerm) ||
-        user.fullName?.toLowerCase().includes(searchTerm) ||
-        user.position?.toLowerCase().includes(searchTerm) ||
-        user.email?.toLowerCase().includes(searchTerm) ||
-        user.cityPhone?.toLowerCase().includes(searchTerm) ||
-        user.mobilePhone?.toLowerCase().includes(searchTerm) ||
-        user.internalPhone?.toLowerCase().includes(searchTerm)
+      return employees.some(employee =>
+        employee.cabinet?.toLowerCase().includes(searchTerm) ||
+        employee.fullName?.toLowerCase().includes(searchTerm) ||
+        employee.position?.toLowerCase().includes(searchTerm) ||
+        employee.email?.toLowerCase().includes(searchTerm) ||
+        employee.cityPhone?.toLowerCase().includes(searchTerm) ||
+        employee.mobilePhone?.toLowerCase().includes(searchTerm) ||
+        employee.internalPhone?.toLowerCase().includes(searchTerm)
       );
     }
     return true;
@@ -58,7 +73,7 @@ const departmentsWithUsers = computed(() => {
 
 onMounted(async () => {
   await departmentStore.getDepartments();
-  await userStore.allDepartmentsEmployees(departmentStore.list);
+  await employeesStore.getEmployees();
 });
 </script>
 
@@ -66,6 +81,20 @@ onMounted(async () => {
 .phone-book {
   &-search {
     padding: 20px 20px 16px;
+  }
+  &-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    gap: 16px;
+  }
+
+  &-loader-text {
+    font-size: 1rem;
+    color: #722F37;
+    font-weight: 500;
   }
   &-not-found {
     width: 100%;

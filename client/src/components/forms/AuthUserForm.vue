@@ -2,6 +2,7 @@
   <BaseForm
     :title="formTitle"
     :form-type="formType"
+    :is-loading="isLoading"
     @cancel="emit('cancel')"
     @submit="onSubmitForm"
   >
@@ -10,6 +11,8 @@
       label="Имя пользователя"
       placeholder="Введите логин"
       icon="mdi-account"
+      :disabled="isLoading"
+      :readonly="disabled"
       :error-messages="v.userName.$errors.map((e: any) => e.$message)"
       :error="v.userName.$error"
       @blur="v.userName.$touch"
@@ -19,6 +22,8 @@
       label="Пароль пользователя"
       type="password"
       icon="mdi-lock"
+      :disabled="isLoading"
+      :readonly="disabled"
       :error-messages="v.password.$errors.map((e: any) => e.$message)"
       :error="v.password.$error"
       @blur="v.password.$touch"
@@ -29,6 +34,8 @@
       :items="roleOptions"
       item-title="title"
       item-value="value"
+      :disabled="isLoading"
+      :readonly="disabled"
       icon="mdi-shield-account"
     />
   </BaseForm>
@@ -71,6 +78,8 @@ const createAuthUser = (): AuthFormModel => ({
 });
 const user = ref<AuthFormModel>(props.data ? { ...props.data } : createAuthUser());
 const v = useVuelidate(userRules, user);
+const disabled = computed(() => props.formType === FormTypes.SHOW);
+const isLoading = ref(false);
 
 const formTitle = computed(() => {
    switch (props.formType) {
@@ -86,11 +95,13 @@ const formTitle = computed(() => {
 const emit = defineEmits(['cancel']);
 
 const onSubmitForm = async () => {
+  if (isLoading.value) return;
   const isValid = await v.value.$validate();
   if (!isValid) {
     v.value.$touch();
     return;
   }
+  isLoading.value = true;
   try {
     if (props.formType === FormTypes.EDIT) {
       await store.updateAuthUser(props.id!, user.value);
@@ -101,6 +112,8 @@ const onSubmitForm = async () => {
     emit('cancel');
   } catch (error) {
     console.error('Ошибка при сохранении:', error);
+  } finally {
+    isLoading.value = false;
   }
 };
 </script>

@@ -122,9 +122,16 @@ const toggleDocsPanel = () => {
     display: flex;
     gap: 6px;
     align-items: center;
-    background: transparent !important;
     padding: 6px 12px;
     border-radius: 8px;
+    background: linear-gradient(135deg, #722F37, #B22222);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(178, 34, 34, 0.3);
+    &:hover {
+      background: linear-gradient(135deg, #B22222, #722F37);
+      box-shadow: 0 6px 16px rgba(178, 34, 34, 0.4);
+    }
   }
   &__contact-text {
     font-size: 0.85rem;
