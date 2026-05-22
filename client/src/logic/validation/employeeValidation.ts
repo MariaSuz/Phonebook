@@ -9,8 +9,8 @@ export const employeeRules = {
   fullName: {
     required: helpers.withMessage('Имя обязателено для заполнения', required),
     validFormat: helpers.withMessage(
-      'Имя может содержать только буквы',
-      (value: string) => !value || /^[a-zA-Zа-яА-Я\s-]+$/.test(value),
+      'Имя может содержать только буквы и цифры',
+      (value: string) => !value || /^[a-zA-Zа-яА-ЯёЁ0-9\s-]+$/.test(value),
     ),
     minLength: helpers.withMessage(
       'Имя должно содержать минимум 2 символа',
@@ -19,28 +19,32 @@ export const employeeRules = {
   },
   cabinet: {
     validFormat: helpers.withMessage(
-      'Номер кабинета может содержать только цифры',
-      (value: string) => !value || /^\d+$/.test(value),
+      'Номер кабинета может содержать только цифры и буквы',
+      (value: string) => !value || /^[a-zA-Zа-яА-ЯёЁ0-9]+$/.test(value),
     ),
   },
-  // position: {
-  //   validFormat: helpers.withMessage(
-  //     'Должность может содержать только буквы и пробелы',
-  //     (value: string) => !value || /^[a-zA-Zа-яА-Я\s-]+$/.test(value),
-  //   ),
-  // },
+  position: {
+    validFormat: helpers.withMessage(
+      'Должность может содержать только буквы, пробелы и знаки .,:',
+      (value: string) => !value || /^[a-zA-Zа-яА-Я\s.,:-]+$/.test(value),
+    ),
+  },
   internalPhone: {
     validFormat: helpers.withMessage(
-      'Внутренний номер может содержать только цифры',
-      (value: string) => !value || /^\d+$/.test(value),
+      'Внутренний номер может содержать только цифры, "," и пробел',
+      (value: string) => {
+        if (!value) return true;
+        if (/^[\s,]+$/.test(value)) return false;
+        return /^[\d, ]+$/.test(value);
+      },
     ),
   },
-  // cityPhone: {
-  //   validFormat: helpers.withMessage(
-  //     'Некорректный формат городского номера',
-  //     (value: string) => !value || /^[\d\s-()+]+$/.test(value),
-  //   ),
-  // },
+  cityPhone: {
+    validFormat: helpers.withMessage(
+      'Некорректный формат городского номера',
+      (value: string) => !value || /^[\d\s\-()+,]+$/.test(value),
+    ),
+  },
   mobilePhone: {
     validFormat: helpers.withMessage(
       'Некорректный формат мобильного номера',

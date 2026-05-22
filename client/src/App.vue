@@ -17,6 +17,18 @@
 import AppSidebar from '@/layouts/AppSidebar.vue';
 import AppHeader from '@/layouts/AppHeader.vue';
 import AlertMessage from './components/widgets/AlertMessage.vue';
+import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/store/authStore';
+
+const authStore = useAuthStore();
+const router = useRouter();
+onMounted(() => {
+  const isValid = authStore.checkToken();
+  if (!isValid && router.currentRoute.value.meta.requiresAuth) {
+    router.push('/login');
+  }
+});
 </script>
 
 <style lang="scss">

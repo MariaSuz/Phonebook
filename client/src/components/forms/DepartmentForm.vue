@@ -2,6 +2,7 @@
   <BaseForm
     :title="formTitle"
     :form-type="formType"
+    :is-loading="isLoading"
     @cancel="emit('cancel')"
     @submit="onSubmitForm"
   >
@@ -11,6 +12,7 @@
       placeholder="Например: Бухгалтерия"
       icon="mdi-office-building"
       :readonly="disabled"
+      :disabled="isLoading"
       :error-messages="v.name.$errors.map((e: any) => e.$message)"
       :error="v.name.$error"
       @blur="v.name.$touch"
@@ -21,6 +23,7 @@
       placeholder="999"
       icon="mdi-sort-numeric-ascending"
       :readonly="disabled"
+      :disabled="isLoading"
       :error-messages="v.sortOrder.$errors.map((e: any) => e.$message)"
       :error="v.sortOrder.$error"
       @blur="v.sortOrder.$touch"
@@ -56,6 +59,7 @@ const department = ref<DepartmentFormModel>(props.data ? { ...props.data } : cre
 const v = useVuelidate(departmentRules, department);
 const emit = defineEmits(['cancel']);
 const disabled = computed(() => props.formType === FormTypes.SHOW);
+const isLoading = ref(false);
 
 const formTitle = computed(() => {
    switch (props.formType) {
@@ -69,6 +73,7 @@ const formTitle = computed(() => {
 });
 
 const onSubmitForm = async () => {
+  if (isLoading.value) return;
   alertStore.clear();
   const isValid = await v.value.$validate();
   if (!isValid) {
@@ -76,6 +81,7 @@ const onSubmitForm = async () => {
     v.value.$touch();
     return;
   }
+  isLoading.value = true;
   try {
     if (props.formType === FormTypes.EDIT) {
       await store.updateDepartment(department.value.id, department.value);
@@ -85,6 +91,8 @@ const onSubmitForm = async () => {
     emit('cancel');
   } catch (error) {
     console.error('Ошибка при добавлении:', error);
+  } finally {
+    isLoading.value = false;
   }
 };
 </script>

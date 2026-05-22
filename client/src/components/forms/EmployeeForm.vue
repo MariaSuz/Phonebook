@@ -2,6 +2,7 @@
   <BaseForm
     :title="formTitle"
     :form-type="formType"
+    :is-loading="isLoading"
     layout="grid"
     @cancel="emit('cancel')"
     @submit="onSubmitForm"
@@ -11,6 +12,7 @@
       label="№ кабинета"
       placeholder="Например: 101"
       icon="mdi-door"
+      :disabled="isLoading"
       :readonly="disabled"
       :error-messages="v.cabinet.$errors.map((e: any) => e.$message)"
       :error="v.cabinet.$error"
@@ -22,6 +24,7 @@
       placeholder="Например: Главный бухгалтер"
       icon="mdi-badge-account"
       :readonly="disabled"
+      :disabled="isLoading"
     />
     <TextField
       v-model="employee.fullName"
@@ -29,6 +32,7 @@
       placeholder="Например: Иванов Иван Иванович"
       icon="mdi-account"
       :readonly="disabled"
+      :disabled="isLoading"
       :error-messages="v.fullName.$errors.map((e: any) => e.$message)"
       :error="v.fullName.$error"
       @blur="v.fullName.$touch"
@@ -39,6 +43,7 @@
       placeholder="Например: 101"
       icon="mdi-phone"
       :readonly="disabled"
+      :disabled="isLoading"
       :error-messages="v.internalPhone.$errors.map((e: any) => e.$message)"
       :error="v.internalPhone.$error"
       @blur="v.internalPhone.$touch"
@@ -49,6 +54,7 @@
       placeholder="Например: 340-00-00"
       icon="mdi-phone-classic"
       :readonly="disabled"
+      :disabled="isLoading"
     />
     <TextField
       v-model="employee.mobilePhone"
@@ -57,6 +63,7 @@
       placeholder="Например: 8 927 000 00 00"
       icon="mdi-cellphone"
       :readonly="disabled"
+      :disabled="isLoading"
       :error-messages="v.mobilePhone.$errors.map((e: any) => e.$message)"
       :error="v.mobilePhone.$error"
       @blur="v.mobilePhone.$touch"
@@ -68,6 +75,7 @@
       placeholder="Например: ivanov.ii@opera-samara.net"
       icon="mdi-email"
       :readonly="disabled"
+      :disabled="isLoading"
       :error-messages="v.email.$errors.map((e: any) => e.$message)"
       :error="v.email.$error"
       @blur="v.email.$touch"
@@ -80,6 +88,7 @@
       item-value="id"
       placeholder="Выберите подразделение"
       :readonly="disabled"
+      :disabled="isLoading"
       icon="mdi-office-building"
       :error-messages="v.departmentId.$errors.map((e: any) => e.$message)"
       :error="v.departmentId.$error"
@@ -92,6 +101,7 @@
       placeholder="999"
       icon="mdi-sort-numeric-ascending"
       :readonly="disabled"
+      :disabled="isLoading"
       :error-messages="v.sortOrder.$errors.map((e: any) => e.$message)"
       :error="v.sortOrder.$error"
       @blur="v.sortOrder.$touch"
@@ -139,6 +149,7 @@ const createEmployee = (): EmployeeFormModel => ({
 const employee = ref<EmployeeFormModel>(props.data ? { ...props.data } : createEmployee());
 const v = useVuelidate(employeeRules, employee);
 const disabled = computed(() => props.formType === FormTypes.SHOW);
+const isLoading = ref(false);
 
 const formTitle = computed(() => {
    switch (props.formType) {
@@ -154,6 +165,7 @@ const formTitle = computed(() => {
 const emit = defineEmits(['cancel']);
 
 const onSubmitForm = async () => {
+  if (isLoading.value) return;
   alertStore.clear();
   const isValid = await v.value.$validate();
   if (!isValid) {
@@ -161,6 +173,7 @@ const onSubmitForm = async () => {
     v.value.$touch();
     return;
   }
+  isLoading.value = true;
   try {
     if (props.formType === FormTypes.EDIT) {
       await store.updateEmployee(props.id, employee.value);
@@ -170,6 +183,8 @@ const onSubmitForm = async () => {
     emit('cancel');
   } catch (error) {
     console.error('Ошибка при сохранении:', error);
+  } finally {
+    isLoading.value = false;
   }
 };
 </script>

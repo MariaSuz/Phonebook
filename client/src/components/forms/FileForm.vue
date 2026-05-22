@@ -2,6 +2,7 @@
   <BaseForm
     :title="formTitle"
     :form-type="formType"
+    :is-loading="isLoading"
     @cancel="emit('cancel')"
     @submit="onSubmitForm"
   >
@@ -10,12 +11,16 @@
       label="Имя файла"
       placeholder="Например: Правила безопасности"
       icon="mdi-office-building"
+      :disabled="isLoading"
+      :readonly="disabled"
     />
     <VFileInput
       v-model="file.fileContent"
       :label="file.fileContent ? 'Файл выбран' : 'Выберите файл'"
       accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
       :multiple="false"
+      :disabled="isLoading"
+      :readonly="disabled"
       :error-messages="v.fileContent.$errors.map((e: any) => e.$message)"
       :error="v.fileContent.$error"
       @blur="v.fileContent.$touch"
@@ -25,6 +30,8 @@
       v-model="file.description"
       label="Описание (необязательно)"
       icon="mdi-sort-numeric-ascending"
+      :disabled="isLoading"
+      :readonly="disabled"
     />
     <Select
       v-model="file.groupId"
@@ -33,6 +40,8 @@
       item-title="title"
       item-value="value"
       placeholder="Выберите подразделение"
+      :disabled="isLoading"
+      :readonly="disabled"
       :error-messages="v.groupId.$errors.map((e: any) => e.$message)"
       :error="v.groupId.$error"
       @blur="v.groupId.$touch"
@@ -69,6 +78,8 @@ const createfile = (): FileUploadModel => ({
 const file = ref<FileUploadModel>(createfile());
 const v = useVuelidate(fileRules, file);
 const emit = defineEmits(['cancel']);
+const isLoading = ref(false);
+const disabled = computed(() => props.formType === FormTypes.SHOW);
 
 const groupOptions = [
   { title: 'Техническое обслуживание', value: 1 },
@@ -86,6 +97,7 @@ const formTitle = computed(() => {
 });
 
 const onSubmitForm = async () => {
+  if (isLoading.value) return;
   alertStore.clear();
   const isValid = await v.value.$validate();
   if (!isValid) {
@@ -93,6 +105,7 @@ const onSubmitForm = async () => {
     v.value.$touch();
     return;
   }
+  isLoading.value = true;
   try {
     if (props.formType === FormTypes.ADD) {
       await store.uploadFile({
@@ -105,6 +118,8 @@ const onSubmitForm = async () => {
     }
   } catch (error) {
     console.error('Ошибка при добавлении:', error);
+  } finally {
+    isLoading.value = false;
   }
 };
 </script>

@@ -1,116 +1,99 @@
 <template>
-  <VCard>
-    <div class="departments">
-      <div class="departments-content">
-        <div class="departments-department">
-          <div class="departments-table">
-            <div class="departments-table-header">
-              <div class="departments-table-header-left">
-                <span class="departments-header-department">
-                  {{ department?.name || 'Отдел не найден' }}</span
-                >
-                <VIcon
-                  v-if="authenticationUser"
-                  color="white"
-                  icon="mdi-pencil"
-                  size="small"
-                  @click="editDepartment"
-                  class="departments-edit-icon"
-                ></VIcon>
-                <VIcon
-                  v-if="authenticationUser"
-                  color="white"
-                  icon="mdi-delete"
-                  size="small"
-                  @click="deleteDepartment"
-                  class="departments-edit-icon"
-                ></VIcon>
-              </div>
-              <ButtonComponent
-                v-if="authenticationUser"
-                prepend-icon="mdi-plus"
-                title="Добавить сотрудника"
-                @click="addUser"
-              />
-            </div>
-            <VDataTable
-              :key="department?.id"
-              :headers="headers"
-              :items="employees"
-              hide-default-footer
-              :search="search"
-              class="departments__table"
-            >
-              <template v-slot:item.cabinet="{ item }">
-                <span v-html="highlightText(item.cabinet) || '—'"></span>
-              </template>
-              <template v-slot:item.position="{ item }">
-                <span v-html="highlightText(item.position) || '—'"></span>
-              </template>
-              <template v-slot:item.fullName="{ item }">
-                <span v-html="highlightText(item.fullName) || '—'"></span>
-              </template>
-              <template v-slot:item.internalPhone="{ item }">
-                <span v-html="highlightText(item.internalPhone) || '—'"></span>
-              </template>
-              <template v-slot:item.cityPhone="{ item }">
-                <span v-html="highlightText(item.cityPhone) || '—'"></span>
-              </template>
-              <template v-slot:item.mobilePhone="{ item }">
-                <span v-html="highlightText(item.mobilePhone) || '—'"></span>
-              </template>
-              <template v-slot:item.email="{ item }">
-                <span v-html="highlightText(item.email) || '—'"></span>
-              </template>
-
-              <template v-slot:item.actions="{ item }">
-                <div class="d-flex ga-2 justify-end">
-                  <VIcon
-                    color="medium-emphasis"
-                    icon="mdi-eye"
-                    size="small"
-                    @click="show(item)"
-                    style="cursor: pointer;"
-                  ></VIcon>
-                  <VIcon
-                    v-if="authenticationUser"
-                    color="medium-emphasis"
-                    icon="mdi-pencil"
-                    size="small"
-                    @click="edit(item)"
-                    style="cursor: pointer;"
-                  ></VIcon>
-
-                  <VIcon
-                    v-if="authenticationUser"
-                    color="medium-emphasis"
-                    icon="mdi-delete"
-                    size="small"
-                    @click="removeEmployee(item)"
-                    style="cursor: pointer;"
-                  ></VIcon>
-                </div>
-              </template>
-              <template v-slot:no-data>
-                <div class="departments-empty">
-                <ButtonComponent
-                  v-if="authenticationUser"
-                  prepend-icon="mdi-plus"
-                  title="Добавить первого сотрудника"
-                  @click="addUser"
-                  buttonType="save"
-                  class="btn-first"
-                />
-                  <span  v-if="!authenticationUser">
-                    Сотрудники отсутствуют
-                </span>
-                </div>
-              </template>
-            </VDataTable>
-          </div>
-        </div>
+  <VCard class="departments">
+    <div class="departments-table-header">
+      <div class="departments-table-header-left">
+        <span class="departments-header-department">
+          {{ department?.name || 'Отдел не найден' }}</span
+        >
+        <VIcon
+          v-if="authenticationUser"
+          color="white"
+          icon="mdi-pencil"
+          size="small"
+          @click="editDepartment"
+          class="departments-edit-icon"
+        ></VIcon>
+        <VIcon
+          v-if="authenticationUser"
+          color="white"
+          icon="mdi-delete"
+          size="small"
+          @click="deleteDepartment"
+          class="departments-edit-icon"
+        ></VIcon>
       </div>
+      <ButtonComponent
+        v-if="authenticationUser"
+        prepend-icon="mdi-plus"
+        title="Добавить сотрудника"
+        @click="addUser"
+      />
     </div>
+
+    <VDataTable
+      :key="department?.id"
+      :headers="headers"
+      :loading="isLoading"
+      :items="employees"
+      hide-default-footer
+      :items-per-page="-1"
+      :search="search"
+      class="departments__table"
+    >
+      <template
+        v-for="field in highlightableFields"
+        :key="field"
+        v-slot:[`item.${field}`]="{ item }"
+      >
+        <span v-html="highlightText(item[field]) || '—'"></span>
+      </template>
+      <template v-slot:item.actions="{ item }">
+        <div class="d-flex ga-2 justify-end">
+          <VIcon
+            color="medium-emphasis"
+            icon="mdi-eye"
+            size="small"
+            @click="show(item)"
+            style="cursor: pointer;"
+          ></VIcon>
+          <VIcon
+            v-if="authenticationUser"
+            color="medium-emphasis"
+            icon="mdi-pencil"
+            size="small"
+            @click="edit(item)"
+            style="cursor: pointer;"
+          ></VIcon>
+          <VIcon
+            v-if="authenticationUser"
+            color="medium-emphasis"
+            icon="mdi-delete"
+            size="small"
+            @click="removeEmployee(item)"
+            style="cursor: pointer;"
+          ></VIcon>
+        </div>
+      </template>
+      <template v-slot:no-data>
+        <div class="departments-empty">
+        <ButtonComponent
+          v-if="authenticationUser"
+          prepend-icon="mdi-plus"
+          title="Добавить первого сотрудника"
+          @click="addUser"
+          buttonType="save"
+          class="btn-first"
+        />
+          <span
+            v-if="!authenticationUser"
+            class="departments-empty-title"
+          >
+            Сотрудники отсутсвуют
+        </span>
+        </div>
+      </template>
+    </VDataTable>
+
     <FormModal
       v-model="modals.showEmployee"
       :form-component="EmployeeForm"
@@ -162,7 +145,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useEmployeesStore } from '@/store/employeesStore';
 import { useDepartmentStore } from '@/store/departmentsStore';
 import FormModal from '@/components/modals/FormModal.vue';
@@ -205,6 +188,12 @@ const authenticationUser = computed(() => authStore.isAuthenticated);
 const employees = computed(() => {
   return (employeesStore.list || []).filter(user => user.departmentId == +props.departmentId);
 })
+const isLoading = computed(() => departmentStore.loading || employeesStore.loading);
+
+const highlightableFields = computed(() => [
+  'cabinet', 'position', 'fullName', 'internalPhone',
+  'cityPhone', 'mobilePhone', 'email'
+]);
 
 // const isEmpty = computed(() => users.value.length === 0);
 
@@ -310,6 +299,14 @@ const highlightText = (text: string | number) => {
       gap: 10px;
       align-items: center;
     }
+  }
+
+  &-empty-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: #722F37;
+    margin: 16px;
   }
 
   &-header-department {

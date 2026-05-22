@@ -11,9 +11,13 @@ export const useEmployeesStore = defineStore('employee', () => {
   const employees = ref<EmployeeFormModel[]>([]);
   const employeesByDepartment = ref<Map<number, EmployeeFormModel[]>>(new Map());
   const loading = ref(false);
+  const allLoading = ref(false);
   const alertStore = useAlertStore();
 
   const list = computed(() => employees.value);
+  function filterEmployeesByDepartment(departmentId: number) {
+    return employees.value.filter((emp) => emp.departmentId === departmentId);
+  }
 
   async function getEmployees() {
     loading.value = true;
@@ -71,7 +75,6 @@ export const useEmployeesStore = defineStore('employee', () => {
   }
 
   async function getEmployeesByDepartment(id: number) {
-    loading.value = true;
     try {
       const response = await api.get(`/employees/department/${id}`);
       const users = response.data;
@@ -79,13 +82,11 @@ export const useEmployeesStore = defineStore('employee', () => {
       return users;
     } catch (error: any) {
       alertStore.error(getErrorMessage(error));
-    } finally {
-      loading.value = false;
     }
   }
 
   async function allDepartmentsEmployees(departments: DepartmentFormModel[]) {
-    loading.value = true;
+    allLoading.value = true;
     try {
       const promises = departments.map((dept) =>
         getEmployeesByDepartment(dept.id),
@@ -94,7 +95,7 @@ export const useEmployeesStore = defineStore('employee', () => {
     } catch (error: any) {
       alertStore.error(getErrorMessage(error));
     } finally {
-      loading.value = false;
+      allLoading.value = false;
     }
   }
 
@@ -108,5 +109,8 @@ export const useEmployeesStore = defineStore('employee', () => {
     deleteEmployee,
     getEmployeesByDepartment,
     allDepartmentsEmployees,
+    loading,
+    allLoading,
+    filterEmployeesByDepartment,
   };
 });

@@ -71,5 +71,6 @@ export const useDepartmentStore = defineStore('departments', () => {
     createDepartment,
     updateDepartment,
     deleteDepartment,
+    loading,
   };
 });
