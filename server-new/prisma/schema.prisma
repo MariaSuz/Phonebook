@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model auditLog {
+  id          Int       @id @default(autoincrement())
+  timestamp   DateTime? @default(now()) @db.Timestamptz(6)
+  userId     Int? @map("user_id")
+  userName   String?   @db.VarChar(255) @map("user_name")
+  action      String?   @db.VarChar(50)
+  entityType String?   @db.VarChar(50) @map("entity_type")
+  entityId   Int? @map("entity_id")
+  oldData    Json? @map("old_data")
+  newData    Json? @map("new_data")
+  diff        Json?
+  users       users?    @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  @@map("audit_log")
+}
+
+model departments {
+  id         Int         @id @default(autoincrement())
+  name       String      @unique @db.VarChar(255)
+  sortOrder Int         @default(999)  @map("sort_order")
+  employees  employees[]
+}
+
+model employees {
+  id             Int          @id @default(autoincrement())
+  fullName      String       @db.VarChar(255) @map("full_name")
+  position       String?      @db.VarChar(255)
+  cabinet        String?      @db.VarChar(50)
+  internalPhone String?      @db.VarChar(50) @map("internal_phone")
+  cityPhone     String?      @db.VarChar(50) @map("city_phone")
+  mobilePhone   String?      @db.VarChar(50) @map("mobile_phone")
+  email          String?      @db.VarChar(255)
+  departmentId  Int? @map("department_id")
+  sortOrder     Int          @default(999) @map("sort_order")
+  departments    departments? @relation(fields: [departmentId], references: [id], onUpdate: NoAction)
+}
+
+model files {
+  id                 String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  fileName          String  @db.VarChar(255) @map("file_name")
+  fileContent       Bytes? @map("file_content")
+  contentType       String? @db.VarChar(100) @map("content_type")
+  sizeBytes         BigInt? @map("size_bytes")
+  description        String?
+  originalFileName String  @db.VarChar(255) @map("original_file_name")
+  groupId           Int? @map("group_id")
+}
+
+model roles {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique @db.VarChar(20)
+  description String?
+  users       users[]
+}
+
+model users {
+  id        Int         @id @default(autoincrement())
+  userName String      @unique @db.VarChar(50) @map("user_name")
+  password  String      @db.VarChar(255)
+  roleId   Int?        @default(2) @map("role_id")
+  auditLog auditLog[]
+  roles     roles?      @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}

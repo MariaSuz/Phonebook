@@ -96,25 +96,29 @@ export const uploadFile = expressAsyncHandler(async (
   res.status(201).json(result);
 });
 
-export const downloadFile = expressAsyncHandler(async (
-  req: Request<{ id: string }>,
-  res: Response,
-) => {
-    const file = await downloadById(req.params.id);
-    if (!file) {
-      throw new AppError('Файл не найден', 404);
-    }
+export const downloadFile = expressAsyncHandler(async (req: Request<{ id: string }>, res: Response) => {
+  const file = await downloadById(req.params.id);
+  if (!file) {
+    throw new AppError('Файл не найден', 404);
+  }
 
-    const downloadName = file.originalFileName || file.fileName;
-    // Заголовки минимум
-    res.set({
-      'Content-Type': file.contentType,
-      'Content-Disposition': `attachment; filename="${downloadName}"`,
-      'Content-Length': file.sizeBytes,
-    });
+  let downloadName = file.originalFileName || file.fileName;
+  // Фикс битой кодировки
+  if (/[ÃÐÑØ]/.test(downloadName)) {
+    downloadName = Buffer.from(downloadName, 'latin1').toString('utf8');
+  }
 
-    // Отправляем файл как бинарные данные
-    res.send(file.fileContent);
+  // Безопасное кодирование для заголовка
+  const safeFilename = encodeURIComponent(downloadName);
+  // Заголовки минимум
+  res.set({
+    'Content-Type': file.contentType,
+    'Content-Disposition': `attachment; filename="${safeFilename}"; filename*=UTF-8''${safeFilename}`,
+    'Content-Length': file.sizeBytes,
+  });
+
+  // Отправляем файл как бинарные данные
+  res.send(file.fileContent);
   }
 );
 

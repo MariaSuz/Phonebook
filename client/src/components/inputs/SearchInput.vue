@@ -33,5 +33,14 @@ const updateValue = debounce((value: string) => {
 }, 300);
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
+.search-input {
+  .v-field {
+    border-radius: 12px;
+  }
+
+  .v-field__outline {
+    color: #C06060 !important;
+  }
+}
 </style>
