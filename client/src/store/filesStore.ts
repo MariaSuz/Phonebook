@@ -37,11 +37,18 @@ export const useFileStore = defineStore('file', () => {
       const contentDisposition = response.headers['content-disposition'];
       let filename = 'download';
       if (contentDisposition) {
-        const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(
-          contentDisposition,
-        );
-        if (matches && matches[1]) {
-          filename = matches[1].replace(/['"]/g, '');
+        // Сначала пробуем раскодировать из filename*=UTF-8''
+        const utf8Match = /filename\*=UTF-8''([^;]*)/.exec(contentDisposition);
+        if (utf8Match && utf8Match[1]) {
+          filename = decodeURIComponent(utf8Match[1]);
+        } else {
+          // Запасной вариант - обычный filename
+          const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(
+            contentDisposition,
+          );
+          if (matches && matches[1]) {
+            filename = decodeURIComponent(matches[1].replace(/['"]/g, ''));
+          }
         }
       }
       // Создаем ссылку для скачивания
