@@ -25,6 +25,9 @@
       icon="mdi-badge-account"
       :readonly="disabled"
       :disabled="isLoading"
+      :error-messages="v.position.$errors.map((e: any) => e.$message)"
+      :error="v.position.$error"
+      @blur="v.position.$touch"
     />
     <TextField
       v-model="employee.fullName"
@@ -55,11 +58,14 @@
       icon="mdi-phone-classic"
       :readonly="disabled"
       :disabled="isLoading"
+      :error-messages="v.cityPhone.$errors.map((e: any) => e.$message)"
+      :error="v.cityPhone.$error"
+      @blur="v.cityPhone.$touch"
     />
     <TextField
       v-model="employee.mobilePhone"
       label="Мобильный номер"
-      v-mask="'+7 (###) ###-##-##'"
+      v-maska="'8 (###) ###-##-##'"
       placeholder="Например: 8 927 000 00 00"
       icon="mdi-cellphone"
       :readonly="disabled"
@@ -122,6 +128,7 @@ import { useAlertStore } from '@/store/alertStore';
 import { useVuelidate } from '@vuelidate/core';
 import { employeeRules } from '@/logic/validation/employeeValidation';
 import BaseForm from './BaseForm.vue';
+import { vMaska } from "maska/vue"
 
 const store = useEmployeesStore();
 const departmentStore = useDepartmentStore();
