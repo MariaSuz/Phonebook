@@ -1,10 +1,10 @@
-import { useAuthStore } from '@/store/authStore';
+import { useUserStore } from '@/store/usersStore';
 import { helpers, required, minLength } from '@vuelidate/validators';
 import { computed } from 'vue';
 
 const uniqueName = (value: string, siblings: any) => {
   if (!value) return true;
-  const store = useAuthStore();
+  const store = useUserStore();
   const currentId = siblings?.id;
   const userstList = computed(() => store.list);
   if (currentId) {
@@ -37,10 +37,7 @@ export const userRules = {
     ),
   },
   password: {
-    required: helpers.withMessage(
-      'Пароль обязателен для заполнения',
-      required,
-    ),
+    required: helpers.withMessage('Пароль обязателен для заполнения', required),
     minLength: helpers.withMessage(
       'Пароль должен содержать минимум 2 символа',
       minLength(2),

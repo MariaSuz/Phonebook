@@ -42,8 +42,8 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '@/store/authStore';
-import type { AuthFormModel } from '@/logic/types/forms/AuthFormModel';
+import { useUserStore } from '@/store/usersStore';
+import UserFormModel from '@/components/forms/UserFormModel.vue';
 import { FormTypes } from '@/logic/types/FormTypes';
 import { ref, computed } from 'vue';
 import TextField from '../inputs/TextField.vue';
@@ -52,8 +52,8 @@ import { userRules } from '@/logic/validation/userValidation';
 import Select from '../inputs/Select.vue';
 import BaseForm from './BaseForm.vue';
 
-interface AuthUserProps {
-  data?: AuthFormModel;
+interface UserProps {
+  data?: UserFormModel;
   formType: FormTypes;
   id?: number;
 }
@@ -67,16 +67,16 @@ const roleOptions: RoleOption[] = [
   { title: 'Редактор', value: 2 }
 ];
 
-const props = defineProps<AuthUserProps>();
-const store = useAuthStore();
+const props = defineProps<UserProps>();
+const store = useUserStore();
 
-const createAuthUser = (): AuthFormModel => ({
+const createUser = (): UserFormModel => ({
   userName: '',
   password: '',
   roleId: 2,
   avatar: '',
 });
-const user = ref<AuthFormModel>(props.data ? { ...props.data } : createAuthUser());
+const user = ref<UserFormModel>(props.data ? { ...props.data } : createUser());
 const v = useVuelidate(userRules, user);
 const disabled = computed(() => props.formType === FormTypes.SHOW);
 const isLoading = ref(false);
@@ -96,6 +96,7 @@ const emit = defineEmits(['cancel']);
 
 const onSubmitForm = async () => {
   if (isLoading.value) return;
+  v.value.$reset();
   const isValid = await v.value.$validate();
   if (!isValid) {
     v.value.$touch();
@@ -104,10 +105,10 @@ const onSubmitForm = async () => {
   isLoading.value = true;
   try {
     if (props.formType === FormTypes.EDIT) {
-      await store.updateAuthUser(props.id!, user.value);
+      await store.updateUser(props.id!, user.value);
     } else if (props.formType === FormTypes.ADD) {
-      await store.register(user.value);
-      await store.getAuthUsers();
+      await store.createUser(user.value);
+      await store.getUsers();
     }
     emit('cancel');
   } catch (error) {

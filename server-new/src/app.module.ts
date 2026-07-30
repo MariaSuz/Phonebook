@@ -4,7 +4,9 @@ import { PrismaModule } from './prisma/prisma.module';
 import { EmployeesModule } from './modules/employees/employees.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { FilesModule } from './modules/files/files.module';
-import { UsersModule } from './modules/users/usersmodule';
+import { UsersModule } from './modules/users/users.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { AuditModule } from './modules/audit/audit.module';
 
 @Module({
   imports: [
@@ -14,6 +16,8 @@ import { UsersModule } from './modules/users/usersmodule';
     RolesModule,
     FilesModule,
     UsersModule,
+    AuthModule,
+    AuditModule,
   ],
   controllers: [],
   providers: [],

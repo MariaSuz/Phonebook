@@ -51,13 +51,13 @@
     </div>
     <FormModal
       v-model="modal.addUser"
-      :form-component="AuthUserForm"
+      :form-component="UserForm"
       :form-type="FormTypes.ADD"
       @cancel="closeModal"
     />
     <FormModal
       v-model="modal.editUser"
-      :form-component="AuthUserForm"
+      :form-component="UserForm"
       :form-type="FormTypes.EDIT"
       :data="selectedUser"
       :id="selectedUser?.id"
@@ -73,15 +73,17 @@
 </template>
 
 <script setup lang="ts">
+import { useUserStore } from '@/store/usersStore';
 import { useAuthStore } from '@/store/authStore';
-import type { AuthFormModel } from '@/logic/types/forms/AuthFormModel';
 import { FormTypes } from '@/logic/types/FormTypes';
 import { computed, onMounted, reactive, ref } from 'vue';
-import AuthUserForm from '@/components/forms/AuthUserForm.vue';
+import UserForm from '@/components/forms/UserForm.vue';
 import FormModal from '@/components/modals/FormModal.vue';
 import ComfirmDelete from '@/components/modals/ComfirmDelete.vue';
 import ButtonComponent from '@/components/ButtonComponent.vue';
+import UserFormModel from '@/components/forms/UserFormModel.vue';
 
+const userStore = useUserStore();
 const authStore = useAuthStore();
 
 const headers = computed(() => [
@@ -96,8 +98,8 @@ const headers = computed(() => [
   }
 ]);
 
-const selectedUser = ref<null | AuthFormModel>(null);
-const users = computed(() => authStore.list);
+const selectedUser = ref<null | UserFormModel>(null);
+const users = computed(() => userStore.list);
 const modal = reactive({
   editUser: false,
   addUser: false,
@@ -115,19 +117,19 @@ const getRoleName = (roleId: number) => {
   }
 };
 
-const edit = (user: AuthFormModel) => {
+const edit = (user: UserFormModel) => {
   selectedUser.value = user;
   modal.editUser = true;
 };
 
-const removeUser = async (user: AuthFormModel) => {
+const removeUser = async (user: UserFormModel) => {
   selectedUser.value = user;
   modal.deleteUser = true;
 };
 const confirmDelete = async () => {
   if (!selectedUser.value) return;
   try {
-    await authStore.deleteAuthUser(selectedUser.value.id!);
+    await userStore.deleteUser(selectedUser.value.id!);
   } catch (error) {
     console.error('Ошибка удаления:', error);
   }
@@ -145,7 +147,7 @@ const closeModal = () => {
 };
 
 onMounted(async () => {
-  await authStore.getAuthUsers();
+  await userStore.getUsers();
 });
 </script>
 

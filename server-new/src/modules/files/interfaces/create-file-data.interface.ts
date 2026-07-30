@@ -4,6 +4,6 @@ export interface CreateFileData {
   contentType: string;
   sizeBytes: number;
   description?: string | null;
-  groupId: number;
+  groupId: number | null;
   originalFileName: string;
 }

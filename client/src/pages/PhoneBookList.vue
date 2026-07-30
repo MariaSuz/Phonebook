@@ -4,7 +4,7 @@
       <div class="phone-book-search">
         <SearchInput
           v-model="searchValue"
-          label="Поиск сотрудника"
+          label="Поиск по сотрудникам"
           clearable
         />
       </div>

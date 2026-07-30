@@ -3,7 +3,7 @@ import { IsInt, IsNotEmpty, IsString } from 'class-validator';
 export class CreateUserDTO {
   @IsString()
   @IsNotEmpty()
-  userName?: string;
+  userName: string;
 
   @IsString()
   @IsNotEmpty()

@@ -18,7 +18,8 @@
       @blur="v.name.$touch"
     />
     <TextField
-      v-model="department.sortOrder"
+      v-model.number="department.sortOrder"
+      type="number"
       label="Приоритет сортировки"
       placeholder="999"
       icon="mdi-sort-numeric-ascending"
@@ -75,6 +76,7 @@ const formTitle = computed(() => {
 const onSubmitForm = async () => {
   if (isLoading.value) return;
   alertStore.clear();
+  v.value.$reset();
   const isValid = await v.value.$validate();
   if (!isValid) {
     // Показываем все ошибки

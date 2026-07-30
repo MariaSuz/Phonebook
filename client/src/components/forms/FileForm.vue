@@ -99,6 +99,7 @@ const formTitle = computed(() => {
 const onSubmitForm = async () => {
   if (isLoading.value) return;
   alertStore.clear();
+  v.value.$reset();
   const isValid = await v.value.$validate();
   if (!isValid) {
     // Показываем все ошибки

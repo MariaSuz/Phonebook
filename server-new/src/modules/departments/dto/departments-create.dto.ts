@@ -5,7 +5,7 @@ export class CreateDepartmentDTO {
   @IsNotEmpty()
   name: string;
 
-  @IsInt()
   @IsOptional()
+  @IsInt()
   sortOrder?: number;
 }

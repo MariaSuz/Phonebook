@@ -96,7 +96,8 @@
     />
     <TextField
       v-if="formType !== FormTypes.SHOW"
-      v-model="employee.sortOrder"
+      v-model.number="employee.sortOrder"
+      type="number"
       label="Приоритет сортировки"
       placeholder="999"
       icon="mdi-sort-numeric-ascending"
@@ -167,6 +168,7 @@ const emit = defineEmits(['cancel']);
 const onSubmitForm = async () => {
   if (isLoading.value) return;
   alertStore.clear();
+  v.value.$reset();
   const isValid = await v.value.$validate();
   if (!isValid) {
     // Показываем все ошибки
