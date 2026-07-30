@@ -1,7 +1,6 @@
-export interface AuthFormModel {
+export interface UserFormModel {
   id?: number;
   userName: string;
-  password: string;
   roleId: number;
   avatar?: string;
 }

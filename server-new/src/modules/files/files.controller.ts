@@ -2,26 +2,29 @@ import {
   Body,
   Controller,
   Delete,
-  FileTypeValidator,
   Get,
   Header,
-  MaxFileSizeValidator,
   NotFoundException,
   Param,
-  ParseFilePipe,
   ParseUUIDPipe,
   Post,
+  Req,
   Res,
   StreamableFile,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesService } from './files.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UploadFileDTO } from './dto/files-upload.dto';
 import type { Response } from 'express';
+import { JwtAuthGuard } from '../../guards/auth.guard';
+import { AuditInterceptor } from '../audit/interceptors/audit.interceptor';
+import { AuditLog } from '../audit/decorators/audit-action.decorator';
+import { UploadFileDTO } from './dto/files-upload.dto';
 
 @Controller('files')
+@UseInterceptors(AuditInterceptor)
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
@@ -59,43 +62,57 @@ export class FilesController {
   }
 
   @Delete(':id')
-  delete(@Param('id', ParseUUIDPipe) id: string) {
+  @UseGuards(JwtAuthGuard)
+  @AuditLog({ entityType: 'file', action: 'DELETE' })
+  async delete(@Param('id', ParseUUIDPipe) id: string, @Req() req: any) {
+    req.oldData = await this.filesService.getById(id);
     return this.filesService.delete(id);
   }
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('document'))
+  @UseGuards(JwtAuthGuard)
+  @AuditLog({ entityType: 'file', action: 'CREATE' })
+  @UseInterceptors(
+    FileInterceptor('document', {
+      fileFilter: (req, file, cb) => {
+        const allowed = [
+          'application/pdf',
+          'image/jpeg',
+          'image/png',
+          'text/plain',
+          'application/msword',
+          'application/vnd.ms-excel',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'application/vnd.oasis.opendocument.spreadsheet',
+        ];
+        if (allowed.includes(file.mimetype)) {
+          cb(null, true);
+        } else {
+          cb(
+            new Error(
+              'Неверный тип файла. Разрешены: PDF, JPG, PNG, TXT, Excel файлы, Word файлы',
+            ),
+            false,
+          );
+        }
+      },
+      limits: { fileSize: 30 * 1024 * 1024 },
+    }),
+  )
   uploadedFile(
     @Body() body: UploadFileDTO,
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 30 * 1024 * 1024 }),
-          new FileTypeValidator({
-            fileType: new RegExp(
-              'application/pdf|' +
-                'image/jpeg|' +
-                'image/png|' +
-                'text/plain|' +
-                'application/msword|' +
-                'application/vnd.ms-excel|' +
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document|' +
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet|' +
-                'application/vnd.oasis.opendocument.spreadsheet',
-            ),
-          }),
-        ],
-      }),
-    )
-    file: Express.Multer.File,
+    @UploadedFile() file: Express.Multer.File,
   ) {
+    if (!file) throw new NotFoundException('Файл не выбран');
+
     return this.filesService.create({
       fileName: body.fileName?.trim() || file.originalname,
       fileContent: file.buffer,
       contentType: file.mimetype,
       sizeBytes: file.size,
       description: body.description,
-      groupId: body.groupId,
+      groupId: body.groupId !== undefined ? Number(body.groupId) : null,
       originalFileName: file.originalname,
     });
   }

@@ -88,7 +88,7 @@
             v-if="!authenticationUser"
             class="departments-empty-title"
           >
-            Сотрудники отсутсвуют
+            Сотрудники отсутствуют
         </span>
         </div>
       </template>

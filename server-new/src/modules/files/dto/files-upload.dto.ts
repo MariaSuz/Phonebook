@@ -1,4 +1,5 @@
-import { IsOptional, IsString, IsUUID } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsInt, IsOptional, IsString } from 'class-validator';
 
 export class UploadFileDTO {
   @IsOptional()
@@ -9,6 +10,8 @@ export class UploadFileDTO {
   @IsString()
   description?: string;
 
-  @IsUUID()
-  groupId: number;
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  groupId?: number;
 }
