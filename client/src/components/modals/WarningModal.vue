@@ -9,6 +9,13 @@
   >
     <VCard>
       <div class="warning-modal__header">
+        <div class="warning-modal__icon">
+          <VIcon
+            icon="mdi-alert"
+            size="20"
+            color="white"
+          />
+        </div>
         <h3 class="warning-modal__title">{{ title || 'Ошибка' }}</h3>
         <VBtn
           class="modal__close"
@@ -58,16 +65,31 @@ const close = () => {
 .warning-modal {
   padding: 24px;
   &__header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
     padding: 24px 28px 16px;
     background: linear-gradient(135deg, #FDF5F5, #FCE9E9);
     border-bottom: 1px solid #E5C7C7;
   }
 
+  &__icon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #722F37, #B22222);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   &__title {
-    font-size: 1.5rem;
+    font-size: 1.125rem;
     font-weight: 600;
     color: #722F37;
-    margin: 0 0 4px 0;
+    margin: 0;
     letter-spacing: -0.01em;
   }
 

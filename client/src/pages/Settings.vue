@@ -81,7 +81,7 @@ import UserForm from '@/components/forms/UserForm.vue';
 import FormModal from '@/components/modals/FormModal.vue';
 import ComfirmDelete from '@/components/modals/ComfirmDelete.vue';
 import ButtonComponent from '@/components/ButtonComponent.vue';
-import UserFormModel from '@/components/forms/UserFormModel.vue';
+import type { UserFormModel } from '@/logic/types/forms/UserFormModel';
 
 const userStore = useUserStore();
 const authStore = useAuthStore();

@@ -14,7 +14,7 @@ import { ViewUserDTO } from './dto/user-view.dto';
 import { CreateUserDTO } from './dto/user-create.dto';
 import { UpdateUserDTO } from './dto/users-update.dto';
 import { JwtAuthGuard } from '../../guards/auth.guard';
-import { AdminGuard } from '../../guards/roles.guard';
+import { AdminGuard, SelfOrAdminGuard } from '../../guards/roles.guard';
 
 @Controller('users')
 export class UsersController {
@@ -39,7 +39,7 @@ export class UsersController {
   }
 
   @Put(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SelfOrAdminGuard)
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() data: UpdateUserDTO,

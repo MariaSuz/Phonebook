@@ -43,7 +43,7 @@
 
 <script setup lang="ts">
 import { useUserStore } from '@/store/usersStore';
-import UserFormModel from '@/components/forms/UserFormModel.vue';
+import type { UserFormModel } from '@/logic/types/forms/UserFormModel';
 import { FormTypes } from '@/logic/types/FormTypes';
 import { ref, computed } from 'vue';
 import TextField from '../inputs/TextField.vue';

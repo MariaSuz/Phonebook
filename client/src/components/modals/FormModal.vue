@@ -17,7 +17,7 @@
 
 <script setup lang="ts">
 import Modal from '@/components/modals/Modal.vue';
-import {  FormType } from '@/logic/types/FormTypes';
+import { FormTypes } from '@/logic/types/FormTypes';
 import { computed } from 'vue';
 import type { Component } from 'vue';
 
@@ -25,7 +25,7 @@ interface ModalProps {
   modelValue: boolean;
   data?: any;
   formComponent: Component;
-  formType: FormType;
+  formType: FormTypes;
   id?: number;
   departmentId?: number;
 }

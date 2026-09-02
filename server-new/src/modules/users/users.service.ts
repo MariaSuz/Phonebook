@@ -30,13 +30,15 @@ export class UsersService {
   async update(id: number, data: UpdateUserDTO): Promise<ViewUserDTO> {
     const user = await this.prisma.users.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('Пользователь не найден');
-    const exists = await this.prisma.users.findFirst({
-      where: { userName: data.userName, id: { not: id } },
-    });
-    if (exists)
-      throw new ConflictException(
-        `Пользователь с именем "${data.userName}" уже существует`,
-      );
+    if (data.userName !== undefined) {
+      const exists = await this.prisma.users.findFirst({
+        where: { userName: data.userName, id: { not: id } },
+      });
+      if (exists)
+        throw new ConflictException(
+          `Пользователь с именем "${data.userName}" уже существует`,
+        );
+    }
 
     const updateData: Prisma.usersUpdateInput = {};
     if (data.userName !== undefined) updateData.userName = data.userName;
