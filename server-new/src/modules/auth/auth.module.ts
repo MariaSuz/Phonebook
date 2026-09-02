@@ -5,7 +5,7 @@ import { CommonModule } from '../../common/common.module';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
 import { JwtAuthGuard } from '../../guards/auth.guard';
-import { AdminGuard } from '../../guards/roles.guard';
+import { AdminGuard, SelfOrAdminGuard } from '../../guards/roles.guard';
 
 @Module({
   controllers: [AuthController],
@@ -16,7 +16,13 @@ import { AdminGuard } from '../../guards/roles.guard';
       signOptions: { expiresIn: '24h' },
     }),
   ],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard, AdminGuard],
-  exports: [JwtAuthGuard, AdminGuard],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    JwtAuthGuard,
+    AdminGuard,
+    SelfOrAdminGuard,
+  ],
+  exports: [JwtAuthGuard, AdminGuard, SelfOrAdminGuard],
 })
 export class AuthModule {}
