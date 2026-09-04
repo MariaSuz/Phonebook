@@ -1,99 +1,125 @@
 <template>
   <VCard class="departments">
-    <div class="departments-table-header">
+    <div
+      class="departments-table-header"
+      :class="{ 'departments-table-header--collapsed': collapsed }"
+    >
       <div class="departments-table-header-left">
+        <div
+          class="departments-collapse"
+          @click="toggleCollapse"
+        >
+          <VIcon
+          color="white"
+          :icon="collapsed ? 'mdi-chevron-right' : 'mdi-chevron-down'"
+          size="small"
+          class="departments-collapse-icon"
+        ></VIcon>
         <span class="departments-header-department">
           {{ department?.name || 'Отдел не найден' }}</span
         >
-        <VIcon
-          v-if="authenticationUser"
-          color="white"
-          icon="mdi-pencil"
+        </div>
+        <VChip
+          v-if="collapsed && matchDepLabel"
           size="small"
-          @click="editDepartment"
-          class="departments-edit-icon"
-        ></VIcon>
-        <VIcon
-          v-if="authenticationUser"
-          color="white"
-          icon="mdi-delete"
-          size="small"
-          @click="deleteDepartment"
-          class="departments-edit-icon"
-        ></VIcon>
+          label
+          class="departments-match-chip"
+        >
+          Совпадение по названию отдела
+        </VChip>
+        <template v-if="!collapsed">
+          <VIcon
+            v-if="authenticationUser"
+            color="white"
+            icon="mdi-pencil"
+            size="small"
+            @click="editDepartment"
+            class="departments-edit-icon"
+          ></VIcon>
+          <VIcon
+            v-if="authenticationUser"
+            color="white"
+            icon="mdi-delete"
+            size="small"
+            @click="deleteDepartment"
+            class="departments-edit-icon"
+          ></VIcon>
+        </template>
       </div>
       <ButtonComponent
-        v-if="authenticationUser"
+        v-if="authenticationUser && !collapsed"
         prepend-icon="mdi-plus"
         title="Добавить сотрудника"
         @click="addUser"
       />
     </div>
-
-    <VDataTable
-      :key="department?.id"
-      :headers="headers"
-      :loading="isLoading"
-      :items="employees"
-      hide-default-footer
-      :items-per-page="-1"
-      :search="search"
-      class="departments__table"
-    >
-      <template
-        v-for="field in highlightableFields"
-        :key="field"
-        v-slot:[`item.${field}`]="{ item }"
-      >
-        <span v-html="highlightText(item[field]) || '—'"></span>
-      </template>
-      <template v-slot:item.actions="{ item }">
-        <div class="d-flex ga-2 justify-end">
-          <VIcon
-            color="medium-emphasis"
-            icon="mdi-eye"
-            size="small"
-            @click="show(item)"
-            style="cursor: pointer;"
-          ></VIcon>
-          <VIcon
-            v-if="authenticationUser"
-            color="medium-emphasis"
-            icon="mdi-pencil"
-            size="small"
-            @click="edit(item)"
-            style="cursor: pointer;"
-          ></VIcon>
-          <VIcon
-            v-if="authenticationUser"
-            color="medium-emphasis"
-            icon="mdi-delete"
-            size="small"
-            @click="removeEmployee(item)"
-            style="cursor: pointer;"
-          ></VIcon>
-        </div>
-      </template>
-      <template v-slot:no-data>
-        <div class="departments-empty">
-        <ButtonComponent
-          v-if="authenticationUser"
-          prepend-icon="mdi-plus"
-          title="Добавить первого сотрудника"
-          @click="addUser"
-          buttonType="save"
-          class="btn-first"
-        />
-          <span
-            v-if="!authenticationUser"
-            class="departments-empty-title"
+    <VExpandTransition>
+      <div v-show="!collapsed">
+        <VDataTable
+          :key="department?.id"
+          :headers="headers"
+          :loading="isLoading"
+          :items="employees"
+          hide-default-footer
+          :items-per-page="-1"
+          :search="search"
+          class="departments__table"
+        >
+          <template
+            v-for="field in highlightableFields"
+            :key="field"
+            v-slot:[`item.${field}`]="{ item }"
           >
-            Сотрудники отсутствуют
-        </span>
-        </div>
-      </template>
-    </VDataTable>
-
+            <span v-html="highlightText(item[field]) || '—'"></span>
+          </template>
+          <template v-slot:item.actions="{ item }">
+            <div class="d-flex ga-2 justify-end">
+              <VIcon
+                color="medium-emphasis"
+                icon="mdi-eye"
+                size="small"
+                @click="show(item)"
+                style="cursor: pointer;"
+              ></VIcon>
+              <VIcon
+                v-if="authenticationUser"
+                color="medium-emphasis"
+                icon="mdi-pencil"
+                size="small"
+                @click="edit(item)"
+                style="cursor: pointer;"
+              ></VIcon>
+              <VIcon
+                v-if="authenticationUser"
+                color="medium-emphasis"
+                icon="mdi-delete"
+                size="small"
+                @click="removeEmployee(item)"
+                style="cursor: pointer;"
+              ></VIcon>
+            </div>
+          </template>
+          <template v-slot:no-data>
+            <div class="departments-empty">
+            <ButtonComponent
+              v-if="authenticationUser"
+              prepend-icon="mdi-plus"
+              title="Добавить первого сотрудника"
+              @click="addUser"
+              buttonType="save"
+              class="btn-first"
+            />
+              <span
+                v-if="!authenticationUser"
+                class="departments-empty-title"
+              >
+                Сотрудники отсутствуют
+            </span>
+            </div>
+          </template>
+        </VDataTable>
+      </div>
+    </VExpandTransition>
     <FormModal
       v-model="modals.showEmployee"
       :form-component="EmployeeForm"
@@ -164,11 +190,19 @@ const props = defineProps<{
   departmentId: number;
   searchValue?: string;
   modelValue?: boolean;
+  collapsed?: boolean;
+  matchDepLabel?: boolean;
 }>();
 
 const employeesStore = useEmployeesStore();
 const departmentStore = useDepartmentStore();
 const authStore = useAuthStore();
+
+const emit = defineEmits<{
+  (e: 'update:collapsed', value: boolean): void;
+}>();
+
+const toggleCollapse = () => emit('update:collapsed', !props.collapsed);
 
 const modals = reactive({
   showEmployee: false,
@@ -279,6 +313,10 @@ const highlightText = (text: string | number) => {
 
 <style lang="scss">
 .departments {
+  border-radius: 12px !important;
+  overflow: hidden;
+  border: 1px solid #C06060 !important;
+
   th {
     background: transparent !important;
     color: #722F37 !important;
@@ -289,18 +327,52 @@ const highlightText = (text: string | number) => {
     display: flex;
     justify-content: space-between;
     background: linear-gradient(135deg, #722F37, #B22222);
-    border-left: 4px solid #C06060;
     padding: 10px 15px;
-    margin-bottom: 8px;
-    box-shadow: 0 4px 12px rgba(114, 47, 55, 0.3);
-    border-radius: 0 0 8px 8px;
     &-left {
       display: flex;
       gap: 10px;
       align-items: center;
     }
+     &--collapsed {
+      background: #FFFFFF;
+      .departments-collapse-icon {
+        color: #722F37 !important;
+      }
+      .departments-header-department {
+        color: #722F37;
+        text-shadow: none;
+      }
+      .departments-table-header-left,
+      .departments-collapse {
+        flex: 1;
+      }
+    }
   }
-
+  &-collapse {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    &:focus-visible {
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6);
+    }
+    &-left {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex: 1;
+    }
+  }
+  &-match-chip {
+    pointer-events: none;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px !important;
+    background: #FDF5F5 !important;
+    color: #722F37 !important;
+    border: 1px solid #E5C7C7 !important;
+  }
   &-empty-title {
     font-size: 1.25rem;
     font-weight: 600;
