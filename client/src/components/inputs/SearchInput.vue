@@ -4,6 +4,7 @@
       :modelValue="modelValue"
       @update:modelValue="updateValue"
       :label="label"
+      :disabled="disabled"
       prepend-inner-icon="mdi-magnify"
       variant="outlined"
       hide-details
@@ -22,6 +23,7 @@ interface SearchInputProps {
   modelValue: string;
   label?: string;
   clearable?: boolean;
+  disabled?: boolean;
 }
 
 defineProps<SearchInputProps>();

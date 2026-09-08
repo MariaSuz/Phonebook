@@ -9,7 +9,6 @@
         @click="sidebarStore.toggleSidebar"
       >
         <VAppBarNavIcon ></VAppBarNavIcon>
-        <span class="header__menu-label">Отделы</span>
       </div>
     </template>
     <RouterLink
@@ -26,7 +25,7 @@
       </div>
     </RouterLink>
     <VBtn
-      v-if="authenticationUser"
+      v-if="isAdmin"
       class="header__docs-btn"
       variant="text"
       @click="toggleTechMenu"
@@ -87,7 +86,10 @@
       <LoginWidgets />
     </template>
     <FileWidget v-model="isDocsPanelOpen" />
-    <TechWidget v-model="isTechMenuOpen" />
+    <TechWidget
+      v-if="isAdmin"
+      v-model="isTechMenuOpen"
+    />
     <MailWarningModal
       v-model="isMailRUOpen"
     />
@@ -119,6 +121,7 @@ const toggleMailRUModal = () => {
   isMailRUOpen.value = !isMailRUOpen.value;
 };
 const authenticationUser = computed(() => authStore.isAuthenticated);
+const isAdmin = computed(() => authStore.isAdmin);
 </script>
 
 <style scoped lang="scss">

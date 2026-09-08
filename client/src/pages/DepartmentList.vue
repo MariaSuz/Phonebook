@@ -2,7 +2,10 @@
   <VCard class="departments">
     <div
       class="departments-table-header"
-      :class="{ 'departments-table-header--collapsed': collapsed }"
+      :class="{
+        'departments-table-header--collapsed': collapsed,
+        'departments-table-header--drag': sortMode,
+       }"
     >
       <div class="departments-table-header-left">
         <div
@@ -15,18 +18,11 @@
           size="small"
           class="departments-collapse-icon"
         ></VIcon>
-        <span class="departments-header-department">
-          {{ department?.name || 'Отдел не найден' }}</span
-        >
+        <span
+          class="departments-header-department"
+          v-html="highlightDepartmentName(department?.name)"
+        ></span>
         </div>
-        <VChip
-          v-if="collapsed && matchDepLabel"
-          size="small"
-          label
-          class="departments-match-chip"
-        >
-          Совпадение по названию отдела
-        </VChip>
         <template v-if="!collapsed">
           <VIcon
             v-if="authenticationUser"
@@ -191,7 +187,8 @@ const props = defineProps<{
   searchValue?: string;
   modelValue?: boolean;
   collapsed?: boolean;
-  matchDepLabel?: boolean;
+  searchQuery?: string;
+  sortMode?: boolean;
 }>();
 
 const employeesStore = useEmployeesStore();
@@ -309,6 +306,16 @@ const highlightText = (text: string | number) => {
 
   return String(text).replace(regex, '<span class="highlight">$&</span>');
 };
+
+const highlightDepartmentName = (text?: string) => {
+  if (!text) return 'Отдел не найден';
+  if (!props.searchQuery) return text;
+
+  const query = props.searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(query, 'ig');
+
+  return text.replace(regex, '<span class="department-name-highlight">$&</span>');
+};
 </script>
 
 <style lang="scss">
@@ -328,6 +335,18 @@ const highlightText = (text: string | number) => {
     justify-content: space-between;
     background: linear-gradient(135deg, #722F37, #B22222);
     padding: 10px 15px;
+    &--drag {
+      cursor: grab;
+      &:active {
+        cursor: grabbing;
+      }
+      .departments-collapse {
+        cursor: grab;
+      }
+      &:active .departments-collapse {
+        cursor: grabbing;
+      }
+    }
     &-left {
       display: flex;
       gap: 10px;
@@ -342,11 +361,20 @@ const highlightText = (text: string | number) => {
         color: #722F37;
         text-shadow: none;
       }
+      .department-name-highlight {
+        border: 1px solid #E5C7C7;
+      }
       .departments-table-header-left,
       .departments-collapse {
         flex: 1;
       }
     }
+  }
+  .department-name-highlight {
+    background: #FDF5F5;
+    color: #722F37;
+    padding: 1px 6px;
+    border-radius: 4px;
   }
   &-collapse {
     display: flex;
