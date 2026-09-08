@@ -25,9 +25,6 @@
       icon="mdi-badge-account"
       :readonly="disabled"
       :disabled="isLoading"
-      :error-messages="v.position.$errors.map((e: any) => e.$message)"
-      :error="v.position.$error"
-      @blur="v.position.$touch"
     />
     <TextField
       v-model="employee.fullName"

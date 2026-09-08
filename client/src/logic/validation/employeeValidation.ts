@@ -23,12 +23,6 @@ export const employeeRules = {
       (value: string) => !value || /^[a-zA-Zа-яА-ЯёЁ0-9]+$/.test(value),
     ),
   },
-  position: {
-    validFormat: helpers.withMessage(
-      'Должность может содержать только буквы, пробелы и знаки .,:',
-      (value: string) => !value || /^[a-zA-Zа-яА-Я\s.,:-]+$/.test(value),
-    ),
-  },
   internalPhone: {
     validFormat: helpers.withMessage(
       'Внутренний номер может содержать только цифры, "," и пробел',
