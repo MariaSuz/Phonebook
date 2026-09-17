@@ -1,17 +1,17 @@
 <template>
-  <VTextField
+  <VAutocomplete
     :model-value="modelValue"
     :label="label"
-    :placeholder="placeholder"
-    :type="isPassword ? (showPassword ? 'text' : 'password') : type"
-    :min="min"
-    :max="max"
+    :items="items"
+    :item-title="itemTitle"
+    :item-value="itemValue"
     variant="outlined"
+    class="auto"
+    :clearable="!readonly && !disabled"
+    :placeholder="placeholder"
     persistent-placeholder
     :readonly="readonly"
     :disabled="disabled"
-    :clearable="!readonly && clearable"
-    class="text-field"
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <template v-slot:prepend-inner>
@@ -20,51 +20,33 @@
         size="small"
       />
     </template>
-    <template
-      v-if="isPassword"
-      v-slot:append-inner
-    >
-      <VIcon
-        :icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
-        size="small"
-        style="cursor: pointer;"
-        @click="showPassword = !showPassword"
-      />
-    </template>
-  </VTextField>
+  </VAutocomplete>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
 
-interface TextFieldProps {
+interface AutocompleteProps {
   modelValue: any;
+  items: any[];
+  itemTitle?: string;
+  itemValue?: string;
   label?: string;
   placeholder?: string;
   icon?: string;
-  clearable?: boolean;
   readonly?: boolean;
   disabled?: boolean;
-  type?: string;
-  min?: number;
-  max?: number;
 }
 
-const props = withDefaults(defineProps<TextFieldProps>(), {
-  clearable: true
-});
-defineEmits<{
+const props = withDefaults(defineProps<AutocompleteProps>(), {});
+const emit = defineEmits<{
   (e: 'update:modelValue', value: string | number): void;
 }>();
-
-const showPassword = ref(false);
-const isPassword = computed(() => props.type === 'password');
 </script>
 
 <style lang="scss">
 @import '@/styles/colors';
 
-.text-field {
+.auto {
   .v-field {
     border-radius: 4px;
     background: $color-bg-muted;
@@ -88,15 +70,6 @@ const isPassword = computed(() => props.type === 'password');
   .v-label {
     color: $color-secondary-text !important;
     opacity: 1 !important;
-  }
-  .v-field__input {
-    color: $color-primary-text !important;
-    opacity: 1 !important;
-
-    &::placeholder {
-      color: $color-muted !important;
-      opacity: 1 !important;
-    }
   }
 }
 </style>

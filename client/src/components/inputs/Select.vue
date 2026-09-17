@@ -8,14 +8,17 @@
     variant="outlined"
     class="select"
     :placeholder="placeholder"
+    persistent-placeholder
     @update:model-value="$emit('update:modelValue', $event)"
   >
-    <template v-slot:prepend>
+    <template v-slot:prepend-inner>
       <VIcon
       :icon="icon"
-      color="#C06060"
       size="small"
       />
+    </template>
+    <template v-if="$slots.item" v-slot:item="slotProps">
+      <slot name="item" v-bind="slotProps" />
     </template>
   </VSelect>
 </template>
@@ -39,12 +42,32 @@ const emit = defineEmits<{
 </script>
 
 <style lang="scss">
+@import '@/styles/colors';
+
 .select {
   .v-field {
-    border-radius: 12px;
+    border-radius: 4px;
+    background: $color-bg-muted;
   }
   .v-field__outline {
-    color: #C06060 !important;
+    color: $color-line !important;
+    opacity: 1 !important;
+  }
+  .v-field--focused .v-field__outline {
+    color: rgb(var(--v-theme-primary)) !important;
+  }
+  .v-field--error .v-field__outline {
+    color: rgb(var(--v-theme-error)) !important;
+  }
+  .v-field__prepend-inner .v-icon {
+    color: $color-secondary-text;
+  }
+  .v-field--error .v-field__prepend-inner .v-icon {
+    color: rgb(var(--v-theme-error));
+  }
+  .v-label {
+    color: $color-secondary-text !important;
+    opacity: 1 !important;
   }
 }
 </style>

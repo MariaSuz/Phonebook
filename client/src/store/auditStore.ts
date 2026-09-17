@@ -28,5 +28,6 @@ export const useAuditLogStore = defineStore('audit', () => {
   return {
     getlogs,
     list,
+    loading,
   }
 });

@@ -24,7 +24,7 @@ const uniqueName = (value: string, siblings: any) => {
 export const departmentRules = {
   name: {
     required: helpers.withMessage(
-      'Наименование отдела обязателено для заполнения',
+      'Укажите наименование отдела',
       required,
     ),
     minLength: helpers.withMessage(

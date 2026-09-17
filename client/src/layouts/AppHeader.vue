@@ -1,58 +1,58 @@
 <template>
   <VAppBar
-    :elevation="2"
+    elevation="0"
     class="header"
   >
-    <template v-slot:prepend>
-      <div
-        class="header__menu"
-        @click="sidebarStore.toggleSidebar"
-      >
-        <VAppBarNavIcon ></VAppBarNavIcon>
-      </div>
-    </template>
     <RouterLink
       to="/"
       class="header-link"
     >
-      <div class="logo-container">
+      <div class="header-logo">
         <img
           src="../assets/logomain.png"
           alt="logo-company"
-          class="logo-image"
+          class="header-logo-image"
         />
-        <VAppBarTitle class="logo-title">Компания</VAppBarTitle>
+        <div>
+          <VAppBarTitle class="header-logo-title font-heading">КОМПАНИЯ</VAppBarTitle>
+          <span class="header-logo-subtitle">супер</span>
+        </div>
       </div>
     </RouterLink>
-    <VBtn
-      v-if="isAdmin"
-      class="header__docs-btn"
-      variant="text"
-      @click="toggleTechMenu"
-    >
-      <VIcon
-        icon="mdi-server"
-        size="24"
-        class="header__docs-icon"
-      />
-      <span class="header__docs-title">Тех. сайты</span>
-    </VBtn>
-    <VBtn
-      class="header__docs-btn"
-      variant="text"
-      @click="toggleDocsPanel"
-    >
-      <VIcon
-        icon="mdi-file-document-multiple"
-        size="24"
-        class="header__docs-icon"
-      />
-      <span class="header__docs-title">Документы</span>
-    </VBtn>
+    <nav class="header__nav">
+      <RouterLink
+        to="/"
+        class="header__nav-tab"
+        active-class="header__nav-tab--active"
+        exact
+      >
+        <VIcon icon="mdi-book-open-page-variant" size="20" />
+        <span>Справочник</span>
+      </RouterLink>
+      <RouterLink
+        to="/documents"
+        class="header__nav-tab"
+        active-class="header__nav-tab--active"
+        exact
+      >
+        <VIcon icon="mdi-file-document-multiple" size="20" />
+        <span>Документы</span>
+      </RouterLink>
+      <RouterLink
+        v-if="isAdmin"
+        to="/tech-sites"
+        class="header__nav-tab"
+        active-class="header__nav-tab--active"
+        exact
+      >
+        <VIcon icon="mdi-server" size="20" />
+        <span>Тех. сайты</span>
+      </RouterLink>
+    </nav>
     <template v-slot:append>
       <div class="header__contacts">
         <VBtn
-          class="header__contact-btn"
+          class="header__contacts-btn"
           variant="text"
           href="#"
           target="_blank"
@@ -60,19 +60,21 @@
           title="Электронная почта"
         >
           <VIcon icon="mdi-email-outline" size="18" />
-          <span class="header__contact-text">Почта</span>
+          <span class="header__contacts-title">Почта</span>
+          <VIcon icon="mdi-arrow-top-right" size="14" class="header__contacts-arrow" />
         </VBtn>
         <VBtn
-          class="header__contact-btn"
+          class="header__contacts-btn"
           variant="text"
           title="Обмен с ЭДО"
           @click="toggleMailRUModal"
         >
           <VIcon icon="mdi-email-outline" size="18" />
-          <span class="header__contact-text">ЭДО</span>
+          <span class="header__contacts-title">ЭДО</span>
+          <VIcon icon="mdi-arrow-top-right" size="14" class="header__contacts-arrow" />
         </VBtn>
         <VBtn
-          class="header__contact-btn"
+          class="header__contacts-btn"
           variant="text"
           href="#"
           target="_blank"
@@ -80,16 +82,13 @@
           title="Официальный сайт"
         >
           <VIcon icon="mdi-web" size="18" />
-          <span class="header__contact-text">Сайт</span>
+          <span class="header__contacts-title">Сайт</span>
+          <VIcon icon="mdi-arrow-top-right" size="14" class="header__contacts-arrow" />
         </VBtn>
       </div>
+      <div class="header__divider" />
       <LoginWidgets />
     </template>
-    <FileWidget v-model="isDocsPanelOpen" />
-    <TechWidget
-      v-if="isAdmin"
-      v-model="isTechMenuOpen"
-    />
     <MailWarningModal
       v-model="isMailRUOpen"
     />
@@ -98,112 +97,127 @@
 
 <script setup>
 import LoginWidgets from '../components/widgets/LoginWidgets.vue'
-import FileWidget from '../components/widgets/FileWidget.vue'
-import TechWidget from '../components/widgets/TechWidget.vue'
 import MailWarningModal from '../components/modals/MailWarningModal.vue';
-import { useSidebarStore } from '@/store/sidebarStore';
 import { useAuthStore } from '@/store/authStore';
 import { computed, ref } from 'vue';
 
-const sidebarStore = useSidebarStore();
-const isDocsPanelOpen = ref(false);
-const isTechMenuOpen = ref(false);
 const isMailRUOpen = ref(false);
 const authStore = useAuthStore();
 
-const toggleDocsPanel = () => {
-  isDocsPanelOpen.value = !isDocsPanelOpen.value;
-};
-const toggleTechMenu = () => {
-  isTechMenuOpen.value = !isTechMenuOpen.value;
-};
 const toggleMailRUModal = () => {
   isMailRUOpen.value = !isMailRUOpen.value;
 };
-const authenticationUser = computed(() => authStore.isAuthenticated);
 const isAdmin = computed(() => authStore.isAdmin);
 </script>
 
 <style scoped lang="scss">
-.header {
-  &__menu {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 6px;
-      &-label {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: #722F37;
-        letter-spacing: 0.02em;
-        padding-left: 4px;
-      }
-    }
-    :deep(.v-app-bar-nav-icon) {
-      color: #722F37;
-      &:hover {
-        background-color: rgba(114, 47, 55, 0.08);
-    }
-  }
+@import '@/styles/colors';
 
+.header {
+  padding: 0 18px;
+  border-bottom: 2px solid $color-bg-muted;
   &-link {
     text-decoration: none;
     cursor: pointer;
     color: inherit;
-    transition: all 0.3s ease;
-    &:hover {
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
-    }
   }
-  .logo-container {
+  &-logo {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding-left: 80px;
-  }
-  .logo-image {
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
+    padding-left: 24px;
+    &-image {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+    &-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    &-subtitle {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: $color-muted;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
   }
 
-  .logo-title {
-    font-size: 1.25rem;
-    font-weight: 500;
-    white-space: nowrap;
-  }
-
-  &__docs-btn {
-    margin-left: 5px;
+  &__nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 32px;
+    height: 100%;
+    &-tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border: none;
+      background: transparent;
+      color: $color-secondary-text;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color 0.2s ease, border-color 0.2s ease;
+      &:hover {
+        color: rgb(var(--v-theme-secondary));
+      }
+      &--active {
+        color: rgb(var(--v-theme-primary));
+        border-bottom-color: rgb(var(--v-theme-primary));
+        font-weight: 600;
+      }
+    }
   }
 
   &__contacts {
     display: flex;
-    gap: 4px;
+    gap: 20px;
     align-items: center;
-    color: #722F37;
-    padding-right: 5px;
-  }
-
-  &__contact-btn {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    padding: 6px 12px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #722F37, #B22222);
-    color: white;
-    border: none;
-    box-shadow: 0 4px 12px rgba(178, 34, 34, 0.3);
-    &:hover {
-      background: linear-gradient(135deg, #B22222, #722F37);
-      box-shadow: 0 6px 16px rgba(178, 34, 34, 0.4);
+    color: rgb(var(--v-theme-secondary));
+    &-btn {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      padding: 0;
+      min-width: 0;
+      background: transparent;
+      color: $color-secondary-text;
+      border: none;
+      box-shadow: none;
+      text-transform: none;
+      letter-spacing: normal;
+      &:hover {
+        background: transparent;
+        color: rgb(var(--v-theme-primary));
+        box-shadow: none;
+      }
+    }
+    &-title {
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    &-arrow {
+      opacity: 0.6;
+      margin-left: -2px;
     }
   }
-  &__contact-text {
-    font-size: 0.85rem;
-    font-weight: 500;
+
+  &__divider {
+    width: 1px;
+    height: 24px;
+    background: $color-line;
+    margin: 0 16px;
   }
 }
 </style>

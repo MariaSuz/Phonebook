@@ -1,5 +1,8 @@
 <template>
-  <VCard class="departments">
+  <VCard
+    ref="rootCard"
+    class="departments"
+  >
     <div
       class="departments-table-header"
       :class="{
@@ -13,7 +16,7 @@
           @click="toggleCollapse"
         >
           <VIcon
-          color="white"
+          color="primary"
           :icon="collapsed ? 'mdi-chevron-right' : 'mdi-chevron-down'"
           size="small"
           class="departments-collapse-icon"
@@ -24,96 +27,52 @@
         ></span>
         </div>
         <template v-if="!collapsed">
-          <VIcon
-            v-if="authenticationUser"
-            color="white"
-            icon="mdi-pencil"
-            size="small"
-            @click="editDepartment"
-            class="departments-edit-icon"
-          ></VIcon>
-          <VIcon
-            v-if="authenticationUser"
-            color="white"
-            icon="mdi-delete"
-            size="small"
-            @click="deleteDepartment"
-            class="departments-edit-icon"
-          ></VIcon>
+          <ActionButtons
+            :show-view="false"
+            :can-edit="authenticationUser"
+            @edit="editDepartment"
+            @delete="deleteDepartment"
+          />
         </template>
       </div>
       <ButtonComponent
         v-if="authenticationUser && !collapsed"
         prepend-icon="mdi-plus"
         title="Добавить сотрудника"
+        buttonType="cancel"
         @click="addUser"
       />
     </div>
     <VExpandTransition>
       <div v-show="!collapsed">
-        <VDataTable
-          :key="department?.id"
-          :headers="headers"
-          :loading="isLoading"
+        <TableComponent
+          :table-key="department?.id"
           :items="employees"
-          hide-default-footer
-          :items-per-page="-1"
+          :headers="headers"
+          :is-loading="isLoading"
           :search="search"
-          class="departments__table"
+          :items-per-page="-1"
+          :hide-default-footer="true"
+          :highlightable-fields="highlightableFields"
+          :show-actions="true"
+          :show-view="true"
+          :can-edit="authenticationUser"
+          :can-delete="authenticationUser"
+          :no-data="!authenticationUser ? 'Сотрудники отсутствуют' : undefined"
+          :no-data-button-title="authenticationUser ? 'Добавить первого сотрудника' : undefined"
+          @view="show"
+          @edit="edit"
+          @delete="removeEmployee"
+          @no-data-action="addUser"
         >
           <template
             v-for="field in highlightableFields"
             :key="field"
-            v-slot:[`item.${field}`]="{ item }"
+            #[`item.${field}`]="{ item }"
           >
             <span v-html="highlightText(item[field]) || '—'"></span>
           </template>
-          <template v-slot:item.actions="{ item }">
-            <div class="d-flex ga-2 justify-end">
-              <VIcon
-                color="medium-emphasis"
-                icon="mdi-eye"
-                size="small"
-                @click="show(item)"
-                style="cursor: pointer;"
-              ></VIcon>
-              <VIcon
-                v-if="authenticationUser"
-                color="medium-emphasis"
-                icon="mdi-pencil"
-                size="small"
-                @click="edit(item)"
-                style="cursor: pointer;"
-              ></VIcon>
-              <VIcon
-                v-if="authenticationUser"
-                color="medium-emphasis"
-                icon="mdi-delete"
-                size="small"
-                @click="removeEmployee(item)"
-                style="cursor: pointer;"
-              ></VIcon>
-            </div>
-          </template>
-          <template v-slot:no-data>
-            <div class="departments-empty">
-            <ButtonComponent
-              v-if="authenticationUser"
-              prepend-icon="mdi-plus"
-              title="Добавить первого сотрудника"
-              @click="addUser"
-              buttonType="save"
-              class="btn-first"
-            />
-              <span
-                v-if="!authenticationUser"
-                class="departments-empty-title"
-              >
-                Сотрудники отсутствуют
-            </span>
-            </div>
-          </template>
-        </VDataTable>
+        </TableComponent>
       </div>
     </VExpandTransition>
     <FormModal
@@ -144,6 +103,7 @@
       v-model="modals.editDepartment"
       :form-component="DepartmentForm"
       :form-type="FormTypes.EDIT"
+      width="520"
       @cancel="closeModal"
       :data="department"
     />
@@ -156,18 +116,22 @@
     <ComfirmDelete
       v-model="modals.deleteEmployee"
       :title="selectedEmployee?.fullName"
+      :subtitle="employeeDeleteSubtitle"
       @confirm="confirmDeleteEmployee"
       @cancel="closeModal"
     />
     <WarningModal
       v-model="modals.warningDialog"
-      message="В отделе находятся сотрудники. Пожалуйста, сначала удалите всех сотрудников, а затем повторите попытку."
+      :department-name="department?.name"
+      :department-id="department?.id"
+      :employees="employees"
+      @cancel="closeModal"
      />
   </VCard>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import { useEmployeesStore } from '@/store/employeesStore';
 import { useDepartmentStore } from '@/store/departmentsStore';
 import FormModal from '@/components/modals/FormModal.vue';
@@ -179,7 +143,9 @@ import EmployeeForm from '@/components/forms/EmployeeForm.vue';
 import { useAuthStore } from '@/store/authStore';
 import { reactive } from 'vue';
 import ComfirmDelete from '@/components/modals/ComfirmDelete.vue';
-import ButtonComponent from '@/components/ButtonComponent.vue';
+import ButtonComponent from '@/components/buttons/ButtonComponent.vue';
+import ActionButtons from '@/components/buttons/ActionButtons.vue';
+import TableComponent from '@/components/TableComponent.vue';
 import WarningModal from '@/components/modals/WarningModal.vue';
 
 const props = defineProps<{
@@ -201,6 +167,8 @@ const emit = defineEmits<{
 
 const toggleCollapse = () => emit('update:collapsed', !props.collapsed);
 
+const rootCard = ref<{ $el: HTMLElement } | null>(null);
+
 const modals = reactive({
   showEmployee: false,
   addEmployee: false,
@@ -220,21 +188,27 @@ const employees = computed(() => {
   return (employeesStore.list || []).filter(user => user.departmentId == +props.departmentId);
 })
 const isLoading = computed(() => departmentStore.loading || employeesStore.loading);
+const deletingEmployeeId = ref<number | null>(null);
+
+const employeeDeleteSubtitle = computed(() => {
+  if (!selectedEmployee.value) return '';
+  return [selectedEmployee.value.position, department.value?.name].filter(Boolean).join(' · ');
+});
 
 const highlightableFields = computed(() => [
-  'cabinet', 'position', 'fullName', 'internalPhone',
-  'cityPhone', 'mobilePhone', 'email'
+  'cabinet', 'position', 'internalPhone',
+  'cityPhone', 'mobilePhone', 'email', 'fullName',
 ]);
 
 // const isEmpty = computed(() => users.value.length === 0);
 
 const selectedEmployee = ref<null | EmployeeFormModel>(null);
 const headers = computed(() => [
-  { key: 'cabinet', title: '№ кабинета', width: '80px' },
+  { key: 'cabinet', title: 'Кабинет', width: '80px' },
   { key: 'position', title: 'Должность', width: '180px' },
   { key: 'fullName', title: 'Ф.И.О', width: '340px' },
-  { key: 'internalPhone', title: 'Внутренний номер', width: '100px' },
-  { key: 'cityPhone', title: 'Городской номер', width: '200px' },
+  { key: 'internalPhone', title: 'Внутренний', width: '100px' },
+  { key: 'cityPhone', title: 'Городской', width: '200px' },
   { key: 'mobilePhone', title: 'Сотовый номер', width: '200px' },
   { key: 'email', title: 'Почта', width: '200px' },
   {
@@ -265,8 +239,14 @@ const removeEmployee = (user: EmployeeFormModel) => {
   modals.deleteEmployee = true;
   selectedEmployee.value = user;
 };
-const confirmDeleteEmployee = () => {
-  employeesStore.deleteEmployee(selectedEmployee?.value?.id!);
+const confirmDeleteEmployee = async () => {
+  const id = selectedEmployee.value?.id!;
+  deletingEmployeeId.value = id;
+  try {
+    await employeesStore.deleteEmployee(id);
+  } finally {
+    deletingEmployeeId.value = null;
+  }
 };
 const deleteDepartment = () => {
   modals.deleteDepartment = true;
@@ -319,21 +299,17 @@ const highlightDepartmentName = (text?: string) => {
 </script>
 
 <style lang="scss">
-.departments {
-  border-radius: 12px !important;
-  overflow: hidden;
-  border: 1px solid #C06060 !important;
+@import '@/styles/colors';
 
-  th {
-    background: transparent !important;
-    color: #722F37 !important;
-    font-weight: 600 !important;
-    border-bottom: 2px solid #C06060 !important;
-  }
+.departments {
+  border-radius: 4px !important;
+  overflow: hidden;
+
   &-table-header {
     display: flex;
     justify-content: space-between;
-    background: linear-gradient(135deg, #722F37, #B22222);
+    align-items: center;
+    border-bottom: 1px solid $color-line;
     padding: 10px 15px;
     &--drag {
       cursor: grab;
@@ -353,17 +329,7 @@ const highlightDepartmentName = (text?: string) => {
       align-items: center;
     }
      &--collapsed {
-      background: #FFFFFF;
-      .departments-collapse-icon {
-        color: #722F37 !important;
-      }
-      .departments-header-department {
-        color: #722F37;
-        text-shadow: none;
-      }
-      .department-name-highlight {
-        border: 1px solid #E5C7C7;
-      }
+      border-bottom: none;
       .departments-table-header-left,
       .departments-collapse {
         flex: 1;
@@ -371,18 +337,19 @@ const highlightDepartmentName = (text?: string) => {
     }
   }
   .department-name-highlight {
-    background: #FDF5F5;
-    color: #722F37;
+    background: $color-bg-muted;
+    color: rgb(var(--v-theme-primary));
     padding: 1px 6px;
     border-radius: 4px;
   }
+
   &-collapse {
     display: flex;
     align-items: center;
     gap: 10px;
     cursor: pointer;
     &:focus-visible {
-      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6);
+      box-shadow: 0 0 0 2px rgba(var(--v-theme-primary), 0.3);
     }
     &-left {
       display: flex;
@@ -391,76 +358,33 @@ const highlightDepartmentName = (text?: string) => {
       flex: 1;
     }
   }
-  &-match-chip {
-    pointer-events: none;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 10px;
-    border-radius: 20px !important;
-    background: #FDF5F5 !important;
-    color: #722F37 !important;
-    border: 1px solid #E5C7C7 !important;
-  }
+
   &-empty-title {
     font-size: 1.25rem;
     font-weight: 600;
     letter-spacing: 0.3px;
-    color: #722F37;
+    color: rgb(var(--v-theme-primary));
     margin: 16px;
   }
 
   &-header-department {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: white;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: $color-primary-text;
     white-space: nowrap;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
 
-  &-search {
-    padding: 20px 20px 16px;
-    background: #FDF5F5;
-    box-shadow: 0 2px 8px rgba(114, 47, 55, 0.1);
-    border-bottom: 1px solid #E5C7C7;
-  }
-
-  &-not-found {
-    width: 100%;
-    font-size: 1.25rem;
+  &-fullname {
+    color: $color-primary-text;
     font-weight: 600;
-    color: #722F37;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
   }
 
   .highlight {
-    background-color: #C06060;
-    color: white;
+    background-color: rgba(var(--v-theme-primary), 0.14);
+    color: rgb(var(--v-theme-primary));
     padding: 2px 4px;
     border-radius: 3px;
     font-weight: 600;
-  }
-
-  .btn-first {
-    margin: 20px;
-    .v-icon {
-      color: white;
-    }
-
-  }
-
-  .v-icon {
-    transition: all 0.2s;
-    opacity: 0.7;
-    color: #8B4C39;
-
-    &:hover {
-      opacity: 1;
-      transform: scale(1.15);
-      color: #B22222;
-    }
   }
 }
 </style>

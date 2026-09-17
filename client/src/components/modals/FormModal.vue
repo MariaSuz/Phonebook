@@ -2,7 +2,7 @@
   <Modal
       v-model="modalValue"
       backgroundColor="white"
-      width="750"
+      :width="width"
     >
       <Component
         :is="formComponent"
@@ -28,9 +28,12 @@ interface ModalProps {
   formType: FormTypes;
   id?: number;
   departmentId?: number;
+  width?: string | number;
 }
 
-const props = defineProps<ModalProps>();
+const props = withDefaults(defineProps<ModalProps>(), {
+  width: 750,
+});
 
 interface Emits {
   (e: 'update:modelValue', value: boolean): void;

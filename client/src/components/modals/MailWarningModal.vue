@@ -1,63 +1,54 @@
 <template>
-  <VDialog
+  <Modal
     v-model="show"
     class="mail-warning-modal"
-    overlay-color="#000"
-    overlay-opacity="1"
-    scroll-strategy="none"
-    max-width="420"
+    max-width="440"
+    @close="close"
   >
-    <VCard>
-      <div class="mail-warning-modal__header">
-        <div class="mail-warning-modal__icon">
-          <VIcon
-            icon="mdi-alert"
-            size="20"
-            color="white"
-          />
-        </div>
-        <h3 class="mail-warning-modal__title">
-          Почта для ЭДО (RU)
-        </h3>
-        <VBtn
-          class="modal__close"
-          icon="mdi-close"
-          variant="text"
-          @click="close"
-        >
-        </VBtn>
-      </div>
-      <div class="mail-warning-modal__content">
+    <div class="mail-warning-modal__eyebrow">Предупреждение</div>
+    <div class="mail-warning-modal__body">
+      <div class="mail-warning-modal__icon">
         <VIcon
-          icon="mdi-email-outline"
-          size="22"
-          class="mail-warning-modal__content-icon"
+          icon="mdi-exclamation"
+          size="32"
+          color="white"
         />
-        <span>Внимание! Вы открываете почту для обмена ЭДО. Вы точно хотите её открыть?</span>
       </div>
+      <h3 class="mail-warning-modal__title font-heading">
+        Почта для ЭДО (RU)
+      </h3>
+      <p class="mail-warning-modal__warning">
+        Внимание! Это специальная почта для документооборота, вы точно хотите её открыть?
+      </p>
+      <p class="mail-warning-modal__note">
+        Ей пользуются отдел кадров, бухгалтерия, экономисты и контрактная служба.
+      </p>
+    </div>
+    <template #footer>
       <div class="mail-warning-modal__footer">
         <ButtonComponent
           title="Отмена"
           buttonType="cancel"
           @click="close"
         />
-        <VBtn
-          class="btn btn--save"
-          href="#"
+        <ButtonComponent
+          title="Открыть почту"
+          append-icon="mdi-arrow-top-right"
+          buttonType="save"
+          href="http://mail.opera-samara.ru/"
           target="_blank"
           rel="noopener noreferrer"
           @click="close"
-        >
-          Открыть почту
-        </VBtn>
+        />
       </div>
-    </VCard>
-  </VDialog>
+    </template>
+  </Modal>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import ButtonComponent from '../ButtonComponent.vue';
+import ButtonComponent from '../buttons/ButtonComponent.vue';
+import Modal from '@/components/modals/Modal.vue';
 
 interface ModalProps {
   modelValue?: boolean;
@@ -82,73 +73,68 @@ const close = () => {
 };
 </script>
 <style lang="scss">
+@import '@/styles/colors';
+
 .mail-warning-modal {
-  &__header {
-    position: relative;
+  &__eyebrow {
+    padding: 20px 44px 0 24px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: $color-secondary-text;
+  }
+
+  &__body {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 12px;
-    padding: 28px 28px 18px;
-    background: linear-gradient(135deg, #FDF5F5, #FCE9E9);
-    border-bottom: 1px solid #E5C7C7;
+    text-align: center;
+    gap: 8px;
+    padding: 16px 32px 28px;
   }
 
   &__icon {
-    width: 40px;
-    height: 40px;
+    width: 64px;
+    height: 64px;
     flex-shrink: 0;
     border-radius: 50%;
-    background: linear-gradient(135deg, #722F37, #B22222);
+    background: rgb(var(--v-theme-primary));
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-bottom: 8px;
   }
 
   &__title {
     margin: 0;
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #722F37;
-    letter-spacing: -0.01em;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: $color-primary-text;
   }
 
-  &__content {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 24px 28px;
+  &__warning {
+    margin: 4px 0 0;
     font-size: 0.95rem;
-    line-height: 1.6;
+    font-weight: 700;
+    line-height: 1.5;
+    color: rgb(var(--v-theme-accent));
   }
 
-  &__content-icon {
-    color: #B22222;
-    flex-shrink: 0;
-    margin-top: 2px;
+  &__note {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: $color-secondary-text;
   }
 
   &__footer {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    padding: 4px 20px 22px;
-  }
-
-  .modal__close {
-    position: absolute !important;
-    right: 16px !important;
-    top: 16px !important;
-    z-index: 100 !important;
-    height: 24px !important;
-    width: 24px !important;
-    border-radius: 50% !important;
-    background: rgba(0, 0, 0, 0.05) !important;
-    transition: all 0.3s ease !important;
-    &:hover {
-      background: rgba(0, 0, 0, 0.1) !important;
-      transform: rotate(90deg);
-    }
+    gap: 12px;
+    padding: 20px 24px 24px;
+    border-top: 1px solid $color-line;
   }
 }
 </style>

@@ -14,6 +14,7 @@
         {{ headerMessage }}
       </h3>
       <VBtn
+        v-if="!hideClose"
         class="modal__close"
         icon="mdi-close"
         variant="text"
@@ -36,6 +37,7 @@ import { computed } from 'vue';
 interface ModalProps {
   modelValue?: boolean;
   headerMessage?: string;
+  hideClose?: boolean;
 }
 
 interface ModalEmits {

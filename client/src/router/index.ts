@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import DepartmentsList from '@/pages/DepartmentList.vue';
+import Documents from '@/pages/Documents.vue';
+import TechSites from '@/pages/TechSites.vue';
 import PhoneBookList from '@/pages/PhoneBookList.vue';
 import Login from '@/pages/Login.vue';
 import Settings from '@/pages/Settings.vue';
@@ -16,10 +17,15 @@ const router = createRouter({
       meta: { requiresAuth: false },
     },
     {
-      path: '/departments/:departmentId',
-      name: 'departments',
-      component: DepartmentsList,
-      props: true,
+      path: '/documents',
+      name: 'documents',
+      component: Documents,
+      meta: { requiresAuth: false },
+    },
+    {
+      path: '/tech-sites',
+      name: 'techSites',
+      component: TechSites,
       meta: { requiresAuth: false },
     },
     {

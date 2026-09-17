@@ -70,6 +70,7 @@ export const useUserStore = defineStore('user', () => {
 
   return {
     list,
+    loading,
     updateUser,
     getUsers,
     deleteUser,
