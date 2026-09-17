@@ -1,8 +1,18 @@
 <template>
   <VCard>
+    <VProgressLinear
+      v-if="isLoading"
+      :model-value="isLoading"
+      color="primary"
+      height="3"
+      absolute
+      location="top"
+    />
     <div class="base-form">
       <div class="base-form__header">
-        <h2 class="base-form__title">{{ title }}</h2>
+        <slot name="header">
+          <h2 class="base-form__title">{{ title }}</h2>
+        </slot>
       </div>
       <VForm @submit.prevent="onSubmitForm">
         <div
@@ -16,12 +26,15 @@
             @click="cancelAction"
             title="Отмена"
             buttonType="cancel"
+            :disabled="isLoading"
           />
           <ButtonComponent
             v-if="formType !== FormTypes.SHOW"
             title="Сохранить"
+            prepend-icon="mdi-check"
             type="submit"
-            :disabled="isLoading"
+            :loading="isLoading"
+            :disabled="isLoading || disabled"
             buttonType="save"
           />
         </div>
@@ -32,7 +45,7 @@
 
 <script setup lang="ts">
 import { FormTypes } from '@/logic/types/FormTypes';
-import ButtonComponent from '../ButtonComponent.vue';
+import ButtonComponent from '../buttons/ButtonComponent.vue';
 import { computed } from 'vue';
 
 interface BaseFormProps {
@@ -40,11 +53,13 @@ interface BaseFormProps {
   formType: FormTypes;
   layout?: 'grid' | 'flex';
   isLoading?: boolean;
+  disabled?: boolean;
 }
 
 const props = withDefaults(defineProps<BaseFormProps>(), {
   layout: 'flex',
   isLoading: false,
+  disabled: false,
 });
 
 const contentClass = computed(() => ({
@@ -66,22 +81,35 @@ const onSubmitForm = () => {
 </script>
 
 <style lang="scss">
+@import '@/styles/colors';
+
 .base-form {
   display: flex;
   flex-direction: column;
-  background: #ffffff;
+  background: rgb(var(--v-theme-surface));
 
   &__header {
     padding: 24px 28px 16px;
-    background: linear-gradient(135deg, #FDF5F5, #FCE9E9);
-    border-bottom: 1px solid #E5C7C7;
+    border-bottom: 1px solid $color-line;
+    background: rgb(var(--v-theme-background));
+  }
+
+  &__status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 28px;
+    background: $color-bg-muted;
+    color: $color-secondary-text;
+    font-size: 0.85rem;
+    border-bottom: 1px solid $color-line;
   }
 
   &__title {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #722F37;
-    margin: 0 0 4px 0;
+    color: $color-primary-text;
+    margin: 0;
   }
 
   &__content {
@@ -99,11 +127,12 @@ const onSubmitForm = () => {
   }
 
   &__actions {
+    background: rgb(var(--v-theme-background));
     display: flex;
     justify-content: flex-end;
     gap: 16px;
     padding: 20px 28px 28px;
-    background: #FDF5F5;
+    border-top: 1px solid $color-line;
   }
 }
 </style>

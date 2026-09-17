@@ -36,13 +36,32 @@ const updateValue = debounce((value: string) => {
 </script>
 
 <style lang="scss">
+@import '@/styles/colors';
+
 .search-input {
+  flex: 1;
+  min-width: 0;
+  background: rgb(var(--v-theme-surface));
   .v-field {
-    border-radius: 12px;
+    border-radius: 4px;
   }
 
   .v-field__outline {
-    color: #C06060 !important;
+    color: $color-line !important;
+    opacity: 1 !important;
+  }
+
+  .v-field--focused .v-field__outline {
+    color: rgb(var(--v-theme-primary)) !important;
+  }
+
+  .v-field__prepend-inner .v-icon {
+    color: $color-secondary-text;
+  }
+
+  .v-label {
+    color: $color-secondary-text !important;
+    opacity: 1 !important;
   }
 }
 </style>

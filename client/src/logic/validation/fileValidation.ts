@@ -12,20 +12,31 @@ const allowedTypes = [
   'application/vnd.oasis.opendocument.spreadsheet',
 ];
 
+const MAX_FILE_SIZE = 20 * 1024 * 1024;
+
 const validFileType = (value: File | null) => {
   if (!value) return true;
   return allowedTypes.includes(value.type);
 };
 
+const validFileSize = (value: File | null) => {
+  if (!value) return true;
+  return value.size <= MAX_FILE_SIZE;
+};
+
 export const fileRules = {
   groupId: {
-    required: helpers.withMessage('Обязателено для заполнения', required),
+    required: helpers.withMessage('Выберите группу документов', required),
   },
   fileContent: {
     required: helpers.withMessage('Обязателено для заполнения', required),
     fileType: helpers.withMessage(
       'Неверный тип файла. Разрешены: PDF, JPG, PNG, TXT, Excel файлы, Word файлы',
       validFileType,
+    ),
+    fileSize: helpers.withMessage(
+      'Максимальный размер файла — 20 МБ',
+      validFileSize,
     ),
   },
 };

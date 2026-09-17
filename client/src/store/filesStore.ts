@@ -69,7 +69,10 @@ export const useFileStore = defineStore('file', () => {
     }
   }
 
-  async function uploadFile(data: FileUploadModel) {
+  async function uploadFile(
+    data: FileUploadModel,
+    onProgress?: (loadedBytes: number, totalBytes: number) => void,
+  ) {
     loading.value = true;
     try {
       const formData = new FormData();
@@ -85,7 +88,13 @@ export const useFileStore = defineStore('file', () => {
       if (data.fileName) {
         formData.append('fileName', data.fileName);
       }
-      const response = await api.post('/files/upload', formData);
+      const response = await api.post('/files/upload', formData, {
+        onUploadProgress: (event) => {
+          if (onProgress && event.total) {
+            onProgress(event.loaded, event.total);
+          }
+        },
+      });
       const newDoc = response.data;
       files.value.push(newDoc);
       return newDoc;

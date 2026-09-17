@@ -3,9 +3,20 @@
     :title="formTitle"
     :form-type="formType"
     :is-loading="isLoading"
+    :disabled="v.$invalid"
     @cancel="emit('cancel')"
     @submit="onSubmitForm"
   >
+    <template v-slot:header>
+      <div class="user-form__eyebrow">Пользователи</div>
+      <h2 class="user-form__title font-heading">{{ formTitle }}</h2>
+      <div
+        v-if="showDefaultRoleHint"
+        class="user-form__subtitle"
+      >
+        Роль по умолчанию — редактор
+      </div>
+    </template>
     <TextField
       v-model="user.userName"
       label="Имя пользователя"
@@ -20,6 +31,7 @@
     <TextField
       v-model="user.password"
       label="Пароль пользователя"
+      placeholder="Введите пароль"
       type="password"
       icon="mdi-lock"
       :disabled="isLoading"
@@ -30,14 +42,37 @@
     />
     <Select
       v-model="user.roleId"
-      label="Выберите роль"
+      label="Роль"
       :items="roleOptions"
       item-title="title"
       item-value="value"
       :disabled="isLoading"
       :readonly="disabled"
       icon="mdi-shield-account"
-    />
+    >
+      <template v-slot:item="{ item, props: itemProps }">
+        <VListItem
+          v-bind="itemProps"
+          :title="item.raw.title"
+          :subtitle="item.raw.description"
+          class="user-form__role-item"
+        >
+          <template v-slot:prepend>
+            <span
+              class="user-form__role-radio"
+              :class="{ 'user-form__role-radio--active': item.raw.value === user.roleId }"
+            />
+          </template>
+        </VListItem>
+      </template>
+    </Select>
+    <div
+      v-if="user.roleId === adminRoleId"
+      class="user-form__role-info"
+    >
+      <VIcon icon="mdi-information-outline" size="16" />
+      <span>Администратор получит доступ к учётным записям и журналу аудита.</span>
+    </div>
   </BaseForm>
 </template>
 
@@ -59,12 +94,24 @@ interface UserProps {
 }
 interface RoleOption {
   title: string;
+  description: string;
   value: number;
 }
 
+const adminRoleId = 1;
+const editorRoleId = 2;
+
 const roleOptions: RoleOption[] = [
-  { title: 'Администратор', value: 1 },
-  { title: 'Редактор', value: 2 }
+  {
+    title: 'Администратор',
+    description: 'Управление пользователями, документами и журналом аудита',
+    value: adminRoleId,
+  },
+  {
+    title: 'Редактор',
+    description: 'Правка сотрудников и подразделений без доступа к учётным записям',
+    value: editorRoleId,
+  },
 ];
 
 const props = defineProps<UserProps>();
@@ -73,7 +120,7 @@ const store = useUserStore();
 const createUser = (): UserFormModel => ({
   userName: '',
   password: '',
-  roleId: 2,
+  roleId: editorRoleId,
   avatar: '',
 });
 const user = ref<UserFormModel>(props.data ? { ...props.data } : createUser());
@@ -81,14 +128,18 @@ const v = useVuelidate(userRules, user);
 const disabled = computed(() => props.formType === FormTypes.SHOW);
 const isLoading = ref(false);
 
+const showDefaultRoleHint = computed(
+  () => props.formType === FormTypes.ADD && user.value.roleId === editorRoleId,
+);
+
 const formTitle = computed(() => {
    switch (props.formType) {
     case FormTypes.EDIT:
-      return `Редактирование пользователя ${user.value.userName}`;
+      return `Редактирование пользователя`;
     case FormTypes.ADD:
-      return `Добавление нового пользователя`;
+      return `Добавление пользователя`;
     default:
-      return `Просмотр пользователя ${user.value.userName}`;
+      return `Просмотр пользователя`;
   };
 });
 
@@ -118,3 +169,79 @@ const onSubmitForm = async () => {
   }
 };
 </script>
+
+<style scoped lang="scss">
+@import '@/styles/colors';
+
+.user-form {
+  &__eyebrow {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgb(var(--v-theme-primary));
+  }
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $color-primary-text;
+    margin: 4px 0 0;
+  }
+
+  &__subtitle {
+    font-size: 0.85rem;
+    color: $color-secondary-text;
+    margin-top: 4px;
+  }
+
+  &__role-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+    background: $color-bg-muted;
+    border-radius: 4px;
+    color: $color-secondary-text;
+    font-size: 0.85rem;
+    margin-top: -8px;
+
+    .v-icon {
+      margin-top: 1px;
+      flex-shrink: 0;
+      color: rgb(var(--v-theme-primary));
+    }
+  }
+}
+
+.user-form__role-radio {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  border-radius: 50%;
+  border: 1.5px solid $color-line;
+  flex-shrink: 0;
+
+  &--active {
+    border-color: rgb(var(--v-theme-primary));
+    border-width: 5px;
+  }
+}
+
+.user-form__role-item {
+  align-items: flex-start;
+
+  :deep(.v-list-item-title) {
+    font-weight: 600;
+    color: $color-primary-text;
+  }
+
+  :deep(.v-list-item-subtitle) {
+    white-space: normal;
+    font-size: 0.8rem;
+    color: $color-secondary-text;
+    opacity: 1;
+  }
+}
+</style>

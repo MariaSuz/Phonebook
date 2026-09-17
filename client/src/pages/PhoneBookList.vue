@@ -1,54 +1,63 @@
 <template>
-  <VCard flat>
-    <div class="phone-book">
-      <div class="phone-book-search">
-        <SearchInput
-          v-model="searchValue"
-          class="phone-book-search-input"
-          label="Поиск по сотрудникам и отделам"
-          clearable
-          :disabled="isDragMode"
-        />
-        <VBtn
-          icon
-          variant="text"
-          size="small"
-          class="phone-book-toggle-all"
-          :title="isDragMode ? 'Готово' : 'Режим сортировки отделов'"
-          @click="toggleDragMode"
-        >
-          <VIcon :icon="isDragMode ? 'mdi-check' : 'mdi-pencil-outline'" />
-        </VBtn>
+  <div class="phone-book">
+    <div class="phone-book-header">
+      <h1 class="phone-book-header-title font-heading">Телефонный справочник</h1>
+      <div class="phone-book-header-actions">
         <ButtonComponent
-          v-if="isDragMode"
-          title="Отмена сортировки"
+          prepend-icon="mdi-sort"
+          title="Порядок отделов"
+          :active="isDragMode"
+          :chip="isDragMode ? 'ВКЛ' : undefined"
           buttonType="cancel"
-          @click="resetDepartmentsOrder"
+          @click="toggleDragMode"
         />
-        <VBtn
-          icon
-          variant="text"
-          size="small"
-          class="phone-book-toggle-all"
+        <ButtonComponent
+          v-if="authenticationUser"
           :disabled="isDragMode"
-          :title="allCollapsed ? 'Развернуть все' : 'Свернуть все'"
-          @click="toggleAll"
-        >
-          <VIcon :icon="allCollapsed ? 'mdi-unfold-more-horizontal' : 'mdi-unfold-less-horizontal'" />
-        </VBtn>
+          prepend-icon="mdi-plus"
+          title="Добавить подразделение"
+          buttonType="save"
+          @click="addDepartment"
+        />
       </div>
-      <div
-        v-if="isLoading"
-        class="phone-book-loader"
-      >
-        <VProgressCircular
-          indeterminate color="#722F37"
-          size="64"
-         />
-        <p class="phone-book-loader-text">Загрузка данных...</p>
-      </div>
+    </div>
+    <div class="phone-book-search">
+      <SearchInput
+        v-model="searchValue"
+        label="Поиск по сотрудникам и отделам"
+        clearable
+        :disabled="isDragMode"
+      />
+      <ButtonComponent
+        :prepend-icon="allCollapsed ? 'mdi-unfold-more-horizontal' : 'mdi-unfold-less-horizontal'"
+        :title="allCollapsed ? 'Развернуть все' : 'Свернуть все'"
+        buttonType="save"
+        :disabled="isDragMode"
+        @click="toggleAll"
+      />
+    </div>
+    <div
+      v-if="isDragMode"
+      class="phone-book-drag-hint"
+    >
+      <span>Тяните за шапку отдела, чтобы изменить порядок. Новый порядок сохраняется сразу.</span>
+      <ButtonComponent
+        title="Сбросить сортировку"
+        buttonType="cancel"
+        @click="resetDepartmentsOrder"
+      />
+      <ButtonComponent
+        title="Готово"
+        buttonType="cancel"
+        @click="toggleDragMode"
+      />
+    </div>
+    <PhoneBookSkeleton v-if="isLoading"/>
+    <div
+      v-else
+      class="phone-book-list"
+    >
       <draggable
-        v-else
         v-model="orderedDepartments"
         item-key="id"
         tag="div"
@@ -71,34 +80,51 @@
           </div>
         </template>
       </draggable>
-      <div
-        v-if="!visibleDepartments.length && searchValue"
-        class="phone-book-not-found"
-      >
-        {{ 'Сотрудники или отделы не найдены' }}
-      </div>
     </div>
-  </VCard>
+    <div
+      v-if="!visibleDepartments.length && searchValue"
+      class="phone-book-not-found"
+    >
+      {{ 'Сотрудники или отделы не найдены' }}
+    </div>
+    <FormModal
+      v-model="isShowModalAddDepartment"
+      :form-component="DepartmentForm"
+      :form-type="FormTypes.ADD"
+      width="520"
+      @cancel="closeModal"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
 import SearchInput from '@/components/inputs/SearchInput.vue';
 import draggable from 'vuedraggable';
-import ButtonComponent from '@/components/ButtonComponent.vue'
+import ButtonComponent from '@/components/buttons/ButtonComponent.vue'
 import { computed, onMounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { useDepartmentStore } from '@/store/departmentsStore';
 import DepartmentList from './DepartmentList.vue';
 import { useEmployeesStore } from '@/store/employeesStore';
 import type { EmployeeFormModel as Employee } from '@/logic/types/forms/EmployeeFormModel';
 import type { DepartmentFormModel as Department } from '@/logic/types/forms/DepartmentFormModel';
+import { useAuthStore } from '@/store/authStore';
+import FormModal from '@/components/modals/FormModal.vue';
+import { FormTypes } from '@/logic/types/FormTypes';
+import DepartmentForm from '@/components/forms/DepartmentForm.vue';
+import PhoneBookSkeleton from '@/components/PhoneBookSkeleton.vue';
 
+const route = useRoute();
 const searchValue = ref('');
 const isDragMode = ref(false);
 const departmentStore = useDepartmentStore();
 const employeesStore = useEmployeesStore();
+const authStore = useAuthStore();
 const collapsedDepartments = ref<Record<number, boolean>>({});
+const isShowModalAddDepartment = ref(false);
 
 const isLoading = computed(() => employeesStore.loading);
+const authenticationUser = computed(() => authStore.isAuthenticated);
 
 const searchTerm = computed(() => searchValue.value.trim().toLowerCase());
 const hasSearch = computed(() => searchTerm.value.length > 0);
@@ -126,7 +152,6 @@ const matchesEmployee = (employee: Employee, term: string) => {
 const visibleDepartments = computed(() => {
   return departmentStore.orderedList.filter(department => {
     const employees = employeesStore.filterEmployeesByDepartment(department.id) || [];
-    if (!employees.length) return false;
     if (!hasSearch.value) return true;
 
     return (
@@ -165,7 +190,6 @@ const toggleAll = () => {
 };
 
 //Сортировка — обычный ref, синхронизируется из visibleDepartments через watch
-// (не computed с get/set — та версия падала с ошибкой '__draggable_context')
 const orderedDepartments = ref<Department[]>([]);
 
 watch(visibleDepartments, (list) => {
@@ -190,6 +214,14 @@ const resetDepartmentsOrder = () => {
   isDragMode.value = false;
 };
 
+//отделы
+const closeModal = () => {
+  isShowModalAddDepartment.value = false;
+};
+const addDepartment = () => {
+  isShowModalAddDepartment.value = true;
+};
+
 onMounted(async () => {
   await departmentStore.getDepartments();
   await employeesStore.getEmployees();
@@ -197,40 +229,67 @@ onMounted(async () => {
 </script>
 
 <style lang="scss">
+@import '@/styles/colors';
+
 .phone-book {
+  &-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    &-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+  }
+
+  &-header-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $color-primary-text;
+    margin: 0;
+  }
+
   &-search {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 20px 20px 16px;
+    padding: 20px 0;
+    border-radius: 4px;
   }
-  &-search-input {
-    flex: 1;
-    min-width: 0;
+
+  &-drag-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    margin-bottom: 8px;
+    background: $color-bg-muted;
+    border-radius: 4px;
+    color: $color-secondary-text;
+    font-size: 0.85rem;
+
+    span {
+      flex: 1;
+    }
   }
   &-toggle-all {
-    color: #722F37 !important;
+    color: rgb(var(--v-theme-primary)) !important;
     flex-shrink: 0;
-    background: #FDF5F5 !important;
-    box-shadow: 0 2px 6px rgba(114, 47, 55, 0.18) !important;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    background: $color-bg-muted !important;
+    box-shadow: none !important;
+    transition: transform 0.15s ease;
 
     &:hover {
       transform: translateY(-1px);
-      box-shadow: 0 4px 10px rgba(114, 47, 55, 0.28) !important;
     }
 
     &.v-btn--disabled {
       box-shadow: none !important;
     }
-  }
-  &-loader {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 300px;
-    gap: 16px;
   }
   .phone-book-content {
     margin-bottom: 8px;
@@ -240,14 +299,14 @@ onMounted(async () => {
   }
   &-loader-text {
     font-size: 1rem;
-    color: #722F37;
+    color: rgb(var(--v-theme-primary));
     font-weight: 500;
   }
   &-not-found {
     width: 100%;
     font-size: 1.25rem;
     font-weight: 600;
-    color: #722F37;
+    color: rgb(var(--v-theme-primary));
     padding: 40px 20px;
     display: flex;
     justify-content: center;

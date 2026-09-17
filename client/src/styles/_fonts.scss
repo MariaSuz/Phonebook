@@ -1,21 +1,47 @@
 @font-face {
-  font-family: 'PT Sans';
-  font-weight: 400;
+  font-family: 'Spectral';
+  font-weight: 600;
   font-style: normal;
   font-display: auto;
-  src:
-    local('PT Sans-Regular'),
-    local('PT Sans Regular'),
-    url('/src/assets/fonts/PT-Sans/PTSans-Regular.ttf') format('truetype');
+  src: url('/src/assets/fonts/Spectral-SemiBold.ttf') format('truetype');
 }
 
 @font-face {
-  font-family: 'PT Sans';
+  font-family: 'Spectral';
   font-weight: 700;
   font-style: normal;
   font-display: auto;
-  src:
-    local('PT Sans-Bold'),
-    local('PT Sans Bold'),
-    url('/src/assets/fonts/PT-Sans/PTSans-Bold.ttf') format('truetype');
+  src: url('/src/assets/fonts/Spectral-Bold.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-weight: 400;
+  font-style: normal;
+  font-display: auto;
+  src: url('/src/assets/fonts/IBMPlexSans-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-weight: 500;
+  font-style: normal;
+  font-display: auto;
+  src: url('/src/assets/fonts/IBMPlexSans-Medium.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-weight: 600;
+  font-style: normal;
+  font-display: auto;
+  src: url('/src/assets/fonts/IBMPlexSans-SemiBold.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-weight: 700;
+  font-style: normal;
+  font-display: auto;
+  src: url('/src/assets/fonts/IBMPlexSans-Bold.ttf') format('truetype');
 }

@@ -1,6 +1,5 @@
 <template>
   <VApp>
-    <AppSidebar />
     <AppHeader />
     <VMain>
       <div class="app-content">
@@ -14,7 +13,6 @@
 </template>
 
 <script setup lang="ts">
-import AppSidebar from '@/layouts/AppSidebar.vue';
 import AppHeader from '@/layouts/AppHeader.vue';
 import AlertMessage from './components/widgets/AlertMessage.vue';
 import { onMounted } from 'vue';
@@ -35,16 +33,12 @@ onMounted(() => {
 @import '@/styles/style.scss';
 .app-content {
   min-height: calc(100vh - 64px);
-  padding: 20px;
-  background: #f8f8f8;
+  background: rgb(var(--v-theme-background));
 
   &__wrapper {
-    max-width: 1440px;
+    max-width: 1600px;
     margin: 0 auto;
-    background: #ffffff;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    border-radius: 8px;
+    padding: 24px;
   }
 }
 </style>
