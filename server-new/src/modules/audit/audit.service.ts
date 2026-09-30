@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogData } from './interfaces/audit-log.interface';
+import { AuditQueryDTO } from './dto/audit-query.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class AuditService {
@@ -40,9 +42,48 @@ export class AuditService {
     return diff;
   }
 
-  async findAll() {
-    return this.prisma.auditLog.findMany({
-      orderBy: { timestamp: 'desc' },
-    });
+  async findAll(query: AuditQueryDTO) {
+    const { limit = 25, offset = 0, action, month } = query;
+
+    const where: Prisma.auditLogWhereInput = {
+      ...(action !== undefined && { action }),
+      ...(month !== undefined && {
+        timestamp: {
+          gte: this.monthStart(month),
+          lt: this.monthEnd(month),
+        },
+      }),
+    };
+
+    const [data, total] = await Promise.all([
+      this.prisma.auditLog.findMany({
+        where,
+        orderBy: { timestamp: 'desc' },
+        skip: offset,
+        take: limit,
+      }),
+      this.prisma.auditLog.count({ where }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        limit,
+        offset,
+        total,
+        hasMore: offset + data.length < total,
+      },
+    };
+  }
+
+  //для фильтрации по месяцам
+  private monthStart(month: string): Date {
+    const [year, m] = month.split('-').map(Number);
+    return new Date(Date.UTC(year, m - 1, 1));
+  }
+
+  private monthEnd(month: string): Date {
+    const [year, m] = month.split('-').map(Number);
+    return new Date(Date.UTC(year, m, 1));
   }
 }
