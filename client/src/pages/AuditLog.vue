@@ -4,15 +4,40 @@
     <div class="audit__header">
       <h1 class="audit__title font-heading">Журнал аудита</h1>
     </div>
-    <TableComponent
+    <div class="audit__filters">
+      <span class="audit__filters-label">Фильтры:</span>
+      <VBtnToggle
+        v-model="selectedAction"
+        class="audit__filters-toggle"
+      >
+        <VBtn
+          v-for="item in ACTIONS"
+          :key="item.value"
+          :value="item.value"
+          size="small"
+          class="audit__filters-toggle-buttons"
+        >
+          {{ item.label }}
+        </VBtn>
+      </VBtnToggle>
+      <VueDatePicker
+        v-model="selectedMonthValue"
+        month-picker
+        :locale="ru"
+        :clearable="true"
+        placeholder="Все месяцы"
+      />
+    </div>
+    <TableComponentServer
       :items="auditStore.list"
       :headers="headers"
       :is-loading="isLoading"
-      :items-per-page="10"
+      :meta="auditStore.meta"
       :highlightable-fields="['timestamp', 'action', 'entity', 'summary']"
       :show-actions="false"
       show-expand
       item-value="id"
+      @update:page="loadPage"
     >
       <template v-slot:item.timestamp="{ item }">
         <div class="audit__when">
@@ -43,22 +68,47 @@
           </td>
         </tr>
       </template>
-    </TableComponent>
+    </TableComponentServer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
+import { ru } from 'date-fns/locale';
 import Breadcrumbs from '@/components/buttons/Breadcrumbs.vue';
-import TableComponent from '@/components/TableComponent.vue';
+import TableComponentServer from '@/components/TableComponentServer.vue';
 import { useAuditLogStore } from '@/store/auditStore';
 import { useDepartmentStore } from '@/store/departmentsStore';
 import type { AuditFormModel } from '@/logic/types/forms/AuditFormModel';
 
+type AuditAction = 'CREATE' | 'UPDATE' | 'DELETE';
+
 const auditStore = useAuditLogStore();
 const departmentStore = useDepartmentStore();
 
+const selectedAction = ref<AuditAction | null>(null);
+const selectedMonthValue = ref<{ month: number; year: number } | null>(null);
+
+// строка "YYYY-MM" для запроса на бэкенд
+const selectedMonth = computed<string | null>(() => {
+  if (!selectedMonthValue.value) return null;
+  const { month, year } = selectedMonthValue.value;
+  return `${year}-${String(month + 1).padStart(2, '0')}`;
+});
+
 const isLoading = computed(() => auditStore.loading);
+
+//пагинация
+const loadPage = (page: number) => {
+  const offset = (page - 1) * auditStore.meta.limit;
+  auditStore.getlogs({ offset });
+};
+
+const ACTIONS: Array<{ value: AuditAction; label: string }> = [
+  { value: 'CREATE', label: 'Создание' },
+  { value: 'UPDATE', label: 'Изменение' },
+  { value: 'DELETE', label: 'Удаление' },
+];
 
 const headers = [
   { key: 'timestamp', title: 'Когда', width: '130px' },
@@ -181,6 +231,18 @@ const getExpandedJson = (item: AuditFormModel) => {
   return JSON.stringify(payload ?? {}, null, 2);
 };
 
+const fetchWithFilters = (offset = 0) => {
+  auditStore.getlogs({
+    offset,
+    action: selectedAction.value ?? undefined,
+    month: selectedMonth.value ?? undefined,
+  });
+};
+
+watch([selectedAction, selectedMonthValue], () => {
+  fetchWithFilters();
+});
+
 onMounted(async () => {
   await auditStore.getlogs();
   if (!departmentStore.list.length) {
@@ -247,6 +309,39 @@ onMounted(async () => {
     word-break: break-word;
     max-height: 320px;
     overflow: auto;
+  }
+
+  &__filters {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    border: 1px solid $color-line;
+    margin-bottom: 16px;
+    background: rgb(var(--v-theme-surface));
+    &-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: $color-secondary-text;
+    }
+    &-toggle {
+      display: flex;
+      gap: 10px;
+      &-buttons {
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        color: $color-secondary-text;
+        border: 1px solid $color-line !important;
+        border-radius: 0 !important;
+        &.v-btn--active {
+          border-color: rgb(var(--v-theme-primary)) !important;
+          color: rgb(var(--v-theme-primary));
+        }
+      }
+    }
   }
 }
 

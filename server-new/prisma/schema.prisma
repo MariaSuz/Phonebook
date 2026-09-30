@@ -19,6 +19,10 @@ model auditLog {
   newData    Json? @map("new_data")
   diff        Json?
   users       users?    @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([timestamp])
   @@map("audit_log")
 }
 
