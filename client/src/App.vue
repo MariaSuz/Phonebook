@@ -22,10 +22,7 @@ import { useAuthStore } from '@/store/authStore';
 const authStore = useAuthStore();
 const router = useRouter();
 onMounted(() => {
-  const isValid = authStore.checkToken();
-  if (!isValid && router.currentRoute.value.meta.requiresAuth) {
-    router.push('/login');
-  }
+  authStore.checkToken();
 });
 </script>
 

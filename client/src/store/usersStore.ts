@@ -14,13 +14,13 @@ export const useUserStore = defineStore('user', () => {
   const list = computed(() => users.value);
 
   async function createUser(data: UserFormModel) {
+    loading.value = true;
     try {
-      loading.value = true;
       const response = await api.post('/users', data);
       users.value.push(response.data);
       return response.data;
     } catch (error: any) {
-      alertStore.error(getErrorMessage(error));
+      showError(error);
     } finally {
       loading.value = false;
     }

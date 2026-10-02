@@ -93,7 +93,7 @@
     <Select
       v-model="file.groupId"
       label="Группа документов"
-      :items="groupOptions"
+      :items="FILE_GROUPS"
       item-title="title"
       item-value="value"
       placeholder="Выберите группу"
@@ -127,6 +127,8 @@ import { useAlertStore } from '@/store/alertStore';
 import { useFileStore } from '@/store/filesStore';
 import BaseForm from './BaseForm.vue';
 import ButtonComponent from '../buttons/ButtonComponent.vue';
+import { FILE_GROUPS } from '@/logic/constants/fileGroups';
+import { formatSize, getExtension } from '@/logic/utils/fileUtils';
 
 const store = useFileStore();
 interface fileProps {
@@ -152,12 +154,6 @@ const fileInputRef = ref<HTMLInputElement | null>(null);
 const isDragOver = ref(false);
 const uploadedBytes = ref(0);
 
-const groupOptions = [
-  { title: 'Техническое обслуживание', value: 1 },
-  { title: 'Нормативно-правовые документы', value: 2 },
-  { title: 'Методические рекомендации по Противодествию коррупции', value: 3 },
-];
-
 const formTitle = computed(() => {
    switch (props.formType) {
     case FormTypes.ADD:
@@ -175,18 +171,12 @@ const titleText = computed(() =>
   props.formType === FormTypes.ADD ? 'Добавление документа' : (file.value.fileName || 'Просмотр документа'),
 );
 
-const formatSize = (bytes: number) => {
-  if (!bytes) return '0 Б';
-  const sizes = ['Б', 'КБ', 'МБ', 'ГБ'];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`;
-};
-
-const fileExtension = computed(() => {
-  const name = file.value.fileContent?.name ?? '';
-  const ext = name.split('.').pop();
-  return ext ? ext.toUpperCase() : '—';
-});
+const fileExtension = computed(() =>
+  getExtension({
+    fileName: file.value.fileContent?.name ?? '',
+    contentType: file.value.fileContent?.type,
+  }),
+);
 
 const formattedSize = computed(() => formatSize(file.value.fileContent?.size ?? 0));
 

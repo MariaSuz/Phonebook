@@ -34,7 +34,7 @@
     <TableComponent
       :items="filteredUsers"
       :headers="headers"
-      :is-loading="isLoading"
+      :is-loading="userStore.loading"
       :items-per-page="10"
       :highlightable-fields="['userName', 'roleId']"
       :show-view="false"
@@ -47,7 +47,7 @@
         <div class="settings__user">
           <div
             class="settings__avatar"
-            :class="{ 'settings__avatar--admin': item.roleId === 1 }"
+            :class="{ 'settings__avatar--admin': item.roleId === ROLE_ADMIN }"
           >{{ getInitials(item.userName) }}</div>
           <div class="settings__user-info">
             <div class="settings__user-name">{{ item.userName }}</div>
@@ -62,10 +62,10 @@
         <VChip
           size="small"
           class="role-chip"
-          :class="item.roleId === 1 ? 'role-chip--admin' : 'role-chip--editor'"
-          :variant="item.roleId === 1 ? 'flat' : 'outlined'"
+          :class="item.roleId === ROLE_ADMIN ? 'role-chip--admin' : 'role-chip--editor'"
+          :variant="item.roleId === ROLE_ADMIN ? 'flat' : 'outlined'"
         >
-          {{ getRoleName(item.roleId) }}
+          {{ roleLabel(item.roleId) }}
         </VChip>
       </template>
     </TableComponent>
@@ -86,7 +86,7 @@
     <ComfirmDelete
       v-model="modal.deleteUser"
       :title="selectedUser?.userName"
-      :subtitle="selectedUser ? getRoleName(selectedUser.roleId) : ''"
+      :subtitle="selectedUser ? roleLabel(selectedUser.roleId) : ''"
       @confirm="confirmDelete"
       @cancel="closeModal"
     />
@@ -107,12 +107,12 @@ import TableComponent from '@/components/TableComponent.vue';
 import SearchInput from '@/components/inputs/SearchInput.vue';
 import type { UserFormModel } from '@/logic/types/forms/UserFormModel';
 import { pluralizeRu } from '@/logic/utils/pluralize';
+import { ROLE_ADMIN, ROLE_OPTIONS, getRoleName } from '@/logic/constants/roles';
 
 const userStore = useUserStore();
 const authStore = useAuthStore();
-const isLoading = computed(() => userStore.loading);
 
-const headers = computed(() => [
+const headers = [
   { key: 'userName', title: 'Пользователь' },
   { key: 'roleId', title: 'Роль'},
   {
@@ -122,7 +122,7 @@ const headers = computed(() => [
     width: '120px',
     sortable: false,
   }
-]);
+];
 
 const selectedUser = ref<null | UserFormModel>(null);
 const users = computed(() => userStore.list);
@@ -138,8 +138,7 @@ const searchValue = ref('');
 const roleFilter = ref<number | null>(null);
 const roleFilterOptions = [
   { value: null, label: 'Все роли' },
-  { value: 1, label: 'Администратор' },
-  { value: 2, label: 'Редактор' },
+  ...ROLE_OPTIONS,
 ];
 
 const filteredUsers = computed(() => {
@@ -157,21 +156,14 @@ const totalLabel = computed(() => {
 });
 
 const adminLabel = computed(() => {
-  const count = users.value.filter((user) => user.roleId === 1).length;
+  const count = users.value.filter((user) => user.roleId === ROLE_ADMIN).length;
   return `${count} ${pluralizeRu(count, ['администратор', 'администратора', 'администраторов'])}`;
 });
 
 const getInitials = (userName: string) => userName.slice(0, 2).toUpperCase();
 const isSelf = (user: UserFormModel) => user.id === authStore.authUser?.id;
 
-// Функция для получения названия роли
-const getRoleName = (roleId: number) => {
-  switch(roleId) {
-    case 1: return 'Администратор';
-    case 2: return 'Редактор';
-    default: return `Роль ${roleId}`;
-  }
-};
+const roleLabel = (roleId: number) => getRoleName(roleId) ?? `Роль ${roleId}`;
 
 const edit = (user: UserFormModel) => {
   selectedUser.value = user;

@@ -67,7 +67,7 @@
       </template>
     </Select>
     <div
-      v-if="user.roleId === adminRoleId"
+      v-if="user.roleId === ROLE_ADMIN"
       class="user-form__role-info"
     >
       <VIcon icon="mdi-information-outline" size="16" />
@@ -86,6 +86,7 @@ import useVuelidate from '@vuelidate/core';
 import { userRules } from '@/logic/validation/userValidation';
 import Select from '../inputs/Select.vue';
 import BaseForm from './BaseForm.vue';
+import { ROLE_ADMIN, ROLE_EDITOR, ROLE_LABELS } from '@/logic/constants/roles';
 
 interface UserProps {
   data?: UserFormModel;
@@ -98,19 +99,16 @@ interface RoleOption {
   value: number;
 }
 
-const adminRoleId = 1;
-const editorRoleId = 2;
-
 const roleOptions: RoleOption[] = [
   {
-    title: 'Администратор',
+    title: ROLE_LABELS[ROLE_ADMIN],
     description: 'Управление пользователями, документами и журналом аудита',
-    value: adminRoleId,
+    value: ROLE_ADMIN,
   },
   {
-    title: 'Редактор',
+    title: ROLE_LABELS[ROLE_EDITOR],
     description: 'Правка сотрудников и подразделений без доступа к учётным записям',
-    value: editorRoleId,
+    value: ROLE_EDITOR,
   },
 ];
 
@@ -120,7 +118,7 @@ const store = useUserStore();
 const createUser = (): UserFormModel => ({
   userName: '',
   password: '',
-  roleId: editorRoleId,
+  roleId: ROLE_EDITOR,
   avatar: '',
 });
 const user = ref<UserFormModel>(props.data ? { ...props.data } : createUser());
@@ -129,7 +127,7 @@ const disabled = computed(() => props.formType === FormTypes.SHOW);
 const isLoading = ref(false);
 
 const showDefaultRoleHint = computed(
-  () => props.formType === FormTypes.ADD && user.value.roleId === editorRoleId,
+  () => props.formType === FormTypes.ADD && user.value.roleId === ROLE_EDITOR,
 );
 
 const formTitle = computed(() => {

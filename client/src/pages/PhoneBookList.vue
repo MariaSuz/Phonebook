@@ -52,7 +52,7 @@
         @click="toggleDragMode"
       />
     </div>
-    <PhoneBookSkeleton v-if="isLoading"/>
+    <PhoneBookSkeleton v-if="employeesStore.loading"/>
     <div
       v-else
       class="phone-book-list"
@@ -123,7 +123,6 @@ const authStore = useAuthStore();
 const collapsedDepartments = ref<Record<number, boolean>>({});
 const isShowModalAddDepartment = ref(false);
 
-const isLoading = computed(() => employeesStore.loading);
 const authenticationUser = computed(() => authStore.isAuthenticated);
 
 const searchTerm = computed(() => searchValue.value.trim().toLowerCase());

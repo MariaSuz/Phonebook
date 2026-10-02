@@ -92,6 +92,7 @@ import TextField from '@/components/inputs/TextField.vue';
 import ButtonComponent from '@/components/buttons/ButtonComponent.vue';
 import { userRules } from '@/logic/validation/userValidation';
 import { useAuthStore } from '@/store/authStore';
+import { getRoleName } from '@/logic/constants/roles';
 import { showError } from '@/logic/utils/errorUtils';
 import { api } from '@/api/api';
 
@@ -119,13 +120,7 @@ const show = computed({
   set: (value) => emits('update:modelValue', value),
 });
 
-const roleName = computed(() => {
-  switch (authStore.authUser?.roleId) {
-    case 1: return 'Администратор';
-    case 2: return 'Редактор';
-    default: return '';
-  }
-});
+const roleName = computed(() => getRoleName(authStore.authUser?.roleId));
 
 const userLabel = computed(() => [authStore.authUser?.userName, roleName.value].filter(Boolean).join(' · '));
 

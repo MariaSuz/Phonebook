@@ -6,6 +6,8 @@ import Login from '@/pages/Login.vue';
 import Settings from '@/pages/Settings.vue';
 import AuditLog from '@/pages/AuditLog.vue';
 import { isTokenExpired } from '@/logic/utils/tokenUtils';
+import { getStoredUser, getToken } from '@/logic/utils/authStorage';
+import { ROLE_ADMIN } from '@/logic/constants/roles';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -38,27 +40,30 @@ const router = createRouter({
       path: '/settings',
       name: 'settings',
       component: Settings,
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, requiresAdmin: true },
     },
     {
       path: '/audit',
       name: 'audit',
       component: AuditLog,
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, requiresAdmin: true },
     },
   ],
 });
 
 
-router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token');
-  const isValid = token && !isTokenExpired(token);
+router.beforeEach((to) => {
+  const token = getToken();
+  const isValid = !!token && !isTokenExpired(token);
+
   if (to.meta.requiresAuth && !isValid) {
-    next({ name: 'login', query: { redirect: to.fullPath } });
-  } else if (to.name === 'login' && isValid) {
-    next({ name: 'main' });
-  } else {
-    next();
+    return { name: 'login', query: { redirect: to.fullPath } };
+  }
+  if (to.meta.requiresAdmin && getStoredUser()?.roleId !== ROLE_ADMIN) {
+    return { name: 'main' };
+  }
+  if (to.name === 'login' && isValid) {
+    return { name: 'main' };
   }
 });
 

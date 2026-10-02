@@ -147,6 +147,7 @@ import ButtonComponent from '@/components/buttons/ButtonComponent.vue';
 import ActionButtons from '@/components/buttons/ActionButtons.vue';
 import TableComponent from '@/components/TableComponent.vue';
 import WarningModal from '@/components/modals/WarningModal.vue';
+import { highlight } from '@/logic/utils/textUtils';
 
 const props = defineProps<{
   departmentId: number;
@@ -195,15 +196,13 @@ const employeeDeleteSubtitle = computed(() => {
   return [selectedEmployee.value.position, department.value?.name].filter(Boolean).join(' · ');
 });
 
-const highlightableFields = computed(() => [
+const highlightableFields = [
   'cabinet', 'position', 'internalPhone',
   'cityPhone', 'mobilePhone', 'email', 'fullName',
-]);
-
-// const isEmpty = computed(() => users.value.length === 0);
+];
 
 const selectedEmployee = ref<null | EmployeeFormModel>(null);
-const headers = computed(() => [
+const headers = [
   { key: 'cabinet', title: 'Кабинет', width: '80px' },
   { key: 'position', title: 'Должность', width: '180px' },
   { key: 'fullName', title: 'Ф.И.О', width: '340px' },
@@ -218,7 +217,7 @@ const headers = computed(() => [
     align: 'end',
     width: '100px'
   }
-]);
+];
 
 const edit = (user: EmployeeFormModel) => {
   selectedEmployee.value = user;
@@ -278,24 +277,11 @@ const closeModal = () => {
 };
 
 //Подстветка текста
-const highlightText = (text: string | number) => {
-  if (!props.searchValue || !text) return text;
+const highlightText = (text: string | number) =>
+  text ? highlight(text, props.searchValue, 'highlight') : text;
 
-  const query = props.searchValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const regex = new RegExp(query, 'ig');
-
-  return String(text).replace(regex, '<span class="highlight">$&</span>');
-};
-
-const highlightDepartmentName = (text?: string) => {
-  if (!text) return 'Отдел не найден';
-  if (!props.searchQuery) return text;
-
-  const query = props.searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const regex = new RegExp(query, 'ig');
-
-  return text.replace(regex, '<span class="department-name-highlight">$&</span>');
-};
+const highlightDepartmentName = (text?: string) =>
+  text ? highlight(text, props.searchQuery, 'department-name-highlight') : 'Отдел не найден';
 </script>
 
 <style lang="scss">

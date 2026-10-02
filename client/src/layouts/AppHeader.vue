@@ -95,7 +95,7 @@
   </VAppBar>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import LoginWidgets from '../components/widgets/LoginWidgets.vue'
 import MailWarningModal from '../components/modals/MailWarningModal.vue';
 import { useAuthStore } from '@/store/authStore';
