@@ -19,3 +19,5 @@ export const highlight = (text: string | number, query: string | undefined, cssC
     .map((part, index) => (index % 2 ? `<span class="${cssClass}">${escapeHtml(part)}</span>` : escapeHtml(part)))
     .join('');
 };
+
+export const displayUrl = (url: string) => url.replace(/^https?:\/\//, '');

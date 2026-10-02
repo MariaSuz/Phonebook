@@ -28,7 +28,7 @@ const router = createRouter({
       path: '/tech-sites',
       name: 'techSites',
       component: TechSites,
-      meta: { requiresAuth: false },
+      meta: { requiresAuth: false, requiresAdmin: true },
     },
     {
       path: '/login',

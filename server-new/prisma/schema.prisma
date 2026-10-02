@@ -73,3 +73,12 @@ model users {
   auditLog auditLog[]
   roles     roles?      @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
+
+model tech_sites {
+  id          Int     @id @default(autoincrement())
+  name        String  @db.VarChar(255)
+  url         String  @unique
+  icon        String  @default("mdi-web") @db.VarChar(100)
+  description String?
+  sortOrder   Int     @default(999) @map("sort_order")
+}

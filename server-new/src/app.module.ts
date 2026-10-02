@@ -7,6 +7,7 @@ import { FilesModule } from './modules/files/files.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { AuditModule } from './modules/audit/audit.module';
+import { TechSitesModule } from './modules/tech-sites/tech-sites.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AuditModule } from './modules/audit/audit.module';
     UsersModule,
     AuthModule,
     AuditModule,
+    TechSitesModule,
   ],
   controllers: [],
   providers: [],
