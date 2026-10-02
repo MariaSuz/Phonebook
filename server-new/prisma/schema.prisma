@@ -82,3 +82,13 @@ model tech_sites {
   description String?
   sortOrder   Int     @default(999) @map("sort_order")
 }
+
+model announcements {
+  id              Int      @id @default(autoincrement())
+  message         String   @db.VarChar(200)
+  startsAt        DateTime @map("starts_at") @db.Timestamptz(6)
+  endsAt          DateTime @map("ends_at") @db.Timestamptz(6)
+  showBeforeHours Int      @default(24) @map("show_before_hours")
+
+  @@index([endsAt], map: "idx_announcements_ends_at")
+}

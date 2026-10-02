@@ -119,14 +119,14 @@
 import type { FileUploadModel } from '@/logic/types/forms/FileFormModel';
 import { FormTypes } from '@/logic/types/FormTypes';
 import { computed, ref } from 'vue';
-import TextField from '../inputs/TextField.vue';
-import Select from '../inputs/Select.vue';
+import TextField from '@/components/inputs/TextField.vue';
+import Select from '@/components/inputs/Select.vue';
 import { useVuelidate } from '@vuelidate/core';
 import { fileRules } from '@/logic/validation/fileValidation';
 import { useAlertStore } from '@/store/alertStore';
 import { useFileStore } from '@/store/filesStore';
 import BaseForm from './BaseForm.vue';
-import ButtonComponent from '../buttons/ButtonComponent.vue';
+import ButtonComponent from '@/components/buttons/ButtonComponent.vue';
 import { FILE_GROUPS } from '@/logic/constants/fileGroups';
 import { formatSize, getExtension } from '@/logic/utils/fileUtils';
 

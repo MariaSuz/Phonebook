@@ -48,6 +48,15 @@
           @click="goSettings"
         />
         <VListItem
+          v-if="authStore.isAuthenticated"
+          class="login-menu__item"
+          prepend-icon="mdi-bullhorn-outline"
+          title="Анонсы"
+          subtitle="Объявления в полосе над шапкой"
+          value="announcements"
+          @click="goAnnouncements"
+        />
+        <VListItem
           v-if="authStore.isAdmin"
           class="login-menu__item"
           prepend-icon="mdi-file-document-outline"
@@ -107,6 +116,9 @@ const logout = () => authStore.logout();
 
 const goSettings = () => {
   router.push('/settings');
+};
+const goAnnouncements = () => {
+  router.push('/announcements');
 };
 const goAudit = () => {
   router.push('/audit');

@@ -8,6 +8,7 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { TechSitesModule } from './modules/tech-sites/tech-sites.module';
+import { AnnouncementsModule } from './modules/announcements/announcements.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { TechSitesModule } from './modules/tech-sites/tech-sites.module';
     AuthModule,
     AuditModule,
     TechSitesModule,
+    AnnouncementsModule,
   ],
   controllers: [],
   providers: [],

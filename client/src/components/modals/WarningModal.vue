@@ -57,7 +57,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import ButtonComponent from '../buttons/ButtonComponent.vue';
+import ButtonComponent from '@/components/buttons/ButtonComponent.vue';
 import Modal from '@/components/modals/Modal.vue';
 import { pluralizeRu } from '@/logic/utils/pluralize';
 

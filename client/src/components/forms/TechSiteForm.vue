@@ -50,7 +50,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import TextField from '../inputs/TextField.vue';
+import TextField from '@/components/inputs/TextField.vue';
 import BaseForm from './BaseForm.vue';
 import { useVuelidate } from '@vuelidate/core';
 import { FormTypes } from '@/logic/types/FormTypes';

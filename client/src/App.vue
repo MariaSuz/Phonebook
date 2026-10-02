@@ -1,5 +1,6 @@
 <template>
   <VApp>
+    <AnnouncementBar />
     <AppHeader />
     <VMain>
       <div class="app-content">
@@ -14,6 +15,7 @@
 
 <script setup lang="ts">
 import AppHeader from '@/layouts/AppHeader.vue';
+import AnnouncementBar from '@/layouts/AnnouncementBar.vue';
 import AlertMessage from './components/widgets/AlertMessage.vue';
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';

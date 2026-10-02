@@ -5,6 +5,7 @@ import PhoneBookList from '@/pages/PhoneBookList.vue';
 import Login from '@/pages/Login.vue';
 import Settings from '@/pages/Settings.vue';
 import AuditLog from '@/pages/AuditLog.vue';
+import Announcements from '@/pages/Announcements.vue';
 import { isTokenExpired } from '@/logic/utils/tokenUtils';
 import { getStoredUser, getToken } from '@/logic/utils/authStorage';
 import { ROLE_ADMIN } from '@/logic/constants/roles';
@@ -41,6 +42,12 @@ const router = createRouter({
       name: 'settings',
       component: Settings,
       meta: { requiresAuth: true, requiresAdmin: true },
+    },
+    {
+      path: '/announcements',
+      name: 'announcements',
+      component: Announcements,
+      meta: { requiresAuth: true },
     },
     {
       path: '/audit',

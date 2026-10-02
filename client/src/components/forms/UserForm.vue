@@ -3,7 +3,6 @@
     :title="formTitle"
     :form-type="formType"
     :is-loading="isLoading"
-    :disabled="v.$invalid"
     @cancel="emit('cancel')"
     @submit="onSubmitForm"
   >

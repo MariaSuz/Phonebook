@@ -4,7 +4,7 @@ import { SetMetadata } from '@nestjs/common';
 export const AUDIT_KEY = 'audit';
 
 export interface AuditMetadata {
-  entityType: 'employee' | 'department' | 'file';
+  entityType: 'employee' | 'department' | 'file' | 'announcement';
   action: 'CREATE' | 'UPDATE' | 'DELETE';
 }
 

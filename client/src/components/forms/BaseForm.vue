@@ -34,7 +34,7 @@
             prepend-icon="mdi-check"
             type="submit"
             :loading="isLoading"
-            :disabled="isLoading || disabled"
+            :disabled="isLoading"
             buttonType="save"
           />
         </div>
@@ -45,7 +45,7 @@
 
 <script setup lang="ts">
 import { FormTypes } from '@/logic/types/FormTypes';
-import ButtonComponent from '../buttons/ButtonComponent.vue';
+import ButtonComponent from '@/components/buttons/ButtonComponent.vue';
 import { computed } from 'vue';
 
 interface BaseFormProps {
@@ -53,13 +53,11 @@ interface BaseFormProps {
   formType: FormTypes;
   layout?: 'grid' | 'flex';
   isLoading?: boolean;
-  disabled?: boolean;
 }
 
 const props = withDefaults(defineProps<BaseFormProps>(), {
   layout: 'flex',
   isLoading: false,
-  disabled: false,
 });
 
 const contentClass = computed(() => ({
