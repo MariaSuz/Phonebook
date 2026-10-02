@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ViewUserDTO } from './dto/user-view.dto';
 import { UserViewMapper } from '../../mappers/user.mapper';
@@ -6,7 +6,9 @@ import { UpdateUserDTO } from './dto/users-update.dto';
 import { CreateUserDTO } from './dto/user-create.dto';
 import { HashService } from '../../common/utils/hash.service';
 import { Prisma } from '@prisma/client';
+import { AuthUser } from '../auth/interfaces/auth-user.interface';
 
+const ROLE_ADMIN = 1;
 @Injectable()
 export class UsersService {
   private readonly mapper = new UserViewMapper();
@@ -27,7 +29,19 @@ export class UsersService {
     return this.mapper.mapOne(user);
   }
 
-  async update(id: number, data: UpdateUserDTO): Promise<ViewUserDTO> {
+  async update(
+    id: number,
+    data: UpdateUserDTO,
+    currentUser: AuthUser,
+  ): Promise<ViewUserDTO> {
+    if (data.roleId !== undefined) {
+      if (currentUser.roleId !== ROLE_ADMIN) {
+        throw new ForbiddenException('Менять роль может только администратор');
+      }
+      if (currentUser.userId === id && data.roleId !== currentUser.roleId) {
+        throw new ForbiddenException('Нельзя изменить собственную роль');
+      }
+    }
     const user = await this.prisma.users.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('Пользователь не найден');
     if (data.userName !== undefined) {
