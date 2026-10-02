@@ -90,23 +90,18 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'vue-router';
+import { getRoleName } from '@/logic/constants/roles';
 import ChangePassword from '@/components/widgets/ChangePassword.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
 const changePass = ref(false);
 
-const roleName = computed(() => {
-  switch (authStore.authUser?.roleId) {
-    case 1: return 'Администратор';
-    case 2: return 'Редактор';
-    default: return '';
-  }
-});
+const roleName = computed(() => getRoleName(authStore.authUser?.roleId));
 
 const logout = () => authStore.logout();
 

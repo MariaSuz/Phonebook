@@ -68,7 +68,7 @@
               <td>
                 <span class="documents__table-format">{{ getExtension(file) }}</span>
               </td>
-              <td>{{ formatSize(file.sizeBytes) }}</td>
+              <td>{{ formatSize(file.sizeBytes, '—') }}</td>
               <td class="documents__table-actions">
                 <VIcon
                   icon="mdi-download"
@@ -139,6 +139,8 @@ import ButtonComponent from '@/components/buttons/ButtonComponent.vue';
 import SearchInput from '@/components/inputs/SearchInput.vue';
 import { useAuthStore } from '@/store/authStore';
 import { useRoute } from 'vue-router';
+import { ALL_GROUP, FILE_GROUPS } from '@/logic/constants/fileGroups';
+import { formatSize, getExtension } from '@/logic/utils/fileUtils';
 
 const route = useRoute();
 const filesStore = useFileStore();
@@ -149,42 +151,14 @@ const modals = reactive({
   delete: false,
 });
 
-const ALL_GROUP = 0;
-const groupOptions = [
-  { title: 'Техническое обслуживание', value: 1 },
-  { title: 'Нормативно-правовые документы', value: 2 },
-  { title: 'Методические рекомендации по противодействию коррупции', value: 3 },
-];
-
 const activeGroup = ref<number>(ALL_GROUP);
 const searchValue = ref(typeof route.query.q === 'string' ? route.query.q : '');
 
 const authenticationUser = computed(() => authStore.isAuthenticated);
 
-const MIME_EXTENSIONS: Record<string, string> = {
-  'application/pdf': 'PDF',
-  'application/msword': 'DOC',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'DOCX',
-  'application/vnd.ms-excel': 'XLS',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'XLSX',
-};
-
-const getExtension = (file: FileFormModel) => {
-  const source = file.originalFileName || file.fileName;
-  const parts = source.split('.');
-  if (parts.length > 1) {
-    const ext = parts.pop()!.toUpperCase();
-    if (ext.length <= 5) return ext;
-  }
-  if (file.contentType && MIME_EXTENSIONS[file.contentType]) {
-    return MIME_EXTENSIONS[file.contentType];
-  }
-  return '—';
-};
-
 const groupsWithCounts = computed(() => [
   { title: 'Все документы', value: ALL_GROUP, count: filesStore.list.length },
-  ...groupOptions.map(group => ({
+  ...FILE_GROUPS.map(group => ({
     ...group,
     count: filesStore.list.filter(file => file.groupId === group.value).length,
   })),
@@ -201,7 +175,7 @@ const groupFilteredFiles = computed(() => {
 
 const deleteSubtitle = computed(() => {
   if (!selectedFile.value) return '';
-  return [getExtension(selectedFile.value), formatSize(selectedFile.value.sizeBytes)].filter(Boolean).join(' · ');
+  return [getExtension(selectedFile.value), formatSize(selectedFile.value.sizeBytes, '—')].filter(Boolean).join(' · ');
 });
 
 const filteredFiles = computed(() => {
@@ -242,13 +216,6 @@ const onDrop = async (event: DragEvent) => {
     fileContent: file,
     groupId: activeGroup.value,
   });
-};
-
-const formatSize = (bytes?: number | null) => {
-  if (!bytes) return '—';
-  const sizes = ['Б', 'КБ', 'МБ', 'ГБ'];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`;
 };
 
 onMounted(async () => {

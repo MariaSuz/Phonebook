@@ -31,7 +31,7 @@
     <TableComponentServer
       :items="auditStore.list"
       :headers="headers"
-      :is-loading="isLoading"
+      :is-loading="auditStore.loading"
       :meta="auditStore.meta"
       :highlightable-fields="['timestamp', 'action', 'entity', 'summary']"
       :show-actions="false"
@@ -41,8 +41,8 @@
     >
       <template v-slot:item.timestamp="{ item }">
         <div class="audit__when">
-          <span class="audit__when-date">{{ formatDateOnly(item.timestamp) }}</span>
-          <span class="audit__when-time">{{ formatTimeOnly(item.timestamp) }}</span>
+          <span class="audit__when-date">{{ formatDate(item.timestamp) }}</span>
+          <span class="audit__when-time">{{ formatTime(item.timestamp) }}</span>
         </div>
       </template>
       <template v-slot:item.action="{ item }">
@@ -59,7 +59,7 @@
         {{ getEntityLabel(item.entityType) }}&nbsp;
       </template>
       <template v-slot:item.summary="{ item }">
-        <span class="audit__summary">{{ getChangeSummary(item) }}</span>
+        <span class="audit__summary">{{ getSummary(item) }}</span>
       </template>
       <template v-slot:expanded-row="{ item, columns }">
         <tr>
@@ -80,8 +80,13 @@ import TableComponentServer from '@/components/TableComponentServer.vue';
 import { useAuditLogStore } from '@/store/auditStore';
 import { useDepartmentStore } from '@/store/departmentsStore';
 import type { AuditFormModel } from '@/logic/types/forms/AuditFormModel';
-
-type AuditAction = 'CREATE' | 'UPDATE' | 'DELETE';
+import { ACTIONS, getActionTitle, type AuditAction } from '@/logic/constants/auditActions';
+import {
+  getChangeSummary,
+  getEntityLabel,
+  getExpandedJson,
+} from '@/logic/utils/auditFormatters';
+import { formatDate, formatTime } from '@/logic/utils/dateUtils';
 
 const auditStore = useAuditLogStore();
 const departmentStore = useDepartmentStore();
@@ -96,19 +101,9 @@ const selectedMonth = computed<string | null>(() => {
   return `${year}-${String(month + 1).padStart(2, '0')}`;
 });
 
-const isLoading = computed(() => auditStore.loading);
-
-//пагинация
 const loadPage = (page: number) => {
-  const offset = (page - 1) * auditStore.meta.limit;
-  auditStore.getlogs({ offset });
+  fetchWithFilters((page - 1) * auditStore.meta.limit);
 };
-
-const ACTIONS: Array<{ value: AuditAction; label: string }> = [
-  { value: 'CREATE', label: 'Создание' },
-  { value: 'UPDATE', label: 'Изменение' },
-  { value: 'DELETE', label: 'Удаление' },
-];
 
 const headers = [
   { key: 'timestamp', title: 'Когда', width: '130px' },
@@ -118,118 +113,8 @@ const headers = [
   { key: 'summary', title: 'Что изменилось', sortable: false },
 ];
 
-const ENTITY_LABELS: Record<string, string> = {
-  employee: 'Сотрудник',
-  department: 'Отдел',
-  file: 'Документ',
-  user: 'Пользователь',
-};
-
-const FIELD_LABELS: Record<string, Record<string, string>> = {
-  employee: {
-    fullName: 'ФИО',
-    position: 'Должность',
-    cabinet: 'Кабинет',
-    internalPhone: 'Внутренний номер',
-    cityPhone: 'Городской номер',
-    mobilePhone: 'Сотовый номер',
-    email: 'Почта',
-    departmentId: 'Отдел',
-    sortOrder: 'Порядок сортировки',
-  },
-  department: {
-    name: 'Название',
-    sortOrder: 'Порядок сортировки',
-  },
-  file: {
-    fileName: 'Имя файла',
-    originalFileName: 'Оригинальное имя файла',
-    description: 'Описание',
-    contentType: 'Тип файла',
-    sizeBytes: 'Размер',
-    groupId: 'Группа',
-  },
-  user: {
-    userName: 'Логин',
-    roleId: 'Роль',
-  },
-};
-
-const getEntityLabel = (entityType: string) => ENTITY_LABELS[entityType] ?? entityType;
-const getFieldLabel = (entityType: string, key: string) => FIELD_LABELS[entityType]?.[key] ?? key;
-
-const formatFieldValue = (entityType: string, key: string, value: any) => {
-  if (value === null || value === undefined || value === '') return '—';
-  if (entityType === 'user' && key === 'roleId') {
-    return value === 1 ? 'Администратор' : value === 2 ? 'Редактор' : String(value);
-  }
-  if (entityType === 'employee' && key === 'departmentId') {
-    const department = departmentStore.list.find((d) => d.id === value);
-    return department?.name ?? String(value);
-  }
-  return String(value);
-};
-
-const getDiffEntries = (item: AuditFormModel) => {
-  if (!item.diff) return [];
-  return Object.entries(item.diff).map(([key, value]) => ({
-    key,
-    label: getFieldLabel(item.entityType, key),
-    oldDisplay: formatFieldValue(item.entityType, key, (value as any)?.old),
-    newDisplay: formatFieldValue(item.entityType, key, (value as any)?.new),
-  }));
-};
-
-const getEntitySummary = (item: AuditFormModel, data?: Record<string, any> | null) => {
-  if (!data) return '—';
-  switch (item.entityType) {
-    case 'employee':
-      return [data.fullName, data.position].filter(Boolean).join(', ') || '—';
-    case 'department':
-      return data.name ?? '—';
-    case 'file':
-      return data.originalFileName ?? data.fileName ?? '—';
-    case 'user':
-      return data.userName ?? '—';
-    default:
-      return '—';
-  }
-};
-
-const getChangeSummary = (item: AuditFormModel) => {
-  if (item.action === 'UPDATE') {
-    const entries = getDiffEntries(item);
-    if (!entries.length) return '—';
-    if (entries.length === 1) {
-      return `${entries[0].label}: ${entries[0].oldDisplay} → ${entries[0].newDisplay}`;
-    }
-    return entries.map((entry) => entry.label).join(', ');
-  }
-  if (item.action === 'CREATE') return getEntitySummary(item, item.newData);
-  if (item.action === 'DELETE') return '';
-  return '—';
-};
-
-const getActionTitle = (action: string) => {
-  switch (action) {
-    case 'CREATE': return 'Создание';
-    case 'UPDATE': return 'Изменение';
-    case 'LOGIN': return 'Вход';
-    default: return 'Удаление';
-  }
-};
-
-const formatDateOnly = (timestamp: Date) => new Date(timestamp).toLocaleDateString('ru-RU');
-const formatTimeOnly = (timestamp: Date) => new Date(timestamp).toLocaleTimeString('ru-RU');
-
-const getExpandedJson = (item: AuditFormModel) => {
-  const payload = item.action === 'DELETE'
-    ? item.oldData
-    : item.action === 'CREATE'
-      ? item.newData
-      : { old: item.oldData, new: item.newData, diff: item.diff };
-  return JSON.stringify(payload ?? {}, null, 2);
-};
+const departmentName = (id: number) => departmentStore.list.find((d) => d.id === id)?.name;
+const getSummary = (item: AuditFormModel) => getChangeSummary(item, departmentName);
 
 const fetchWithFilters = (offset = 0) => {
   auditStore.getlogs({
@@ -256,10 +141,6 @@ onMounted(async () => {
 
 .audit {
   &__header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
     margin-bottom: 20px;
   }
 
@@ -285,10 +166,6 @@ onMounted(async () => {
   &__when-time {
     font-size: 0.78rem;
     color: $color-muted;
-  }
-
-  &__entity-id {
-    color: $color-secondary-text;
   }
 
   &__summary {
@@ -359,11 +236,6 @@ onMounted(async () => {
   &--delete {
     border-color: rgb(var(--v-theme-error)) !important;
     color: rgb(var(--v-theme-error)) !important;
-  }
-
-  &--login {
-    border-color: $color-line !important;
-    color: $color-muted !important;
   }
 }
 </style>

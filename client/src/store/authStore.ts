@@ -5,7 +5,15 @@ import { computed, ref } from 'vue';
 import { useAlertStore } from './alertStore';
 import { getErrorMessage } from '@/logic/utils/errorUtils';
 import { isTokenExpired } from '@/logic/utils/tokenUtils';
+import {
+  clearAuthStorage,
+  getStoredUser,
+  getToken,
+  setStoredUser,
+  setToken,
+} from '@/logic/utils/authStorage';
 import type { UserFormModel } from '@/logic/types/forms/UserFormModel';
+import { ROLE_ADMIN } from '@/logic/constants/roles';
 
 
 interface AuthResponse {
@@ -15,33 +23,22 @@ interface AuthResponse {
   token: string;
 }
 
-function getStoredUser(): UserFormModel | null {
-  try {
-    const stored = localStorage.getItem('currentUser');
-    if (!stored || stored === 'undefined' || stored === 'null') return null;
-    return JSON.parse(stored);
-  } catch {
-    return null;
-  }
-}
-
 export const useAuthStore = defineStore('auth', () => {
   const loading = ref(false);
   const currentUser = ref<UserFormModel | null>(getStoredUser());
-  const token = ref<string | null>(localStorage.getItem('token'));
+  const token = ref<string | null>(getToken());
 
   const isAuthenticated = computed(() => {
     if (!token.value) return false;
     return !isTokenExpired(token.value);
   });
-  const isAdmin = computed(() => currentUser.value?.roleId === 1);
+  const isAdmin = computed(() => currentUser.value?.roleId === ROLE_ADMIN);
   const authUser = computed(() => currentUser.value);
 
   function clearAuth() {
     currentUser.value = null;
     token.value = null;
-    localStorage.removeItem('token');
-    localStorage.removeItem('currentUser');
+    clearAuthStorage();
   }
 
   async function login(credentials: { userName: string; password: string }) {
@@ -55,8 +52,8 @@ export const useAuthStore = defineStore('auth', () => {
       currentUser.value = userData;
       token.value = authToken;
 
-      localStorage.setItem('token', authToken);
-      localStorage.setItem('currentUser', JSON.stringify(userData));
+      setToken(authToken);
+      setStoredUser(userData);
 
       return { success: true, data: response.data };
     } catch (error: any) {
@@ -75,14 +72,29 @@ export const useAuthStore = defineStore('auth', () => {
     router.push('/');
   }
 
-  function checkToken():boolean {
-    if(token && isTokenExpired(token.value)) {
+  function checkToken(): boolean {
+    if (token.value && isTokenExpired(token.value)) {
       clearAuth();
       return false;
     }
     return !!token.value;
   }
 
+  // другая вкладка вышла или вошла
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'token' || e.key === null) {
+      token.value = getToken();
+      currentUser.value = getStoredUser();
+    }
+  });
+
+  // автоматический выход по истечении срока токена
+  setInterval(() => {
+    if (token.value && isTokenExpired(token.value)) {
+      clearAuth();
+      router.push({ name: 'login' });
+    }
+  }, 60_000);
 
   return {
     isAuthenticated,

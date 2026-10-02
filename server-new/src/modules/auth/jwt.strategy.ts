@@ -1,22 +1,30 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private readonly prisma: PrismaService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: process.env.JWT_SECRET || '',
+      secretOrKey: process.env.JWT_SECRET as string,
     });
   }
 
-  validate(payload: JwtPayload) {
+  async validate(payload: JwtPayload) {
+    const user = await this.prisma.users.findUnique({
+      where: { id: payload.userId },
+      select: { id: true, userName: true, roleId: true },
+    });
+    if (!user) {
+      throw new UnauthorizedException('Пользователь не найден');
+    }
     return {
-      userId: payload.userId,
-      userName: payload.userName,
-      roleId: payload.roleId,
+      userId: user.id,
+      userName: user.userName,
+      roleId: user.roleId,
     };
   }
 }
