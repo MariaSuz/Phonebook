@@ -3,7 +3,6 @@
     :title="formTitle"
     :form-type="formType"
     :is-loading="isLoading"
-    :progress="isLoading"
     @cancel="emit('cancel')"
     @submit="onSubmitForm"
   >

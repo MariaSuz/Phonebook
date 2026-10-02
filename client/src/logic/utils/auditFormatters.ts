@@ -8,6 +8,7 @@ export const ENTITY_LABELS: Record<string, string> = {
   department: 'Отдел',
   file: 'Документ',
   user: 'Пользователь',
+  announcement: 'Анонс',
 };
 
 export const FIELD_LABELS: Record<string, Record<string, string>> = {
@@ -37,6 +38,12 @@ export const FIELD_LABELS: Record<string, Record<string, string>> = {
   user: {
     userName: 'Логин',
     roleId: 'Роль',
+  },
+  announcement: {
+    message: 'Текст',
+    startsAt: 'Начало',
+    endsAt: 'Окончание',
+    showBeforeHours: 'Показывать заранее (ч)',
   },
 };
 
@@ -85,6 +92,8 @@ const getEntitySummary = (
       return data.originalFileName ?? data.fileName ?? '—';
     case 'user':
       return data.userName ?? '—';
+    case 'announcement':
+      return data.message ?? '—';
     default:
       return '—';
   }

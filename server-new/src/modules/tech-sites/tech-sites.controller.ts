@@ -7,16 +7,13 @@ import {
   ParseIntPipe,
   Post,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { TechSitesService } from './tech-sites.service';
 import { CreateTechSiteDTO } from './dto/tech-sites-create.dto';
 import { JwtAuthGuard } from '../../guards/auth.guard';
-import { AuditInterceptor } from '../audit/interceptors/audit.interceptor';
 import { AdminGuard } from '../../guards/roles.guard';
 
 @Controller('tech-sites')
-@UseInterceptors(AuditInterceptor)
 export class TechSitesController {
   constructor(private readonly techSitesService: TechSitesService) {}
 

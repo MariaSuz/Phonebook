@@ -6,7 +6,7 @@ export interface AuditFormModel {
   userId: number | null;
   userName: string;
   action: AuditAction;
-  entityType: 'employee' | 'department' | 'user' | 'file';
+  entityType: 'employee' | 'department' | 'user' | 'file' | 'announcement';
   entityId: number | string;
   oldData?: Record<string, any> | null;
   newData?: Record<string, any> | null;
