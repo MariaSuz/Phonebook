@@ -3,10 +3,32 @@
     <Breadcrumbs current="Технические сайты" />
     <div class="tech-sites__header">
       <h1 class="tech-sites__title font-heading">Технические сайты</h1>
+      <ButtonComponent
+        prepend-icon="mdi-plus"
+        title="Добавить сайт"
+        buttonType="save"
+        @click="modals.add = true"
+      />
+    </div>
+    <div
+      v-if="!store.sites.length && !store.loading"
+      class="tech-sites__empty"
+    >
+      <div class="tech-sites__empty-icon">
+        <VIcon
+          icon="mdi-view-agenda-outline"
+          size="28"
+          color="primary"
+        />
+      </div>
+      <h3 class="tech-sites__empty-title font-heading">Сайтов пока нет</h3>
+      <p class="tech-sites__empty-text">
+        Здесь появятся ссылки на внутренние инструменты, когда их добавит администратор.
+      </p>
     </div>
     <div class="tech-sites__grid">
       <div
-        v-for="site in sites"
+        v-for="site in store.sites"
         :key="site.id"
         class="site-card"
         @click="openSite(site)"
@@ -26,6 +48,12 @@
               size="14"
               class="site-card__arrow"
             />
+            <VIcon
+              icon="mdi-delete"
+              size="small"
+              class="site-card__delete"
+              @click.stop="askDelete(site)"
+            />
           </div>
           <div
             v-if="site.description"
@@ -37,43 +65,54 @@
         </div>
       </div>
     </div>
+    <FormModal
+      v-model="modals.add"
+      :form-component="TechSiteForm"
+      :form-type="FormTypes.ADD"
+      width="520"
+      @cancel="modals.add = false"
+    />
+    <ComfirmDelete
+      v-model="modals.delete"
+      :title="siteToDelete?.name"
+      @confirm="confirmDelete"
+      @cancel="modals.delete = false"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import Breadcrumbs from '@/components/buttons/Breadcrumbs.vue';
+import ButtonComponent from '@/components/buttons/ButtonComponent.vue';
+import TechSiteForm from '@/components/forms/TechSiteForm.vue';
+import FormModal from '@/components/modals/FormModal.vue';
+import ComfirmDelete from '@/components/modals/ComfirmDelete.vue';
+import { FormTypes } from '@/logic/types/FormTypes';
+import { useTechSitesStore } from '@/store/techSitesStore';
+import type { TechSiteFormModel } from '@/logic/types/forms/TechSiteFormModel';
+import { displayUrl } from '@/logic/utils/textUtils';
 
-interface TechSite {
-  id: string;
-  name: string;
-  url: string;
-  icon?: string;
-  description?: string;
-}
+const store = useTechSitesStore();
+const modals = reactive({ add: false, delete: false });
+const siteToDelete = ref<TechSiteFormModel | null>(null);
 
-const sites = computed<TechSite[]>(() => [
-  {
-    id: '1',
-    name: '#',
-    url: '#',
-    icon: 'mdi-database',
-    description: '#',
-  },
-  {
-    id: '2',
-    name: '#',
-    url: '#',
-    icon: 'mdi-database',
-    description: '#',
-  },
-]);
-
-const displayUrl = (url: string) => url.replace(/^https?:\/\//, '');
-
-const openSite = (site: TechSite) => {
+const openSite = (site: TechSiteFormModel) => {
   window.open(site.url, '_blank', 'noopener');
 };
+
+const askDelete = (site: TechSiteFormModel) => {
+  siteToDelete.value = site;
+  modals.delete = true;
+};
+
+const confirmDelete = async () => {
+  if (siteToDelete.value) await store.deleteSite(siteToDelete.value.id);
+  modals.delete = false;
+  siteToDelete.value = null;
+};
+
+onMounted(() => store.getSites());
 </script>
 
 <style scoped lang="scss">
@@ -92,6 +131,37 @@ const openSite = (site: TechSite) => {
     font-weight: 700;
     color: $color-primary-text;
     margin: 0;
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 48px 16px;
+    &-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 6px;
+      background: $color-bg-muted;
+      border: 1px solid $color-line;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    &-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: $color-primary-text;
+      margin: 0 0 8px;
+    }
+    &--text {
+    max-width: 380px;
+    margin: 0;
+    font-size: 0.9rem;
+    color: $color-secondary-text;
+    }
   }
 
   &__grid {
@@ -116,6 +186,16 @@ const openSite = (site: TechSite) => {
 
     .site-card__arrow {
       opacity: 1;
+    }
+  }
+
+  &__delete {
+    margin-left: auto;
+    color: $color-muted;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: rgb(var(--v-theme-error));
     }
   }
 
