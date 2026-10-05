@@ -77,7 +77,7 @@
 
 <script setup lang="ts">
 import { useUserStore } from '@/store/usersStore';
-import type { UserFormModel } from '@/logic/types/forms/UserFormModel';
+import type { User, UserCreateModel } from '@/logic/types/forms/UserFormModel';
 import { FormTypes } from '@/logic/types/FormTypes';
 import { ref, computed } from 'vue';
 import TextField from '../inputs/TextField.vue';
@@ -88,7 +88,7 @@ import BaseForm from './BaseForm.vue';
 import { ROLE_ADMIN, ROLE_EDITOR, ROLE_LABELS } from '@/logic/constants/roles';
 
 interface UserProps {
-  data?: UserFormModel;
+  data?: User;
   formType: FormTypes;
   id?: number;
 }
@@ -114,16 +114,25 @@ const roleOptions: RoleOption[] = [
 const props = defineProps<UserProps>();
 const store = useUserStore();
 
-const createUser = (): UserFormModel => ({
+const createUser = (): UserCreateModel => ({
   userName: '',
   password: '',
   roleId: ROLE_EDITOR,
   avatar: '',
 });
-const user = ref<UserFormModel>(props.data ? { ...props.data } : createUser());
+const user = ref<UserCreateModel>(
+  props.data
+    ? {
+        userName: props.data.userName,
+        roleId: props.data.roleId,
+        avatar: props.data.avatar,
+        password: '',
+      }
+    : createUser(),
+);
 const v = useVuelidate(userRules, user);
 const disabled = computed(() => props.formType === FormTypes.SHOW);
-const isLoading = ref(false);
+const isLoading = computed(() => store.loading);
 
 const showDefaultRoleHint = computed(
   () => props.formType === FormTypes.ADD && user.value.roleId === ROLE_EDITOR,
@@ -150,20 +159,13 @@ const onSubmitForm = async () => {
     v.value.$touch();
     return;
   }
-  isLoading.value = true;
-  try {
-    if (props.formType === FormTypes.EDIT) {
-      await store.updateUser(props.id!, user.value);
-    } else if (props.formType === FormTypes.ADD) {
-      await store.createUser(user.value);
-      await store.getUsers();
-    }
-    emit('cancel');
-  } catch (error) {
-    console.error('Ошибка при сохранении:', error);
-  } finally {
-    isLoading.value = false;
+  if (props.formType === FormTypes.EDIT) {
+    await store.updateUser(props.id!, user.value);
+  } else if (props.formType === FormTypes.ADD) {
+    await store.createUser(user.value);
+    await store.getUsers();
   }
+  emit('cancel');
 };
 </script>
 

@@ -105,7 +105,7 @@ import ComfirmDelete from '@/components/modals/ComfirmDelete.vue';
 import ButtonComponent from '@/components/buttons/ButtonComponent.vue';
 import TableComponent from '@/components/TableComponent.vue';
 import SearchInput from '@/components/inputs/SearchInput.vue';
-import type { UserFormModel } from '@/logic/types/forms/UserFormModel';
+import type { User } from '@/logic/types/forms/UserFormModel';
 import { pluralizeRu } from '@/logic/utils/pluralize';
 import { ROLE_ADMIN, ROLE_OPTIONS, getRoleName } from '@/logic/constants/roles';
 
@@ -124,7 +124,7 @@ const headers = [
   }
 ];
 
-const selectedUser = ref<null | UserFormModel>(null);
+const selectedUser = ref<null | User>(null);
 const users = computed(() => userStore.list);
 const modal = reactive({
   editUser: false,
@@ -161,16 +161,16 @@ const adminLabel = computed(() => {
 });
 
 const getInitials = (userName: string) => userName.slice(0, 2).toUpperCase();
-const isSelf = (user: UserFormModel) => user.id === authStore.authUser?.id;
+const isSelf = (user: User) => user.id === authStore.authUser?.id;
 
 const roleLabel = (roleId: number) => getRoleName(roleId) ?? `Роль ${roleId}`;
 
-const edit = (user: UserFormModel) => {
+const edit = (user: User) => {
   selectedUser.value = user;
   modal.editUser = true;
 };
 
-const removeUser = async (user: UserFormModel) => {
+const removeUser = async (user: User) => {
   if (isSelf(user)) return;
   selectedUser.value = user;
   modal.deleteUser = true;

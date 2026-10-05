@@ -123,5 +123,6 @@ export const useFileStore = defineStore('file', () => {
     downloadFile,
     uploadFile,
     deleteFile,
+    loading,
   };
 });

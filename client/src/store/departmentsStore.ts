@@ -1,5 +1,9 @@
 import { defineStore } from 'pinia';
-import type { DepartmentFormModel } from '../logic/types/forms/DepartmentFormModel';
+import type {
+  Department,
+  DepartmentCreateModel,
+  DepartmentUpdateModel,
+} from '../logic/types/forms/DepartmentFormModel';
 import { api } from '../api/api';
 import { computed, ref } from 'vue';
 import { useAlertStore } from './alertStore';
@@ -17,7 +21,7 @@ const loadStoredOrder = (): number[] => {
 };
 
 export const useDepartmentStore = defineStore('departments', () => {
-  const departments = ref<DepartmentFormModel[]>([]);
+  const departments = ref<Department[]>([]);
   const loading = ref(false);
   const alertStore = useAlertStore();
   const customOrder = ref<number[]>(loadStoredOrder());
@@ -33,7 +37,7 @@ export const useDepartmentStore = defineStore('departments', () => {
       loading.value = false;
     }
   }
-  async function createDepartment(data: DepartmentFormModel) {
+  async function createDepartment(data: DepartmentCreateModel) {
     loading.value = true;
     try {
       const response = await api.post('/departments', data);
@@ -47,7 +51,7 @@ export const useDepartmentStore = defineStore('departments', () => {
     }
   }
 
-  async function updateDepartment(id: number, data: DepartmentFormModel) {
+  async function updateDepartment(id: number, data: DepartmentUpdateModel) {
     loading.value = true;
     try {
       const response = await api.put(`/departments/${id}`, data);
@@ -89,7 +93,7 @@ export const useDepartmentStore = defineStore('departments', () => {
     });
   });
 
-  function updateDepartmentsOrder(newOrder: DepartmentFormModel[]) {
+  function updateDepartmentsOrder(newOrder: Department[]) {
     customOrder.value = newOrder.map((department) => department.id);
     localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(customOrder.value));
   }

@@ -90,18 +90,18 @@ import FormModal from '@/components/modals/FormModal.vue';
 import ComfirmDelete from '@/components/modals/ComfirmDelete.vue';
 import { FormTypes } from '@/logic/types/FormTypes';
 import { useTechSitesStore } from '@/store/techSitesStore';
-import type { TechSiteFormModel } from '@/logic/types/forms/TechSiteFormModel';
+import type { TechSite } from '@/logic/types/forms/TechSiteFormModel';
 import { displayUrl } from '@/logic/utils/textUtils';
 
 const store = useTechSitesStore();
 const modals = reactive({ add: false, delete: false });
-const siteToDelete = ref<TechSiteFormModel | null>(null);
+const siteToDelete = ref<TechSite | null>(null);
 
-const openSite = (site: TechSiteFormModel) => {
+const openSite = (site: TechSite) => {
   window.open(site.url, '_blank', 'noopener');
 };
 
-const askDelete = (site: TechSiteFormModel) => {
+const askDelete = (site: TechSite) => {
   siteToDelete.value = site;
   modals.delete = true;
 };

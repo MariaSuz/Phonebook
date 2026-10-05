@@ -68,7 +68,7 @@
 <script setup lang="ts">
 import { useDepartmentStore } from '@/store/departmentsStore';
 import { useEmployeesStore } from '@/store/employeesStore';
-import type { DepartmentFormModel } from '@/logic/types/forms/DepartmentFormModel';
+import type { Department, DepartmentCreateModel } from '@/logic/types/forms/DepartmentFormModel';
 import { FormTypes } from '@/logic/types/FormTypes';
 import { computed, ref } from 'vue';
 import TextField from '../inputs/TextField.vue';
@@ -81,22 +81,26 @@ import BaseForm from './BaseForm.vue';
 const store = useDepartmentStore();
 const employeesStore = useEmployeesStore();
 interface DepartmentProps {
-  data?: DepartmentFormModel;
+  data?: Department;
   formType: FormTypes;
 }
 
 const props = defineProps<DepartmentProps>();
 const alertStore = useAlertStore();
 
-const createDepartment = (): DepartmentFormModel => ({
+const createDepartment = (): DepartmentCreateModel => ({
   name: '',
   sortOrder: 999,
 });
-const department = ref<DepartmentFormModel>(props.data ? { ...props.data } : createDepartment());
+const department = ref<DepartmentCreateModel>(
+  props.data
+    ? { name: props.data.name, sortOrder: props.data.sortOrder }
+    : createDepartment(),
+);
 const v = useVuelidate(departmentRules, department);
 const emit = defineEmits(['cancel']);
 const disabled = computed(() => props.formType === FormTypes.SHOW);
-const isLoading = ref(false);
+const isLoading = computed(() => store.loading);
 
 const eyebrowText = computed(() => {
   switch (props.formType) {
@@ -110,14 +114,15 @@ const eyebrowText = computed(() => {
 });
 
 const employeeCountLabel = computed(() => {
-  if (!department.value.id) return '';
-  const count = employeesStore.list.filter(e => e.departmentId === department.value.id).length;
+  if (!props.data) return '';
+  const count = employeesStore.list.filter(e => e.departmentId === props.data?.id).length;
   return `${count} ${pluralizeRu(count, ['сотрудник', 'сотрудника', 'сотрудников'])}`;
 });
 
 const previewList = computed(() => {
-  const others = store.list.filter(d => d.id !== department.value.id);
+  const others = store.list.filter(d => d.id !== props.data?.id);
   const current = {
+    id: props.data?.id,
     ...department.value,
     sortOrder: department.value.sortOrder ?? 999,
     isCurrent: true,
@@ -153,19 +158,12 @@ const onSubmitForm = async () => {
     v.value.$touch();
     return;
   }
-  isLoading.value = true;
-  try {
-    if (props.formType === FormTypes.EDIT) {
-      await store.updateDepartment(department.value.id, department.value);
-    } else if (props.formType === FormTypes.ADD) {
-      await store.createDepartment(department.value);
-    }
-    emit('cancel');
-  } catch (error) {
-    console.error('Ошибка при добавлении:', error);
-  } finally {
-    isLoading.value = false;
+  if (props.formType === FormTypes.EDIT && props.data) {
+    await store.updateDepartment(props.data.id, department.value);
+  } else if (props.formType === FormTypes.ADD) {
+    await store.createDepartment(department.value);
   }
+  emit('cancel');
 };
 </script>
 

@@ -135,7 +135,7 @@ import { computed, nextTick, onMounted, ref } from 'vue';
 import { useEmployeesStore } from '@/store/employeesStore';
 import { useDepartmentStore } from '@/store/departmentsStore';
 import FormModal from '@/components/modals/FormModal.vue';
-import type { EmployeeFormModel } from '@/logic/types/forms/EmployeeFormModel';
+import type { Employee } from '@/logic/types/forms/EmployeeFormModel';
 import router from '@/router';
 import { FormTypes } from '@/logic/types/FormTypes';
 import DepartmentForm from '@/components/forms/DepartmentForm.vue';
@@ -201,7 +201,7 @@ const highlightableFields = [
   'cityPhone', 'mobilePhone', 'email', 'fullName',
 ];
 
-const selectedEmployee = ref<null | EmployeeFormModel>(null);
+const selectedEmployee = ref<null | Employee>(null);
 const headers = [
   { key: 'cabinet', title: 'Кабинет', width: '80px' },
   { key: 'position', title: 'Должность', width: '180px' },
@@ -219,11 +219,11 @@ const headers = [
   }
 ];
 
-const edit = (user: EmployeeFormModel) => {
+const edit = (user: Employee) => {
   selectedEmployee.value = user;
   modals.editEmployee = true;
 };
-const show = (user: EmployeeFormModel) => {
+const show = (user: Employee) => {
   selectedEmployee.value = user;
   modals.showEmployee = true;
 };
@@ -234,7 +234,7 @@ const editDepartment = () => {
   modals.editDepartment = true;
 };
 
-const removeEmployee = (user: EmployeeFormModel) => {
+const removeEmployee = (user: Employee) => {
   modals.deleteEmployee = true;
   selectedEmployee.value = user;
 };

@@ -147,7 +147,7 @@ const createfile = (): FileUploadModel => ({
 const file = ref<FileUploadModel>(createfile());
 const v = useVuelidate(fileRules, file);
 const emit = defineEmits(['cancel']);
-const isLoading = ref(false);
+const isLoading = computed(() => store.loading);
 const disabled = computed(() => props.formType === FormTypes.SHOW);
 
 const fileInputRef = ref<HTMLInputElement | null>(null);
@@ -223,25 +223,18 @@ const onSubmitForm = async () => {
     v.value.$touch();
     return;
   }
-  isLoading.value = true;
   uploadedBytes.value = 0;
-  try {
-    if (props.formType === FormTypes.ADD) {
-      await store.uploadFile(
-        {
-          fileName: file.value.fileName,
-          fileContent: file.value.fileContent,
-          description: file.value.description,
-          groupId: file.value.groupId,
-        },
-        (loaded) => { uploadedBytes.value = loaded; },
-      );
-    emit('cancel');
-    }
-  } catch (error) {
-    console.error('Ошибка при добавлении:', error);
-  } finally {
-    isLoading.value = false;
+  if (props.formType === FormTypes.ADD) {
+    await store.uploadFile(
+      {
+        fileName: file.value.fileName,
+        fileContent: file.value.fileContent,
+        description: file.value.description,
+        groupId: file.value.groupId,
+      },
+      (loaded) => { uploadedBytes.value = loaded; },
+    );
+  emit('cancel');
   }
 };
 </script>

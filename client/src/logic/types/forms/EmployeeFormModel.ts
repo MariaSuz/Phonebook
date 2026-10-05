@@ -1,5 +1,4 @@
-export interface EmployeeFormModel {
-  id: number;
+export interface EmployeeCreateModel {
   departmentId: number;
   cabinet: string;
   position: string;
@@ -10,3 +9,9 @@ export interface EmployeeFormModel {
   email: string;
   sortOrder: number;
 }
+
+export interface Employee extends EmployeeCreateModel {
+  id: number;
+}
+
+export type EmployeeUpdateModel = EmployeeCreateModel;

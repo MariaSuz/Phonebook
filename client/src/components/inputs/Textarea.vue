@@ -3,16 +3,10 @@
     :model-value="modelValue"
     :label="label"
     :placeholder="placeholder"
-    :rows="rows"
-    :auto-grow="autoGrow"
-    :counter="counter"
-    :maxlength="maxlength"
     variant="outlined"
     persistent-placeholder
-    persistent-hint
     :readonly="readonly"
     :disabled="disabled"
-    :clearable="!readonly && clearable"
     class="textarea"
     @update:model-value="$emit('update:modelValue', $event)"
   >
@@ -30,24 +24,15 @@
 
 <script setup lang="ts">
 interface TextareaProps {
-  modelValue: any;
+  modelValue: string | null;
   label?: string;
   placeholder?: string;
   icon?: string;
-  clearable?: boolean;
   readonly?: boolean;
   disabled?: boolean;
-  rows?: number | string;
-  autoGrow?: boolean;
-  counter?: number | string | boolean;
-  maxlength?: number | string;
 }
 
-withDefaults(defineProps<TextareaProps>(), {
-  clearable: false,
-  rows: 3,
-  autoGrow: true,
-});
+defineProps<TextareaProps>();
 defineEmits<{
   (e: 'update:modelValue', value: string): void;
 }>();
@@ -89,10 +74,6 @@ defineEmits<{
       color: $color-muted !important;
       opacity: 1 !important;
     }
-  }
-  .v-counter,
-  .v-messages {
-    color: $color-muted;
   }
 }
 </style>

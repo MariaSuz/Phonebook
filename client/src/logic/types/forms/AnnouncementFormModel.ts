@@ -1,7 +1,7 @@
 export interface AnnouncementFormModel {
   id: number;
   message: string;
-  startsAt: string; // ISO
-  endsAt: string; // ISO
+  startsAt: string;
+  endsAt: string;
   showBeforeHours: number; // 0 — не показывать заранее, 24 / 72 / 168
 }

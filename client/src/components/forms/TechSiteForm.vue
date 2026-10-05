@@ -49,12 +49,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import TextField from '@/components/inputs/TextField.vue';
 import BaseForm from './BaseForm.vue';
 import { useVuelidate } from '@vuelidate/core';
 import { FormTypes } from '@/logic/types/FormTypes';
-import type { TechSiteFormModel } from '@/logic/types/forms/TechSiteFormModel';
+import type { TechSiteCreateModel } from '@/logic/types/forms/TechSiteFormModel';
 import { useTechSitesStore } from '@/store/techSitesStore';
 import { techSiteRules } from '@/logic/validation/techSiteValidation';
 
@@ -62,8 +62,8 @@ defineProps<{ formType: FormTypes }>();
 const emit = defineEmits(['cancel']);
 
 const store = useTechSitesStore();
-const isLoading = ref(false);
-const site = ref<Partial<TechSiteFormModel>>({
+const isLoading = computed(() => store.loading);
+const site = ref<TechSiteCreateModel>({
   name: '',
   url: '',
   description: '',
@@ -75,18 +75,13 @@ const v = useVuelidate(techSiteRules, site);
 const onSubmitForm = async () => {
   if (isLoading.value) return;
   if (!(await v.value.$validate())) return;
-  isLoading.value = true;
-  try {
-    await store.createSite({
-      name: site.value.name!,
-      url: site.value.url!,
-      icon: site.value.icon || undefined,
-      description: site.value.description || undefined,
-    });
-    emit('cancel');
-  } finally {
-    isLoading.value = false;
-  }
+  await store.createSite({
+    name: site.value.name,
+    url: site.value.url,
+    icon: site.value.icon || undefined,
+    description: site.value.description || undefined,
+  });
+  emit('cancel');
 };
 </script>
 

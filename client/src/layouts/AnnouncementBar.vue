@@ -6,6 +6,7 @@
     class="announcement-bar"
   >
     <AnnouncementStrip
+      v-if="banner.phase"
       :phase="banner.phase"
       :message="banner.item.message"
       :period="formatPeriod(banner.item.startsAt, banner.item.endsAt)"
@@ -17,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 import AnnouncementStrip from '@/components/widgets/AnnouncementStrip.vue';
 import { useAnnouncementsStore } from '@/store/announcementsStore';
 import { formatEndTime, formatPeriod, getBannerPhase } from '@/logic/utils/announcementUtils';
@@ -25,15 +26,27 @@ import { formatEndTime, formatPeriod, getBannerPhase } from '@/logic/utils/annou
 const store = useAnnouncementsStore();
 const closed = reactive<number[]>([]);
 
+const now = ref(Date.now());
+//обновление каждые 60 секунд.
+const REFRESH_MS = 60_000;
+let timer: ReturnType<typeof setInterval> | undefined;
+
 // самый ранний из подходящих анонсов;
 const banner = computed(() =>
   store.current
-    .map((item) => ({ item, phase: getBannerPhase(item) }))
+    .map((item) => ({ item, phase: getBannerPhase(item, now.value) }))
     .filter((x) => x.phase && !(x.phase === 'upcoming' && closed.includes(x.item.id)))
     .sort((a, b) => +new Date(a.item.startsAt) - +new Date(b.item.startsAt))[0],
 );
 
-onMounted(() => store.getCurrent());
+onMounted(() => {
+  store.getCurrent();
+  timer = setInterval(() => {
+    now.value = Date.now();
+  }, REFRESH_MS);
+});
+
+onBeforeUnmount(() => clearInterval(timer));
 </script>
 
 <style scoped lang="scss">

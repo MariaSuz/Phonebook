@@ -159,7 +159,7 @@
 <script setup lang="ts">
 import { useDepartmentStore } from '@/store/departmentsStore';
 import { FormTypes } from '@/logic/types/FormTypes';
-import type { EmployeeFormModel } from '@/logic/types/forms/EmployeeFormModel';
+import type { Employee, EmployeeCreateModel } from '@/logic/types/forms/EmployeeFormModel';
 import { useEmployeesStore } from '@/store/employeesStore';
 import { ref, computed } from 'vue';
 import TextField from '@/components/inputs/TextField.vue';
@@ -175,7 +175,7 @@ const departmentStore = useDepartmentStore();
 const departmentsList = computed(() => departmentStore.list);
 const alertStore = useAlertStore();
 interface employeeProps {
-  data?: EmployeeFormModel;
+  data?: Employee;
   formType: FormTypes;
   id?: number;
   departmentId?: number;
@@ -183,7 +183,7 @@ interface employeeProps {
 
 const props = defineProps<employeeProps>();
 
-const createEmployee = (): EmployeeFormModel => ({
+const createEmployee = (): EmployeeCreateModel => ({
   cabinet: '',
   position: '',
   fullName: '',
@@ -191,13 +191,13 @@ const createEmployee = (): EmployeeFormModel => ({
   cityPhone: '',
   mobilePhone: '',
   email: '',
-  departmentId: props.departmentId,
+  departmentId: props.departmentId as number,
   sortOrder: 999,
 });
-const employee = ref<EmployeeFormModel>(props.data ? { ...props.data } : createEmployee());
+const employee = ref<EmployeeCreateModel>(props.data ? { ...props.data } : createEmployee());
 const v = useVuelidate(employeeRules, employee);
 const disabled = computed(() => props.formType === FormTypes.SHOW);
-const isLoading = ref(false);
+const isLoading = computed(() => store.loading);
 
 const departmentName = computed(() => {
   return departmentsList.value.find(d => d.id === employee.value.departmentId)?.name ?? '';
@@ -226,19 +226,12 @@ const onSubmitForm = async () => {
     v.value.$touch();
     return;
   }
-  isLoading.value = true;
-  try {
-    if (props.formType === FormTypes.EDIT) {
-      await store.updateEmployee(props.id, employee.value);
-    } else if (props.formType === FormTypes.ADD) {
-      await store.addEmployees(employee.value);
-    }
-    emit('cancel');
-  } catch (error) {
-    console.error('Ошибка при сохранении:', error);
-  } finally {
-    isLoading.value = false;
+  if (props.formType === FormTypes.EDIT && props.id !== undefined) {
+    await store.updateEmployee(props.id, employee.value);
+  } else if (props.formType === FormTypes.ADD) {
+    await store.addEmployees(employee.value);
   }
+  emit('cancel');
 };
 </script>
 

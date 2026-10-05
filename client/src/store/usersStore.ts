@@ -3,17 +3,21 @@ import { api } from '@/api/api';
 import { computed, ref } from 'vue';
 import { useAlertStore } from './alertStore';
 import { getErrorMessage, showError } from '@/logic/utils/errorUtils';
-import type { UserFormModel } from '@/logic/types/forms/UserFormModel';
+import type {
+  User,
+  UserCreateModel,
+  UserUpdateModel,
+} from '@/logic/types/forms/UserFormModel';
 
 
 export const useUserStore = defineStore('user', () => {
-  const users = ref<UserFormModel[]>([]);
+  const users = ref<User[]>([]);
   const loading = ref(false);
   const alertStore = useAlertStore();
 
   const list = computed(() => users.value);
 
-  async function createUser(data: UserFormModel) {
+  async function createUser(data: UserCreateModel) {
     loading.value = true;
     try {
       const response = await api.post('/users', data);
@@ -26,7 +30,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  async function updateUser(id: number, data: UserFormModel) {
+  async function updateUser(id: number, data: UserUpdateModel) {
     loading.value = true;
     try {
       const response = await api.put(`/users/${id}`, data);

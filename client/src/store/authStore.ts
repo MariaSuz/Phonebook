@@ -12,7 +12,7 @@ import {
   setStoredUser,
   setToken,
 } from '@/logic/utils/authStorage';
-import type { UserFormModel } from '@/logic/types/forms/UserFormModel';
+import type { User } from '@/logic/types/forms/UserFormModel';
 import { ROLE_ADMIN } from '@/logic/constants/roles';
 
 
@@ -25,7 +25,7 @@ interface AuthResponse {
 
 export const useAuthStore = defineStore('auth', () => {
   const loading = ref(false);
-  const currentUser = ref<UserFormModel | null>(getStoredUser());
+  const currentUser = ref<User | null>(getStoredUser());
   const token = ref<string | null>(getToken());
 
   const isAuthenticated = computed(() => {
@@ -48,7 +48,7 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await api.post<AuthResponse>('/auth/login', credentials);
       const { id, userName, roleId, token: authToken } = response.data;
 
-      const userData: UserFormModel = { id, userName, roleId };
+      const userData: User = { id, userName, roleId };
       currentUser.value = userData;
       token.value = authToken;
 

@@ -35,7 +35,7 @@
           title="Открыть почту"
           append-icon="mdi-arrow-top-right"
           buttonType="save"
-          href="http://mail.example.ru/"
+          href="#"
           target="_blank"
           rel="noopener noreferrer"
           @click="close"

@@ -2,7 +2,7 @@
   <VCard>
     <VProgressLinear
       v-if="isLoading"
-      :model-value="isLoading"
+      indeterminate
       color="primary"
       height="3"
       absolute

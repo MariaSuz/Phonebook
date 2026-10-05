@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { api } from '../api/api';
-import type { TechSiteFormModel } from '../logic/types/forms/TechSiteFormModel';
+import type { TechSite, TechSiteCreateModel } from '../logic/types/forms/TechSiteFormModel';
 import { useAlertStore } from './alertStore';
 import { getErrorMessage, showError } from '@/logic/utils/errorUtils';
 
 export const useTechSitesStore = defineStore('techSites', () => {
-  const sites = ref<TechSiteFormModel[]>([]);
+  const sites = ref<TechSite[]>([]);
   const loading = ref(false);
   const alertStore = useAlertStore();
 
@@ -22,7 +22,7 @@ export const useTechSitesStore = defineStore('techSites', () => {
     }
   }
 
-  async function createSite(data: Omit<TechSiteFormModel, 'id'>) {
+  async function createSite(data: TechSiteCreateModel) {
     loading.value = true;
     try {
       const response = await api.post('/tech-sites', data);

@@ -2,7 +2,6 @@
   <BaseForm
     :title="formTitle"
     :form-type="formType"
-    :disabled="v.$invalid"
     :is-loading="isLoading"
     @cancel="emit('cancel')"
     @submit="onSubmitForm"
@@ -89,6 +88,7 @@ import TextField from '@/components/inputs/TextField.vue';
 import Textarea from '@/components/inputs/Textarea.vue';
 import Select from '@/components/inputs/Select.vue';
 import BaseForm from './BaseForm.vue';
+import { useAnnouncementsStore } from '@/store/announcementsStore';
 
 const props = defineProps<{ formType: FormTypes; data?: AnnouncementFormModel }>();
 const emit = defineEmits<{
@@ -96,8 +96,11 @@ const emit = defineEmits<{
   (e: 'save', payload: Omit<AnnouncementFormModel, 'id'>): void;
 }>();
 
+const store = useAnnouncementsStore();
+
 const isEdit = computed(() => props.formType === FormTypes.EDIT);
 const formTitle = computed(() => (isEdit.value ? 'Изменить анонс' : 'Новый анонс'));
+const isLoading = computed(() => store.loading);
 
 const form = ref({
   message: props.data?.message ?? '',

@@ -1,5 +1,5 @@
 export interface FileFormModel {
-  id?: string;
+  id: string;
   fileName: string;
   originalFileName?: string;
   fileContent: File | null;

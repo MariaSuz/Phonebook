@@ -1,15 +1,19 @@
 import { defineStore } from 'pinia';
 import { api } from '@/api/api';
-import type { EmployeeFormModel } from '../logic/types/forms/EmployeeFormModel';
-import type { DepartmentFormModel } from '../logic/types/forms/DepartmentFormModel';
+import type {
+  Employee,
+  EmployeeCreateModel,
+  EmployeeUpdateModel,
+} from '../logic/types/forms/EmployeeFormModel';
+import type { Department } from '../logic/types/forms/DepartmentFormModel';
 import { useAlertStore } from './alertStore';
 import { computed, ref } from 'vue';
 import { getErrorMessage, showError } from '@/logic/utils/errorUtils';
 
 export const useEmployeesStore = defineStore('employee', () => {
 
-  const employees = ref<EmployeeFormModel[]>([]);
-  const employeesByDepartment = ref<Map<number, EmployeeFormModel[]>>(new Map());
+  const employees = ref<Employee[]>([]);
+  const employeesByDepartment = ref<Map<number, Employee[]>>(new Map());
   const loading = ref(false);
   const allLoading = ref(false);
   const alertStore = useAlertStore();
@@ -31,7 +35,7 @@ export const useEmployeesStore = defineStore('employee', () => {
     }
   }
 
-  async function addEmployees(data: EmployeeFormModel) {
+  async function addEmployees(data: EmployeeCreateModel) {
     loading.value = true;
     try {
       const response = await api.post('/employees', data);
@@ -45,7 +49,7 @@ export const useEmployeesStore = defineStore('employee', () => {
     }
   }
 
-  async function updateEmployee(id: number, data: EmployeeFormModel) {
+  async function updateEmployee(id: number, data: EmployeeUpdateModel) {
     loading.value = true;
     try {
       const response = await api.put(`/employees/${id}`, data);
@@ -85,7 +89,7 @@ export const useEmployeesStore = defineStore('employee', () => {
     }
   }
 
-  async function allDepartmentsEmployees(departments: DepartmentFormModel[]) {
+  async function allDepartmentsEmployees(departments: Department[]) {
     allLoading.value = true;
     try {
       const promises = departments.map((dept) =>
