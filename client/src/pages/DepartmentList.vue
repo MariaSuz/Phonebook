@@ -131,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useEmployeesStore } from '@/store/employeesStore';
 import { useDepartmentStore } from '@/store/departmentsStore';
 import FormModal from '@/components/modals/FormModal.vue';
@@ -239,7 +239,8 @@ const removeEmployee = (user: Employee) => {
   selectedEmployee.value = user;
 };
 const confirmDeleteEmployee = async () => {
-  const id = selectedEmployee.value?.id!;
+  const id = selectedEmployee.value?.id;
+  if (!id) return;
   deletingEmployeeId.value = id;
   try {
     await employeesStore.deleteEmployee(id);
@@ -251,13 +252,15 @@ const deleteDepartment = () => {
   modals.deleteDepartment = true;
 };
 const confirmDeleteDepartment = async () => {
+  const id = department.value?.id;
+  if (!id) return;
   const hasEmployees = employees.value.length > 0;
   if (hasEmployees) {
     modals.deleteDepartment = false;
     modals.warningDialog = true;
   } else {
     try {
-      await departmentStore.deleteDepartment(department.value?.id!);
+      await departmentStore.deleteDepartment(id);
       modals.deleteDepartment = false;
       router.push('/');
     } catch (error) {

@@ -14,8 +14,8 @@
           class="header-logo-image"
         />
         <div>
-          <VAppBarTitle class="header-logo-title font-heading">КОМПАНИЯ</VAppBarTitle>
-          <span class="header-logo-subtitle">супер</span>
+          <VAppBarTitle class="header-logo-title font-heading">{{ company.name }}</VAppBarTitle>
+          <span class="header-logo-subtitle">{{ company.subtitle }}</span>
         </div>
       </div>
     </RouterLink>
@@ -54,7 +54,7 @@
         <VBtn
           class="header__contacts-btn"
           variant="text"
-          href="#"
+          :href="company.mailUrl"
           target="_blank"
           rel="noopener noreferrer"
           title="Электронная почта"
@@ -76,7 +76,7 @@
         <VBtn
           class="header__contacts-btn"
           variant="text"
-          href="#"
+          :href="company.siteUrl"
           target="_blank"
           rel="noopener noreferrer"
           title="Официальный сайт"
@@ -100,6 +100,7 @@ import LoginWidgets from '../components/widgets/LoginWidgets.vue'
 import MailWarningModal from '../components/modals/MailWarningModal.vue';
 import { useAuthStore } from '@/store/authStore';
 import { computed, ref } from 'vue';
+import { company } from '@/config/company';
 
 const isMailRUOpen = ref(false);
 const authStore = useAuthStore();

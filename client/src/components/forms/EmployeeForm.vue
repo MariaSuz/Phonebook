@@ -116,7 +116,7 @@
         v-model="employee.email"
         label="Электронная почта"
         type="email"
-        placeholder="Например: ivanov.ii@example.ru"
+        :placeholder="`Например: ${company.emailPlaceholder}`"
         icon="mdi-email"
         :readonly="disabled"
         :disabled="isLoading"
@@ -169,6 +169,7 @@ import { useVuelidate } from '@vuelidate/core';
 import { employeeRules } from '@/logic/validation/employeeValidation';
 import BaseForm from './BaseForm.vue';
 import { vMaska } from "maska/vue"
+import { company } from '@/config/company';
 
 const store = useEmployeesStore();
 const departmentStore = useDepartmentStore();

@@ -10,6 +10,7 @@
     :clearable="!readonly && !disabled"
     :placeholder="placeholder"
     persistent-placeholder
+    :menu-props="{ contentClass: 'select-menu', offset: 4, maxHeight: 320 }"
     :readonly="readonly"
     :disabled="disabled"
     @update:model-value="$emit('update:modelValue', $event)"
@@ -37,8 +38,8 @@ interface AutocompleteProps {
   disabled?: boolean;
 }
 
-const props = withDefaults(defineProps<AutocompleteProps>(), {});
-const emit = defineEmits<{
+withDefaults(defineProps<AutocompleteProps>(), {});
+defineEmits<{
   (e: 'update:modelValue', value: string | number): void;
 }>();
 </script>
@@ -66,6 +67,10 @@ const emit = defineEmits<{
   }
   .v-field--error .v-field__prepend-inner .v-icon {
     color: rgb(var(--v-theme-error));
+  }
+  .v-field__append-inner .v-icon {
+    color: $color-secondary-text;
+    opacity: 1;
   }
   .v-label {
     color: $color-secondary-text !important;

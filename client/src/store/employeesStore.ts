@@ -15,6 +15,7 @@ export const useEmployeesStore = defineStore('employee', () => {
   const employees = ref<Employee[]>([]);
   const employeesByDepartment = ref<Map<number, Employee[]>>(new Map());
   const loading = ref(false);
+  const listLoading = ref(false);
   const allLoading = ref(false);
   const alertStore = useAlertStore();
 
@@ -24,14 +25,14 @@ export const useEmployeesStore = defineStore('employee', () => {
   }
 
   async function getEmployees() {
-    loading.value = true;
+    listLoading.value = true;
     try {
       const response = await api.get('/employees');
       employees.value = response.data;
     } catch (error: any) {
       alertStore.error(getErrorMessage(error));
     } finally {
-      loading.value = false;
+      listLoading.value = false;
     }
   }
 
@@ -114,6 +115,7 @@ export const useEmployeesStore = defineStore('employee', () => {
     getEmployeesByDepartment,
     allDepartmentsEmployees,
     loading,
+    listLoading,
     allLoading,
     filterEmployeesByDepartment,
   };

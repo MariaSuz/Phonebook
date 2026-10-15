@@ -18,11 +18,9 @@ import AppHeader from '@/layouts/AppHeader.vue';
 import AnnouncementBar from '@/layouts/AnnouncementBar.vue';
 import AlertMessage from './components/widgets/AlertMessage.vue';
 import { onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/authStore';
 
 const authStore = useAuthStore();
-const router = useRouter();
 onMounted(() => {
   authStore.checkToken();
 });

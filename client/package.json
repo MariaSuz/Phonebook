@@ -18,8 +18,8 @@
     "build-only": "vite build",
     "format": "prettier --write .",
     "type-check": "vue-tsc --build",
-    "lint": "eslint . --ext .vue,.js,.ts",
-    "lint:fix": "eslint . --ext .vue,.js,.ts --fix"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
@@ -39,7 +39,10 @@
     "@tsconfig/node22": "^22.0.2",
     "@types/node": "^22.16.5",
     "@vitejs/plugin-vue": "^6.0.1",
+    "@vue/eslint-config-typescript": "^14.9.0",
     "@vue/tsconfig": "^0.7.0",
+    "eslint": "^10.12.0",
+    "eslint-plugin-vue": "^10.11.1",
     "npm-run-all2": "^8.0.4",
     "prettier": "^3.6.2",
     "sass": "^1.91.0",

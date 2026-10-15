@@ -180,12 +180,6 @@ const fileExtension = computed(() =>
 
 const formattedSize = computed(() => formatSize(file.value.fileContent?.size ?? 0));
 
-const progressPercent = computed(() => {
-  const total = file.value.fileContent?.size ?? 0;
-  if (!total) return 0;
-  return Math.min(100, Math.round((uploadedBytes.value / total) * 100));
-});
-
 const applyFile = (selected: File | null) => {
   file.value.fileContent = selected;
   v.value.fileContent.$touch();

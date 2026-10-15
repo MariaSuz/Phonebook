@@ -86,7 +86,7 @@ interface TableProps {
   itemValue?: string;
 }
 
-const props = withDefaults(defineProps<TableProps>(), {
+withDefaults(defineProps<TableProps>(), {
   tableKey: undefined,
   itemsPerPage: -1,
   hideDefaultFooter: false,

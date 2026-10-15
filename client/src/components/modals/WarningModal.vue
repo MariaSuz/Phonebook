@@ -104,11 +104,6 @@ const close = () => {
   show.value = false;
   emits('cancel');
 };
-
-const openDepartment = () => {
-  close();
-  emits('open-department');
-};
 </script>
 <style lang="scss">
 @import '@/styles/colors';

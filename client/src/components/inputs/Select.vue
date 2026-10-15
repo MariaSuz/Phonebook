@@ -1,14 +1,17 @@
 <template>
+  <div class="field">
+    <label v-if="label" class="field__label">{{ label }}<span v-if="required" class="field__required">*</span></label>
   <VSelect
     :model-value="modelValue"
-    :label="label"
     :items="items"
     :item-title="itemTitle"
     :item-value="itemValue"
     variant="outlined"
     class="select"
+    v-bind="$attrs"
     :placeholder="placeholder"
     persistent-placeholder
+    :menu-props="{ contentClass: 'select-menu', offset: 4, maxHeight: 320 }"
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <template v-slot:prepend-inner>
@@ -21,9 +24,12 @@
       <slot name="item" v-bind="slotProps" />
     </template>
   </VSelect>
+  </div>
 </template>
 
 <script setup lang="ts">
+
+defineOptions({ inheritAttrs: false });
 
 interface SelectProps {
   modelValue: any;
@@ -31,12 +37,13 @@ interface SelectProps {
   itemTitle?: string;
   itemValue?: string;
   label?: string;
+  required?: boolean;
   placeholder?: string;
   icon?: string;
 }
 
-const props = withDefaults(defineProps<SelectProps>(), {});
-const emit = defineEmits<{
+withDefaults(defineProps<SelectProps>(), {});
+defineEmits<{
   (e: 'update:modelValue', value: string | number): void;
 }>();
 </script>
@@ -68,6 +75,10 @@ const emit = defineEmits<{
   .v-label {
     color: $color-secondary-text !important;
     opacity: 1 !important;
+  }
+  .v-field__append-inner .v-icon {
+    color: $color-secondary-text;
+    opacity: 1;
   }
 }
 </style>

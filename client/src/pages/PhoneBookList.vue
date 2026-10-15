@@ -52,7 +52,7 @@
         @click="toggleDragMode"
       />
     </div>
-    <PhoneBookSkeleton v-if="employeesStore.loading"/>
+    <PhoneBookSkeleton v-if="employeesStore.listLoading"/>
     <div
       v-else
       class="phone-book-list"
@@ -102,7 +102,6 @@ import SearchInput from '@/components/inputs/SearchInput.vue';
 import draggable from 'vuedraggable';
 import ButtonComponent from '@/components/buttons/ButtonComponent.vue'
 import { computed, onMounted, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
 import { useDepartmentStore } from '@/store/departmentsStore';
 import DepartmentList from './DepartmentList.vue';
 import { useEmployeesStore } from '@/store/employeesStore';
@@ -114,7 +113,6 @@ import { FormTypes } from '@/logic/types/FormTypes';
 import DepartmentForm from '@/components/forms/DepartmentForm.vue';
 import PhoneBookSkeleton from '@/components/PhoneBookSkeleton.vue';
 
-const route = useRoute();
 const searchValue = ref('');
 const isDragMode = ref(false);
 const departmentStore = useDepartmentStore();

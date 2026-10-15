@@ -1,16 +1,19 @@
-import { useAlertStore } from "@/store/alertStore";
+import { isAxiosError } from 'axios';
+import { useAlertStore } from '@/store/alertStore';
 
-export function getErrorMessage(error: any): string {
-  return (
-    error?.response?.data?.message ||
-    error?.message ||
-    'Произошла неизвестная ошибка'
-  );
+const DEFAULT_MESSAGE = 'Произошла неизвестная ошибка';
+
+export function getErrorMessage(error: unknown): string {
+  if (isAxiosError<{ message?: string }>(error)) {
+    return error.response?.data?.message || error.message || DEFAULT_MESSAGE;
+  }
+  if (error instanceof Error) {
+    return error.message || DEFAULT_MESSAGE;
+  }
+  return DEFAULT_MESSAGE;
 }
 
-export function showError(error: any): never {
-  const errorMessage = getErrorMessage(error);
-  const alertStore = useAlertStore();
-  alertStore.error(errorMessage);
-  throw new Error(errorMessage);
+export function showError(error: unknown): never {
+  useAlertStore().error(getErrorMessage(error));
+  throw error;
 }

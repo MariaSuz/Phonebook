@@ -35,7 +35,7 @@
           title="Открыть почту"
           append-icon="mdi-arrow-top-right"
           buttonType="save"
-          href="#"
+          :href="company.edoMailUrl"
           target="_blank"
           rel="noopener noreferrer"
           @click="close"
@@ -49,6 +49,7 @@
 import { computed } from 'vue';
 import ButtonComponent from '@/components/buttons/ButtonComponent.vue';
 import Modal from '@/components/modals/Modal.vue';
+import { company } from '@/config/company';
 
 interface ModalProps {
   modelValue?: boolean;

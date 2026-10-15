@@ -15,8 +15,8 @@
           alt="logo-company"
           class="login-page__logo"
         />
-        <div class="login-page__brand-name">Лого</div>
-        <div class="login-page__brand-sub">Саб лого</div>
+        <div class="login-page__brand-name">{{ company.name }}</div>
+        <div class="login-page__brand-sub">{{ company.subtitle }}</div>
       </div>
       <div class="login-page__intro">
         <h1 class="login-page__title font-heading">Телефонный справочник</h1>
@@ -74,6 +74,7 @@ import { useAlertStore } from "@/store/alertStore";
 import AlertMessage from "@/components/widgets/AlertMessage.vue"
 import TextField from "@/components/inputs/TextField.vue";
 import ButtonComponent from "@/components/buttons/ButtonComponent.vue";
+import { company } from '@/config/company';
 
 const authStore = useAuthStore();
 const router = useRouter();
