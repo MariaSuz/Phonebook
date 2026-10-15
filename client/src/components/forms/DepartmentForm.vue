@@ -3,8 +3,9 @@
     :title="formTitle"
     :form-type="formType"
     :is-loading="isLoading"
+    :validation="v"
     @cancel="emit('cancel')"
-    @submit="onSubmitForm"
+    :submit="save"
   >
     <template v-slot:header>
       <div class="department-form__eyebrow">{{ eyebrowText }}</div>
@@ -74,7 +75,6 @@ import { computed, ref } from 'vue';
 import TextField from '../inputs/TextField.vue';
 import { useVuelidate } from '@vuelidate/core';
 import { departmentRules } from '@/logic/validation/departmentValidation';
-import { useAlertStore } from '@/store/alertStore';
 import { pluralizeRu } from '@/logic/utils/pluralize';
 import BaseForm from './BaseForm.vue';
 
@@ -86,7 +86,6 @@ interface DepartmentProps {
 }
 
 const props = defineProps<DepartmentProps>();
-const alertStore = useAlertStore();
 
 const createDepartment = (): DepartmentCreateModel => ({
   name: '',
@@ -148,22 +147,12 @@ const formTitle = computed(() => {
   };
 });
 
-const onSubmitForm = async () => {
-  if (isLoading.value) return;
-  alertStore.clear();
-  v.value.$reset();
-  const isValid = await v.value.$validate();
-  if (!isValid) {
-    // Показываем все ошибки
-    v.value.$touch();
-    return;
-  }
+const save = async () => {
   if (props.formType === FormTypes.EDIT && props.data) {
     await store.updateDepartment(props.data.id, department.value);
   } else if (props.formType === FormTypes.ADD) {
     await store.createDepartment(department.value);
   }
-  emit('cancel');
 };
 </script>
 

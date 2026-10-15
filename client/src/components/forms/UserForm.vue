@@ -3,8 +3,9 @@
     :title="formTitle"
     :form-type="formType"
     :is-loading="isLoading"
+    :validation="v"
     @cancel="emit('cancel')"
-    @submit="onSubmitForm"
+    :submit="save"
   >
     <template v-slot:header>
       <div class="user-form__eyebrow">Пользователи</div>
@@ -151,21 +152,13 @@ const formTitle = computed(() => {
 
 const emit = defineEmits(['cancel']);
 
-const onSubmitForm = async () => {
-  if (isLoading.value) return;
-  v.value.$reset();
-  const isValid = await v.value.$validate();
-  if (!isValid) {
-    v.value.$touch();
-    return;
-  }
+const save = async () => {
   if (props.formType === FormTypes.EDIT) {
     await store.updateUser(props.id!, user.value);
   } else if (props.formType === FormTypes.ADD) {
     await store.createUser(user.value);
     await store.getUsers();
   }
-  emit('cancel');
 };
 </script>
 

@@ -4,8 +4,9 @@
     :form-type="formType"
     :is-loading="isLoading"
     :progress="isLoading"
+    :validation="v"
     @cancel="emit('cancel')"
-    @submit="onSubmitForm"
+    :submit="save"
   >
     <template v-slot:header>
       <div class="tech-site-form__eyebrow">Новый сайт</div>
@@ -72,16 +73,13 @@ const site = ref<TechSiteCreateModel>({
 
 const v = useVuelidate(techSiteRules, site);
 
-const onSubmitForm = async () => {
-  if (isLoading.value) return;
-  if (!(await v.value.$validate())) return;
+const save = async () => {
   await store.createSite({
     name: site.value.name,
     url: site.value.url,
     icon: site.value.icon || undefined,
     description: site.value.description || undefined,
   });
-  emit('cancel');
 };
 </script>
 

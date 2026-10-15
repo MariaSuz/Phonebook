@@ -4,8 +4,9 @@
     :form-type="formType"
     :is-loading="isLoading"
     layout="flex"
+    :validation="v"
     @cancel="emit('cancel')"
-    @submit="onSubmitForm"
+    :submit="save"
   >
     <template v-slot:header>
       <div class="employee-form__eyebrow">{{ formTitle }}</div>
@@ -164,7 +165,6 @@ import { useEmployeesStore } from '@/store/employeesStore';
 import { ref, computed } from 'vue';
 import TextField from '@/components/inputs/TextField.vue';
 import Autocomplete from '@/components/inputs/Autocomplete.vue';
-import { useAlertStore } from '@/store/alertStore';
 import { useVuelidate } from '@vuelidate/core';
 import { employeeRules } from '@/logic/validation/employeeValidation';
 import BaseForm from './BaseForm.vue';
@@ -174,7 +174,6 @@ import { company } from '@/config/company';
 const store = useEmployeesStore();
 const departmentStore = useDepartmentStore();
 const departmentsList = computed(() => departmentStore.list);
-const alertStore = useAlertStore();
 interface employeeProps {
   data?: Employee;
   formType: FormTypes;
@@ -217,22 +216,12 @@ const formTitle = computed(() => {
 
 const emit = defineEmits(['cancel']);
 
-const onSubmitForm = async () => {
-  if (isLoading.value) return;
-  alertStore.clear();
-  v.value.$reset();
-  const isValid = await v.value.$validate();
-  if (!isValid) {
-    // Показываем все ошибки
-    v.value.$touch();
-    return;
-  }
+const save = async () => {
   if (props.formType === FormTypes.EDIT && props.id !== undefined) {
     await store.updateEmployee(props.id, employee.value);
   } else if (props.formType === FormTypes.ADD) {
     await store.addEmployees(employee.value);
   }
-  emit('cancel');
 };
 </script>
 

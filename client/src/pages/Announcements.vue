@@ -65,7 +65,6 @@
         :key="formKey"
         :form-type="formType"
         :data="selected"
-        @save="saveItem"
         @cancel="formModal = false"
       />
     </Modal>
@@ -132,15 +131,6 @@ const openForm = (type: FormTypes, item?: AnnouncementFormModel) => {
   selected.value = item;
   formKey.value++;
   formModal.value = true;
-};
-
-const saveItem = async (payload: Omit<AnnouncementFormModel, 'id'>) => {
-  if (formType.value === FormTypes.EDIT && selected.value) {
-    await store.updateAnnouncement(selected.value.id, payload);
-  } else {
-    await store.createAnnouncement(payload);
-  }
-  formModal.value = false;
 };
 
 const askDelete = (item: AnnouncementFormModel) => {

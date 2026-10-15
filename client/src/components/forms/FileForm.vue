@@ -3,8 +3,9 @@
     :title="formTitle"
     :form-type="formType"
     :is-loading="isLoading"
+    :validation="v"
     @cancel="emit('cancel')"
-    @submit="onSubmitForm"
+    :submit="save"
   >
     <template v-slot:header>
       <div class="file-form__eyebrow">{{ eyebrowText }}</div>
@@ -123,7 +124,6 @@ import TextField from '@/components/inputs/TextField.vue';
 import Select from '@/components/inputs/Select.vue';
 import { useVuelidate } from '@vuelidate/core';
 import { fileRules } from '@/logic/validation/fileValidation';
-import { useAlertStore } from '@/store/alertStore';
 import { useFileStore } from '@/store/filesStore';
 import BaseForm from './BaseForm.vue';
 import ButtonComponent from '@/components/buttons/ButtonComponent.vue';
@@ -136,7 +136,6 @@ interface fileProps {
 }
 
 const props = defineProps<fileProps>();
-const alertStore = useAlertStore();
 
 const createfile = (): FileUploadModel => ({
   fileName: '',
@@ -207,16 +206,7 @@ const removeFile = () => {
   v.value.fileContent.$reset();
 };
 
-const onSubmitForm = async () => {
-  if (isLoading.value) return;
-  alertStore.clear();
-  v.value.$reset();
-  const isValid = await v.value.$validate();
-  if (!isValid) {
-    // Показываем все ошибки
-    v.value.$touch();
-    return;
-  }
+const save = async () => {
   uploadedBytes.value = 0;
   if (props.formType === FormTypes.ADD) {
     await store.uploadFile(
@@ -228,7 +218,6 @@ const onSubmitForm = async () => {
       },
       (loaded) => { uploadedBytes.value = loaded; },
     );
-  emit('cancel');
   }
 };
 </script>

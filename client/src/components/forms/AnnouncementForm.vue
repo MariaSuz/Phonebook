@@ -3,8 +3,9 @@
     :title="formTitle"
     :form-type="formType"
     :is-loading="isLoading"
+    :validation="v"
     @cancel="emit('cancel')"
-    @submit="onSubmitForm"
+    :submit="save"
   >
     <template v-slot:header>
       <div class="announcement-form__eyebrow">Анонсы</div>
@@ -91,10 +92,7 @@ import BaseForm from './BaseForm.vue';
 import { useAnnouncementsStore } from '@/store/announcementsStore';
 
 const props = defineProps<{ formType: FormTypes; data?: AnnouncementFormModel }>();
-const emit = defineEmits<{
-  (e: 'cancel'): void;
-  (e: 'save', payload: Omit<AnnouncementFormModel, 'id'>): void;
-}>();
+const emit = defineEmits(['cancel']);
 
 const store = useAnnouncementsStore();
 
@@ -128,14 +126,18 @@ const showFromHint = computed(() => {
   return `С ${label}. До начала работ полосу можно скрыть крестиком.`;
 });
 
-const onSubmitForm = async () => {
-  if (!(await v.value.$validate())) return;
-  emit('save', {
+const save = async () => {
+  const announcement = {
     message: form.value.message.trim(),
     startsAt: fromInputValue(form.value.startsAt),
     endsAt: fromInputValue(form.value.endsAt),
     showBeforeHours: form.value.showBeforeHours,
-  });
+  };
+  if (props.formType === FormTypes.EDIT && props.data) {
+    await store.updateAnnouncement(props.data.id, announcement);
+  } else if (props.formType === FormTypes.ADD) {
+    await store.createAnnouncement(announcement);
+  }
 };
 </script>
 

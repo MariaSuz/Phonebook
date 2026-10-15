@@ -47,12 +47,21 @@
 import { FormTypes } from '@/logic/types/FormTypes';
 import ButtonComponent from '@/components/buttons/ButtonComponent.vue';
 import { computed } from 'vue';
+import { useAlertStore } from '@/store/alertStore';
+
+interface ValidationLike {
+  $validate: () => Promise<boolean>;
+  $reset: () => void;
+  $touch: () => void;
+}
 
 interface BaseFormProps {
   title: string;
   formType: FormTypes;
   layout?: 'grid' | 'flex';
   isLoading?: boolean;
+  submit: () => Promise<boolean | void>;
+  validation: ValidationLike;
 }
 
 const props = withDefaults(defineProps<BaseFormProps>(), {
@@ -65,15 +74,32 @@ const contentClass = computed(() => ({
   'base-form__content--flex': props.layout === 'flex'
 }));
 
-const emit = defineEmits(['cancel', 'submit']);
+const emit = defineEmits(['cancel']);
+const alertStore = useAlertStore();
+
 const cancelAction = () => {
-  if (!props.isLoading) {
-    emit('cancel');
-  }
+  if (!props.isLoading) emit('cancel');
 };
-const onSubmitForm = () => {
-  if (!props.isLoading) {
-    emit('submit');
+
+const onSubmitForm = async () => {
+  if (props.isLoading || !props.submit) return;
+  alertStore.clear();
+
+  if (props.validation) {
+    props.validation.$reset();
+    const isValid = await props.validation.$validate();
+    if (!isValid) {
+      // Показываем все ошибки
+      props.validation.$touch();
+      return;
+    }
+  }
+
+  try {
+    await props.submit();
+    emit('cancel');
+  } catch {
+    // ошибку уже показал showError, форма остаётся открытой
   }
 };
 </script>
